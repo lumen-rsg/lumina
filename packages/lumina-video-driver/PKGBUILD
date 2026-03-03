@@ -1,0 +1,14 @@
+pkgname=lumina-video-driver
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Automatic GPU driver detection and installation tool for Lumina OS"
+arch=('any')
+license=('GPL3')
+depends=('bash' 'pciutils')
+source=("lumina-gpu-setup")
+sha256sums=('SKIP')
+
+package() {
+    install -dm755 "$pkgdir/usr/bin"
+    install -m755 "$srcdir/lumina-gpu-setup" "$pkgdir/usr/bin/lumina-gpu-setup"
+}
