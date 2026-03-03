@@ -1,0 +1,66 @@
+pkgname=lumina-desktop-hyprland
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="The official Lumina OS Hyprland desktop experience"
+arch=('any')
+license=('GPL3')
+
+depends=(
+    # --- Core Display Server ---
+    'hyprland'
+    'xdg-desktop-portal-hyprland'
+    'xdg-desktop-portal-gtk'
+    'qt5-wayland'
+    'qt6-wayland'
+
+    # --- Shell & UI Components ---
+    'quickshell'         # Next-gen QML-based shell/bar
+    'rofi-wayland'       # Application launcher
+    'hyprpaper'          # Wallpaper daemon
+    'swaync'             # Notification daemon
+
+    # --- Core Utilities ---
+    'kitty'              # Default terminal emulator
+    'polkit-kde-agent'   # Authentication agent for elevated privileges
+    'network-manager-applet' # Network management (nm-connection-editor)
+    
+    # --- Audio Stack (Pipewire) ---
+    'pipewire'
+    'pipewire-pulse'
+    'pipewire-alsa'
+    'wireplumber'
+    'pavucontrol'        # GUI volume control
+
+    # --- Clipboard & Screenshot Stack ---
+    'wl-clipboard'       # Wayland clipboard utilities
+    'cliphist'           # Clipboard history manager
+    'grim'               # Screen grabber
+    'slurp'              # Region selector
+    'libnotify'          # Notification sender (notify-send)
+
+    # --- Typography ---
+    'ttf-jetbrains-mono-nerd' # System font and icons
+    'ttf-dejavu'              # Solid fallback font
+    'noto-fonts-emoji'        # Emoji support
+
+    # --- Lumina Base Integration ---
+    'lumina-hooks'            # Essential ALPM lifecycle hooks
+    'lumina-kernel-manager'   # Bootloader and initramfs automation
+    'lumina-default-settings' # Systemd presets and default configs
+)
+
+package() {
+    # Metapackages don't install physical files.
+    # We simply create the standard documentation directory to keep ALPM happy.
+    install -dm755 "$pkgdir/usr/share/doc/$pkgname"
+    
+    cat <<EOF > "$pkgdir/usr/share/doc/$pkgname/README.md"
+# Lumina Hyprland Desktop
+
+This is a metapackage that installs the default Wayland desktop environment 
+for Lumina OS, centered around Hyprland and Quickshell.
+
+To modify your system, simply uninstall this package (which removes the dependency lock) 
+and install/remove the specific components you prefer.
+EOF
+}
