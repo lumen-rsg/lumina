@@ -1,0 +1,170 @@
+#!/bin/bash
+set -e
+
+# ==============================================================================
+# LUMINA KERNEL MANAGER
+# ==============================================================================
+
+CYAN='\033[0;36m'
+PURPLE='\033[0;35m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+BOOT_DIR="/boot"
+MODULES_DIR="/usr/lib/modules"
+ENTRIES_DIR="$BOOT_DIR/loader/entries"
+LOADER_CONF="$BOOT_DIR/loader/loader.conf"
+
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${RED}Error:${NC} lumina-kernel requires root privileges."
+    exit 1
+fi
+
+get_root_uuid() {
+    # Try findmnt first (works on live system and properly mounted chroots)
+    local uuid
+    uuid=$(findmnt / -o UUID -n 2>/dev/null || true)
+    
+    # Fallback to fstab if findmnt fails (e.g., bare chroot)
+    if[ -z "$uuid" ]; then
+        uuid=$(awk '$2=="/" {print $1}' /etc/fstab | grep -oP 'UUID=\K.*' || true)
+    fi
+    
+    echo "$uuid"
+}
+
+install_kernel() {
+    local kver=$1
+    local vmlinuz_src="$MODULES_DIR/$kver/vmlinuz"
+    
+    echo -e "${CYAN}::${NC} Generating initramfs for ${PURPLE}$kver${NC} (dracut)..."
+    dracut --force --kver "$kver" "$BOOT_DIR/initramfs-$kver.img"
+    
+    echo -e "${CYAN}::${NC} Copying kernel image..."
+    cp "$vmlinuz_src" "$BOOT_DIR/vmlinuz-$kver"
+
+    echo -e "${CYAN}::${NC} Generating systemd-boot entry..."
+    local uuid=$(get_root_uuid)
+    
+    if [ -z "$uuid" ]; then
+        echo -e "${YELLOW}Warning:${NC} Could not detect Root UUID. Entry created, but options line may need manual editing."
+    fi
+
+    mkdir -p "$ENTRIES_DIR"
+    cat <<EOF > "$ENTRIES_DIR/lumina-$kver.conf"
+title   Lumina OS
+version $kver
+linux   /vmlinuz-$kver
+initrd  /initramfs-$kver.img
+options root=UUID=$uuid rw quiet splash
+EOF
+    echo -e "${GREEN}✔${NC} Successfully installed $kver"
+}
+
+remove_kernel() {
+    local kver=$1
+    echo -e "${YELLOW}::${NC} Removing files for ${PURPLE}$kver${NC}..."
+    rm -f "$BOOT_DIR/initramfs-$kver.img"
+    rm -f "$BOOT_DIR/vmlinuz-$kver"
+    rm -f "$ENTRIES_DIR/lumina-$kver.conf"
+    echo -e "${GREEN}✔${NC} Successfully removed $kver"
+}
+
+set_default() {
+    local kver=$1
+    echo -e "${CYAN}::${NC} Setting default boot entry to ${PURPLE}lumina-$kver.conf${NC}..."
+    
+    if[ ! -f "$LOADER_CONF" ]; then
+        echo "default lumina-$kver.conf" > "$LOADER_CONF"
+        echo "timeout 3" >> "$LOADER_CONF"
+        echo "console-mode max" >> "$LOADER_CONF"
+    else
+        # Replace existing default or append if missing
+        if grep -q "^default" "$LOADER_CONF"; then
+            sed -i "s/^default.*/default lumina-$kver.conf/" "$LOADER_CONF"
+        else
+            echo "default lumina-$kver.conf" >> "$LOADER_CONF"
+        fi
+    fi
+    echo -e "${GREEN}✔${NC} Default kernel updated."
+}
+
+# ==============================================================================
+# MODE: HOOK (Automated by Package Manager)
+# ==============================================================================
+if [[ "$1" == "--hook" ]]; then
+    while read -r path; do
+        # path looks like: usr/lib/modules/6.8.2-lumina/vmlinuz
+        kver=$(echo "$path" | awk -F'/' '{print $4}')
+        
+        if [[ ! -f "/$path" ]]; then
+            remove_kernel "$kver"
+        else
+            # Install or Upgrade
+            install_kernel "$kver"
+            set_default "$kver" 
+        fi
+    done
+    
+    if command -v bootctl >/dev/null 2>&1; then
+        bootctl update || true
+    fi
+    exit 0
+fi
+
+# ==============================================================================
+# MODE: INTERACTIVE (User CLI)
+# ==============================================================================
+
+mapfile -t kernels < <(find "$MODULES_DIR" -maxdepth 2 -name "vmlinuz" | awk -F'/' '{print $5}')
+
+if [ ${#kernels[@]} -eq 0 ]; then
+    echo -e "${RED}Error:${NC} No kernels found in $MODULES_DIR"
+    exit 1
+fi
+
+echo -e "\n  ${BOLD}${CYAN}LUMINA KERNEL MANAGER${NC}\n"
+
+PS3=$'\nSelect an action or kernel (Number): '
+options=("Regenerate specific kernel" "Set default kernel" "Regenerate ALL kernels" "Exit")
+
+select opt in "${options[@]}"; do
+    case $opt in
+        "Regenerate specific kernel")
+            echo -e "\n${BOLD}Select kernel to regenerate:${NC}"
+            select k in "${kernels[@]}" "Cancel"; do
+                if [[ "$k" == "Cancel" ]]; then break; fi
+                if [[ -n "$k" ]]; then
+                    install_kernel "$k"
+                    break
+                fi
+            done
+            break
+            ;;
+        "Set default kernel")
+            echo -e "\n${BOLD}Select kernel to set as default boot option:${NC}"
+            select k in "${kernels[@]}" "Cancel"; do
+                if [[ "$k" == "Cancel" ]]; then break; fi
+                if [[ -n "$k" ]]; then
+                    set_default "$k"
+                    break
+                fi
+            done
+            break
+            ;;
+        "Regenerate ALL kernels")
+            for k in "${kernels[@]}"; do
+                install_kernel "$k"
+            done
+            break
+            ;;
+        "Exit")
+            echo "Exiting."
+            exit 0
+            ;;
+        *) echo "Invalid option $REPLY";;
+    esac
+done
