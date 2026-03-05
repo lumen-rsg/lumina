@@ -4,12 +4,8 @@ pkgrel=1
 pkgdesc="Mainline U-Boot and ATF for Orange Pi 5 Ultra"
 arch=('aarch64')
 license=('GPL2')
-makedepends=('git' 'aarch64-linux-gnu-gcc' 'bison' 'flex' 'python' 'swig' 'python-setuptools' 'dtc' 'bc')
+makedepends=('git' 'gcc-aarch64-linux-gnu' 'bison' 'flex' 'python' 'swig' 'python-setuptools' 'device-tree-compiler' 'bc')
 
-# We need three repositories: 
-# 1. Trusted Firmware-A (ATF)
-# 2. Rockchip binaries (for DDR init)
-# 3. Mainline U-Boot
 source=(
     "atf::git+https://github.com/ARM-software/arm-trusted-firmware.git"
     "rkbin::git+https://github.com/rockchip-linux/rkbin.git"
@@ -18,7 +14,11 @@ source=(
 sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 build() {
+    # CRITICAL FIX: Prevent host makepkg/Aurora flags from leaking into the cross-compiler
+    unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+    
     export CROSS_COMPILE=aarch64-linux-gnu-
+    export ARCH=arm64
     
     # 1. Build ARM Trusted Firmware (TF-A)
     msg2 "Building TF-A for RK3588..."
@@ -37,7 +37,7 @@ build() {
     cd "$srcdir/uboot"
     make distclean
     
-    # Use the appropriate defconfig (Mainline U-Boot has added OPi 5 support)
+    # Use the appropriate defconfig for OPi5
     make orangepi-5-plus-rk3588_defconfig
     
     # Build the final images
@@ -45,6 +45,9 @@ build() {
 }
 
 package() {
+    # Ensure no flags leak into package phase if it triggers any relinking
+    unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+
     install -dm755 "$pkgdir/boot/extlinux"
     install -dm755 "$pkgdir/usr/share/uboot/orangepi-5-ultra"
     
@@ -57,16 +60,17 @@ package() {
     # Provide a helper script to flash the bootloader
     cat << 'EOF' > "$pkgdir/usr/share/uboot/orangepi-5-ultra/flash-bootloader.sh"
 #!/bin/bash
-if[ -z "$1" ]; then
+if [ -z "$1" ]; then
     echo "Usage: $0 /dev/nvme0n1 (or /dev/mmcblk0)"
     exit 1
 fi
 echo "Flashing idbloader to sector 64..."
-dd if=idbloader.img of=$1 seek=64 conv=notrunc status=progress
+dd if=/usr/share/uboot/orangepi-5-ultra/idbloader.img of=$1 seek=64 conv=notrunc status=progress
 echo "Flashing u-boot.itb to sector 16384..."
-dd if=u-boot.itb of=$1 seek=16384 conv=notrunc status=progress
+dd if=/usr/share/uboot/orangepi-5-ultra/u-boot.itb of=$1 seek=16384 conv=notrunc status=progress
 sync
-echo "Done."
+echo "Bootloader flashed successfully."
 EOF
+
     chmod +x "$pkgdir/usr/share/uboot/orangepi-5-ultra/flash-bootloader.sh"
 }
