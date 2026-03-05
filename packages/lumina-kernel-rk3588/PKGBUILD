@@ -5,7 +5,7 @@ pkgver=6.19.6
 pkgrel=1
 pkgdesc='Mainline Linux Kernel for RK3588 (Orange Pi 5 Ultra)'
 url='https://kernel.org'
-arch=(arm64)
+arch=(aarch64)
 license=(GPL-2.0-only)
 
 makedepends=(
@@ -39,14 +39,15 @@ options=(
 )
 
 _srcname=linux-$pkgver
-source=("https://cdn.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz")
-sha256sums=('SKIP')
+source=(
+  "https://cdn.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz"
+)
+sha256sums=('SKIP' 'SKIP')
 
 export KBUILD_BUILD_HOST=lumina
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-export CROSS_COMPILE=aarch64-linux-gnu-
 export ARCH=arm64
 
 prepare() {
@@ -56,19 +57,28 @@ prepare() {
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
 
-  echo "Setting config (defconfig)..."
-  make defconfig
-
   echo "Applying Lumina & RK3588 Customizations..."
+  
+  # 1. Custom Name and Hostname
   scripts/config --set-str LOCALVERSION "-lumina-rk3588"
   scripts/config --set-str DEFAULT_HOSTNAME "lumina-os"
 
-  # Rockchip / Hardware specific flags
+  # 2. Disable BTF to fix libbpf cross-compilation errors
+  scripts/config --disable CONFIG_DEBUG_INFO_BTF
+  scripts/config --disable CONFIG_DEBUG_INFO_BTF_MODULES
+
+  # 3. Disable massive unneeded PCIe GPU drivers to save compile time
+  scripts/config --disable CONFIG_DRM_NOUVEAU
+  scripts/config --disable CONFIG_DRM_AMDGPU
+  scripts/config --disable CONFIG_DRM_RADEON
+
+  # 4. Ensure Rockchip & Mali Hardware is enabled
   scripts/config --enable CONFIG_ARCH_ROCKCHIP
   scripts/config --enable CONFIG_DRM_PANTHOR
   scripts/config --enable CONFIG_VIDEO_ROCKCHIP_VDPU
   scripts/config --module CONFIG_VIDEO_HANTRO
 
+  # 5. Make olddefconfig resolves the changes and generates a clean config
   make olddefconfig
 
   make -s kernelrelease > version
@@ -79,10 +89,8 @@ build() {
   cd $_srcname
   make all -j$(nproc)
   
-  # Build BPF tools if the architecture supports it
-  if [ -d "tools/bpf/bpftool" ]; then
-    make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1 || true
-  fi
+  # REMOVED: make -C tools/bpf/bpftool
+  # Cross-compiling BPF tools causes the vmlinux.h error
   
   make htmldocs SPHINXOPTS=-QT
 }
@@ -135,13 +143,15 @@ _package-headers() {
 
   echo "Installing build files..."
   install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
-    localversion.* version vmlinux[ -f tools/bpf/bpftool/vmlinux.h ] && install -Dt "$builddir" -m644 tools/bpf/bpftool/vmlinux.h
+    localversion.* version vmlinux
 
   install -Dt "$builddir/kernel" -m644 kernel/Makefile
   install -Dt "$builddir/arch/arm64" -m644 arch/arm64/Makefile
   cp -t "$builddir" -a scripts
-  ln -srt "$builddir" "$builddir/scripts/gdb/vmlinux-gdb.py" || true[ -f tools/objtool/objtool ] && install -Dt "$builddir/tools/objtool" tools/objtool/objtool
-  [ -f tools/bpf/resolve_btfids/resolve_btfids ] && install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  ln -srt "$builddir" "$builddir/scripts/gdb/vmlinux-gdb.py" || true
+
+  # Ignore objtool/resolve_btfids if they weren't compiled (due to cross-compilation)
+  [ -f tools/objtool/objtool ] && install -Dt "$builddir/tools/objtool" tools/objtool/objtool[ -f tools/bpf/resolve_btfids/resolve_btfids ] && install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
 
   echo "Installing headers..."
   cp -t "$builddir" -a include
