@@ -16,21 +16,11 @@ makedepends=(
   pahole
   perl
   python
-  rust
-  rust-bindgen
-  rust-src
   tar
   xz
   make
   bison
   flex
-
-  # htmldocs
-  graphviz
-  imagemagick
-  python-sphinx
-  python-yaml
-  texlive-latexextra
 )
 
 options=(
@@ -39,60 +29,62 @@ options=(
 )
 
 _srcname=linux-$pkgver
-source=(
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz"
-)
-sha256sums=('SKIP' 'SKIP')
+source=("https://cdn.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz")
+sha256sums=('SKIP')
 
 export KBUILD_BUILD_HOST=lumina
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-export ARCH=arm64
-
 prepare() {
-  cd $_srcname
+  cd "$_srcname"
+
+  # Prevent host makepkg/Aurora flags from leaking into the cross-compiler
+  # unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
 
   echo "Setting version..."
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
 
+  echo "Setting base config (defconfig)..."
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+
   echo "Applying Lumina & RK3588 Customizations..."
   
-  # 1. Custom Name and Hostname
+  # 1. Branding
   scripts/config --set-str LOCALVERSION "-lumina-rk3588"
   scripts/config --set-str DEFAULT_HOSTNAME "lumina-os"
 
-  # 2. Disable BTF to fix libbpf cross-compilation errors
+  # 2. Disable BTF (Fixes the libbpf/pahole ELF section errors)
   scripts/config --disable CONFIG_DEBUG_INFO_BTF
   scripts/config --disable CONFIG_DEBUG_INFO_BTF_MODULES
 
-  # 3. Disable massive unneeded PCIe GPU drivers to save compile time
+  # 3. Strip heavy PCIe desktop GPUs to save massive compile time
   scripts/config --disable CONFIG_DRM_NOUVEAU
   scripts/config --disable CONFIG_DRM_AMDGPU
   scripts/config --disable CONFIG_DRM_RADEON
 
-  # 4. Ensure Rockchip & Mali Hardware is enabled
+  # 4. Enable specific RK3588 / Orange Pi 5 Hardware
   scripts/config --enable CONFIG_ARCH_ROCKCHIP
   scripts/config --enable CONFIG_DRM_PANTHOR
   scripts/config --enable CONFIG_VIDEO_ROCKCHIP_VDPU
   scripts/config --module CONFIG_VIDEO_HANTRO
 
-  # 5. Make olddefconfig resolves the changes and generates a clean config
-  make olddefconfig
+  echo "Regenerating config..."
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
-  make -s kernelrelease > version
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -s kernelrelease > version
   echo "Prepared $pkgbase version $(<version)"
 }
 
 build() {
-  cd $_srcname
-  make all -j$(nproc)
+  cd "$_srcname"
   
-  # REMOVED: make -C tools/bpf/bpftool
-  # Cross-compiling BPF tools causes the vmlinux.h error
+  # Ensure flags stay unset
+  # unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
   
-  make htmldocs SPHINXOPTS=-QT
+  echo "Building Kernel Image and Modules..."
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- all -j$(nproc)
 }
 
 _package() {
@@ -102,18 +94,12 @@ _package() {
     initramfs
     kmod
   )
-  optdepends=(
-    'linux-firmware: firmware images needed for some devices'
-  )
-  provides=(
-    linux
-    WIREGUARD-MODULE
-  )
-  conflicts=(
-    linux
-  )
+  provides=(linux)
+  conflicts=(linux)
 
-  cd $_srcname
+  cd "$_srcname"
+  # unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+
   local modulesdir="$pkgdir/usr/lib/modules/$(<version)"
 
   echo "Installing boot image..."
@@ -122,11 +108,12 @@ _package() {
   echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
   echo "Installing modules..."
-  ZSTD_CLEVEL=19 make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
-    DEPMOD=/doesnt/exist modules_install
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install
 
-  echo "Installing Device Trees (DTB)..."
-  make INSTALL_DTBS_PATH="$pkgdir/boot/dtbs/rockchip" dtbs_install
+  echo "Installing Device Trees..."
+  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    INSTALL_DTBS_PATH="$pkgdir/boot/dtbs/rockchip" dtbs_install
 
   rm -f "$modulesdir"/build
   rm -f "$modulesdir"/source
@@ -138,7 +125,9 @@ _package-headers() {
   provides=(linux-headers)
   conflicts=(linux-headers)
 
-  cd $_srcname
+  cd "$_srcname"
+  # unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+
   local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
 
   echo "Installing build files..."
@@ -150,94 +139,37 @@ _package-headers() {
   cp -t "$builddir" -a scripts
   ln -srt "$builddir" "$builddir/scripts/gdb/vmlinux-gdb.py" || true
 
-  # Ignore objtool/resolve_btfids if they weren't compiled (due to cross-compilation)
-  [ -f tools/objtool/objtool ] && install -Dt "$builddir/tools/objtool" tools/objtool/objtool[ -f tools/bpf/resolve_btfids/resolve_btfids ] && install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
-
   echo "Installing headers..."
   cp -t "$builddir" -a include
   cp -t "$builddir/arch/arm64" -a arch/arm64/include
-  
   install -Dt "$builddir/arch/arm64/kernel" -m644 arch/arm64/kernel/asm-offsets.s
 
-  install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
-  install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
-  install -Dt "$builddir/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h || true
-  install -Dt "$builddir/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h || true
-  install -Dt "$builddir/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h || true
-  install -Dt "$builddir/drivers/media/tuners" -m644 drivers/media/tuners/*.h || true
-  install -Dt "$builddir/drivers/iio/common/hid-sensors" -m644 drivers/iio/common/hid-sensors/*.h || true
+  # Install required subsystem headers
+  install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h || true
+  install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h || true
 
   echo "Installing KConfig files..."
   find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
 
-  echo "Installing Rust files..."
-  if [ -d "rust" ]; then
-    install -Dt "$builddir/rust" -m644 rust/*.rmeta || true
-    install -Dt "$builddir/rust" rust/*.so || true
-  fi
-
-  echo "Installing unstripped VDSO..."
-  make INSTALL_MOD_PATH="$pkgdir/usr" vdso_install link= || true
-
   echo "Removing unneeded architectures..."
-  local arch
   for arch in "$builddir"/arch/*/; do
     [[ $arch = */arm64/ ]] && continue
-    echo "Removing $(basename "$arch")"
     rm -r "$arch"
   done
 
   echo "Removing documentation..."
   rm -rf "$builddir/Documentation"
-
-  echo "Removing broken symlinks..."
   find -L "$builddir" -type l -printf 'Removing %P\n' -delete
-
-  echo "Removing loose objects..."
   find "$builddir" -type f -name '*.o' -printf 'Removing %P\n' -delete
-
-  echo "Stripping build tools..."
-  local file
-  while read -rd '' file; do
-    case "$(file -Sib "$file")" in
-      application/x-sharedlib\;*)      strip -v $STRIP_SHARED "$file" ;;
-      application/x-archive\;*)        strip -v $STRIP_STATIC "$file" ;;
-      application/x-executable\;*)     strip -v $STRIP_BINARIES "$file" ;;
-      application/x-pie-executable\;*) strip -v $STRIP_SHARED "$file" ;;
-    esac
-  done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
-
-  echo "Stripping vmlinux..."
-  strip -v $STRIP_STATIC "$builddir/vmlinux" || true
 
   echo "Adding symlink..."
   mkdir -p "$pkgdir/usr/src"
   ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
 
-_package-docs() {
-  pkgdesc="Documentation for the $pkgdesc kernel"
-
-  cd $_srcname
-  local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
-
-  echo "Installing documentation..."
-  local src dst
-  while read -rd '' src; do
-    dst="${src#Documentation/}"
-    dst="$builddir/Documentation/${dst#output/}"
-    install -Dm644 "$src" "$dst"
-  done < <(find Documentation -name '.*' -prune -o ! -type d -print0)
-
-  echo "Adding symlink..."
-  mkdir -p "$pkgdir/usr/share/doc"
-  ln -sr "$builddir/Documentation" "$pkgdir/usr/share/doc/$pkgbase"
-}
-
 pkgname=(
   "$pkgbase"
   "$pkgbase-headers"
-  "$pkgbase-docs"
 )
 
 for _p in "${pkgname[@]}"; do
