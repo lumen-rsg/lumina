@@ -3,7 +3,7 @@
 pkgbase=lumina-kernel-rk3588
 pkgver=6.19.6
 pkgrel=1
-pkgdesc='Mainline Linux Kernel for RK3588'
+pkgdesc='Mainline Linux Kernel for RK3588 (Orange Pi 5 Ultra)'
 url='https://kernel.org'
 arch=(arm64)
 license=(GPL-2.0-only)
@@ -21,7 +21,6 @@ makedepends=(
   rust-src
   tar
   xz
-  git
   make
   bison
   flex
@@ -39,8 +38,8 @@ options=(
   !strip
 )
 
-_srcname=linux
-source=("git+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git#tag=v6.19.6")
+_srcname=linux-$pkgver
+source=("https://cdn.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz")
 sha256sums=('SKIP')
 
 export KBUILD_BUILD_HOST=lumina
@@ -61,11 +60,10 @@ prepare() {
   make defconfig
 
   echo "Applying Lumina & RK3588 Customizations..."
-  # 1. Custom Name and Hostname
   scripts/config --set-str LOCALVERSION "-lumina-rk3588"
   scripts/config --set-str DEFAULT_HOSTNAME "lumina-os"
 
-  # 2. Rockchip / Hardware specific flags
+  # Rockchip / Hardware specific flags
   scripts/config --enable CONFIG_ARCH_ROCKCHIP
   scripts/config --enable CONFIG_DRM_PANTHOR
   scripts/config --enable CONFIG_VIDEO_ROCKCHIP_VDPU
@@ -113,7 +111,6 @@ _package() {
   echo "Installing boot image..."
   install -Dm644 arch/arm64/boot/Image "$modulesdir/vmlinuz"
 
-  # Used by mkinitcpio/dracut to name the kernel
   echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
   echo "Installing modules..."
@@ -123,7 +120,6 @@ _package() {
   echo "Installing Device Trees (DTB)..."
   make INSTALL_DTBS_PATH="$pkgdir/boot/dtbs/rockchip" dtbs_install
 
-  # remove build link
   rm -f "$modulesdir"/build
   rm -f "$modulesdir"/source
 }
@@ -144,18 +140,15 @@ _package-headers() {
   install -Dt "$builddir/kernel" -m644 kernel/Makefile
   install -Dt "$builddir/arch/arm64" -m644 arch/arm64/Makefile
   cp -t "$builddir" -a scripts
-  ln -srt "$builddir" "$builddir/scripts/gdb/vmlinux-gdb.py" || true
-
-  [ -f tools/objtool/objtool ] && install -Dt "$builddir/tools/objtool" tools/objtool/objtool[ -f tools/bpf/resolve_btfids/resolve_btfids ] && install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  ln -srt "$builddir" "$builddir/scripts/gdb/vmlinux-gdb.py" || true[ -f tools/objtool/objtool ] && install -Dt "$builddir/tools/objtool" tools/objtool/objtool
+  [ -f tools/bpf/resolve_btfids/resolve_btfids ] && install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
 
   echo "Installing headers..."
   cp -t "$builddir" -a include
   cp -t "$builddir/arch/arm64" -a arch/arm64/include
   
-  # ARM64 asm offsets
   install -Dt "$builddir/arch/arm64/kernel" -m644 arch/arm64/kernel/asm-offsets.s
 
-  # Keep standard header inclusions
   install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
   install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
   install -Dt "$builddir/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h || true
@@ -231,7 +224,6 @@ _package-docs() {
   ln -sr "$builddir/Documentation" "$pkgdir/usr/share/doc/$pkgbase"
 }
 
-# The magic array that generates the package functions
 pkgname=(
   "$pkgbase"
   "$pkgbase-headers"
