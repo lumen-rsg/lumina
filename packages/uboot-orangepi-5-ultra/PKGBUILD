@@ -4,7 +4,7 @@ pkgrel=1
 pkgdesc="Mainline U-Boot and ATF for Orange Pi 5 Ultra"
 arch=('aarch64')
 license=('GPL2')
-makedepends=('git' 'gcc-aarch64-linux-gnu' 'bison' 'flex' 'python' 'swig' 'python-setuptools' 'device-tree-compiler' 'bc')
+makedepends=('git' 'aarch64-linux-gnu-gcc' 'bison' 'flex' 'python' 'swig' 'python-setuptools' 'dtc' 'bc')
 
 source=(
     "atf::git+https://github.com/ARM-software/arm-trusted-firmware.git"
