@@ -47,8 +47,7 @@ export KBUILD_BUILD_HOST=lumina
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-# If cross-compiling on x86_64, uncomment the line below:
-# export CROSS_COMPILE=aarch64-linux-gnu-
+export CROSS_COMPILE=aarch64-linux-gnu-
 export ARCH=arm64
 
 prepare() {
