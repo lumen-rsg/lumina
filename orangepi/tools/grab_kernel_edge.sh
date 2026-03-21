@@ -46,4 +46,4 @@ mkdir -p /home/$SUDO_USER/rpmbuild/SOURCES 2>/dev/null || mkdir -p ~/rpmbuild/SO
 cd $STAGE
 tar --owner=0 --group=0 -czvf ~/rpmbuild/SOURCES/kernel-rockchip64-edge-7.0.0.tar.gz .
 
-echo "Done! The Edge kernel tarball is ready."
+echo "Done! The Edge kernel tarball is ready." 
