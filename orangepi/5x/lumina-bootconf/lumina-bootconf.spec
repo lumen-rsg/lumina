@@ -1,6 +1,6 @@
 %global debug_package %{nil}
 
-Name:           devicetrees-rockchip
+Name:           lumina-bootconf
 Version:        1.0
 Release:        1.lu26
 Summary:        Lumina Boot Scripts and Devicetree Configurator
