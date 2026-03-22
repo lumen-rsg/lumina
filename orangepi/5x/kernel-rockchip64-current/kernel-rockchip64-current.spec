@@ -13,7 +13,7 @@ Summary:        Linux kernel for Rockchip64
 License:        GPLv2
 
 ExclusiveArch:  aarch64
-Source0:        kernel-rockchip64-edge-6.18.19.tar.gz
+Source0:        kernel-rockchip64-current-6.18.19.tar.gz
 
 Requires:       dracut, kmod, lumina-bootconf, opi5x-fw
 AutoReqProv:    no
