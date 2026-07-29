@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly KVER="6.8.12-1021-tegra"
+readonly CONFIG="/boot/extlinux/extlinux.conf"
+readonly BACKUP="${CONFIG}.pre-lumina"
+non_interactive=false
+
+if [[ "${1:-}" == "--non-interactive" ]]; then
+    non_interactive=true
+elif [[ $# -ne 0 ]]; then
+    echo "Usage: lumina-jetson-boot-setup [--non-interactive]" >&2
+    exit 2
+fi
+
+if [[ "${EUID}" -ne 0 ]]; then
+    echo "Run lumina-jetson-boot-setup as root." >&2
+    exit 1
+fi
+
+if [[ -r /proc/device-tree/compatible ]] &&
+   ! tr '\0' '\n' </proc/device-tree/compatible | grep -qx 'nvidia,tegra234'; then
+    if "${non_interactive}"; then
+        exit 0
+    fi
+    echo "This system does not identify itself as an NVIDIA Tegra234." >&2
+    exit 1
+fi
+
+for required in "/boot/Image-${KVER}" "/boot/initramfs-${KVER}.img"; do
+    if [[ ! -f "${required}" ]]; then
+        if "${non_interactive}"; then
+            exit 0
+        fi
+        echo "Missing ${required}; install kernel-tegra-l4t first." >&2
+        exit 1
+    fi
+done
+
+root_source="$(findmnt -n -o SOURCE /)"
+root_fstype="$(findmnt -n -o FSTYPE /)"
+root_uuid="$(findmnt -n -o UUID /)"
+if [[ -n "${root_uuid}" ]]; then
+    root_arg="UUID=${root_uuid}"
+else
+    root_arg="${root_source}"
+fi
+
+install -d -m 0755 "$(dirname "${CONFIG}")"
+if [[ -f "${CONFIG}" && ! -e "${BACKUP}" ]]; then
+    cp -a "${CONFIG}" "${BACKUP}"
+fi
+
+temp_config="$(mktemp "${CONFIG}.XXXXXX")"
+trap 'rm -f "${temp_config}"' EXIT
+cat >"${temp_config}" <<EOF
+TIMEOUT 30
+DEFAULT lumina
+
+MENU TITLE Lumina Linux on NVIDIA Jetson
+
+LABEL lumina
+      MENU LABEL Lumina Linux (${KVER})
+      LINUX /boot/Image-${KVER}
+      INITRD /boot/initramfs-${KVER}.img
+      APPEND \${cbootargs} root=${root_arg} rw rootwait rootfstype=${root_fstype} console=ttyTCU0,115200 efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
+EOF
+
+install -m 0644 "${temp_config}" "${CONFIG}"
+echo "Wrote ${CONFIG} for ${root_arg}."
+if [[ -e "${BACKUP}" ]]; then
+    echo "The original configuration is preserved at ${BACKUP}."
+fi
