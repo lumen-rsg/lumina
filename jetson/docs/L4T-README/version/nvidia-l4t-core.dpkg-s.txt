@@ -1,0 +1,17 @@
+Package: nvidia-l4t-core
+Status: install ok installed
+Priority: standard
+Section: libs
+Installed-Size: 12248
+Maintainer: NVIDIA Corporation
+Architecture: arm64
+Version: 39.2.0-20260601141651
+Replaces: nvidia-l4t-ccp-generic
+Depends: libc6, libegl1, libexpat1, libgcc-s1, libstdc++6
+Conflicts: nvidia-l4t-ccp-generic
+Conffiles:
+ /etc/dpkg/dpkg.cfg.d/include-docs 2aa0eb656e168317923951a2793c99c2
+ /etc/ld.so.conf.d/nvidia-tegra.conf 625ac531b30ca7994a3b598a4cfaa779
+ /etc/nv_tegra_release c1c354da4be6cb70a47a4ca3bf4d7ff1
+Description: NVIDIA Core Package
+Homepage: http://developer.nvidia.com/jetson

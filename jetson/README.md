@@ -73,3 +73,10 @@ The command preserves an existing `extlinux.conf` as
 `/boot/extlinux/extlinux.conf.pre-lumina` and writes a versioned kernel entry.
 Do not erase or reformat the NVIDIA boot, recovery, ESP, or A/B firmware
 partitions.
+
+## Bring-up notes
+
+The hardware inventory and rationale behind the package split are recorded in
+[`docs/`](docs/README.md).  These notes describe the exact R39.2 reference
+Jetson used for the initial port, including its NVMe partition table, kernel,
+modules, proprietary userspace, and NVIDIA's mounted L4T README material.
