@@ -153,6 +153,13 @@ The installer is local-media-only. The remaster removes Fedora dracut's iSCSI
 root parser because it unconditionally probes `iscsi_tcp`, which NVIDIA's
 Tegra kernel does not provide, even when no iSCSI root was requested.
 
+Before Anaconda starts its package transaction, `lumina-jetson-bootstrap`
+seeds the empty target with the installer runtime's matching Bash, glibc ELF
+loader, libc, and libtinfo. It verifies `/bin/sh` in a chroot. This prevents
+shell-based RPM pre-install scriptlets from running before their interpreter's
+runtime dependencies have been unpacked. RPM overwrites and registers every
+seeded file during the normal transaction.
+
 The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
 only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
 configures the installed Lumina system with SELinux enforcing.

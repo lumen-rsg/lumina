@@ -47,6 +47,10 @@ fi
 
 %include /tmp/lumina-jetson-storage.ks
 
+%pre-install --erroronfail --log=/tmp/lumina-jetson-bootstrap.log
+/run/install/repo/jetson/lumina-jetson-bootstrap /mnt/sysroot
+%end
+
 %packages --inst-langs=en
 @^workstation-product-environment
 lumina-release

@@ -1,0 +1,73 @@
+#!/usr/bin/bash
+#
+# Seed a runnable /bin/sh in an empty Anaconda target root. RPM replaces and
+# registers these files during the normal package transaction.
+
+set -euo pipefail
+
+die()
+{
+    printf 'lumina-jetson-bootstrap: %s\n' "$*" >&2
+    exit 1
+}
+
+[[ $# -eq 1 ]] || die "usage: $0 TARGET_ROOT"
+
+readonly target_root="$1"
+
+[[ -d "${target_root}" ]] ||
+    die "target root does not exist: ${target_root}"
+
+for source_file in \
+    /usr/bin/bash \
+    /usr/lib/ld-linux-aarch64.so.1 \
+    /usr/lib64/libc.so.6; do
+    [[ -f "${source_file}" ]] ||
+        die "installer runtime is missing ${source_file}"
+done
+
+mapfile -t libtinfo_files < <(
+    find /usr/lib64 -maxdepth 1 \
+        \( -type f -o -type l \) \
+        -name 'libtinfo.so.6*' \
+        -print
+)
+[[ ${#libtinfo_files[@]} -gt 0 ]] ||
+    die "installer runtime is missing libtinfo.so.6"
+
+install -d -m 0755 \
+    "${target_root}/usr/bin" \
+    "${target_root}/usr/lib" \
+    "${target_root}/usr/lib64"
+install -m 0755 /usr/bin/bash \
+    "${target_root}/usr/bin/bash"
+install -m 0755 /usr/lib/ld-linux-aarch64.so.1 \
+    "${target_root}/usr/lib/ld-linux-aarch64.so.1"
+install -m 0755 /usr/lib64/libc.so.6 \
+    "${target_root}/usr/lib64/libc.so.6"
+cp -a "${libtinfo_files[@]}" "${target_root}/usr/lib64/"
+
+for link_spec in \
+    "bin usr/bin" \
+    "lib usr/lib" \
+    "lib64 usr/lib64"; do
+    read -r link_name link_target <<<"${link_spec}"
+    if [[ ! -e "${target_root}/${link_name}" &&
+          ! -L "${target_root}/${link_name}" ]]; then
+        ln -s "${link_target}" "${target_root}/${link_name}"
+    fi
+    [[ -L "${target_root}/${link_name}" ]] ||
+        die "/${link_name} is not a symbolic link"
+    [[ "$(readlink -- "${target_root}/${link_name}")" == "${link_target}" ]] ||
+        die "/${link_name} has an unexpected target"
+done
+
+if [[ ! -e "${target_root}/usr/bin/sh" &&
+      ! -L "${target_root}/usr/bin/sh" ]]; then
+    ln -s bash "${target_root}/usr/bin/sh"
+fi
+[[ "$(readlink -- "${target_root}/usr/bin/sh")" == bash ]] ||
+    die "/usr/bin/sh has an unexpected target"
+
+chroot "${target_root}" /bin/sh -c \
+    'printf "Target shell bootstrap verified\n"'

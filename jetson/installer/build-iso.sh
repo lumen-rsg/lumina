@@ -67,6 +67,8 @@ install -m 0644 "${script_dir}/lumina-jetson.ks" \
     "${iso_tree}/jetson/lumina-jetson.ks"
 install -m 0755 "${script_dir}/lumina-jetson-storage" \
     "${iso_tree}/jetson/lumina-jetson-storage"
+install -m 0755 "${script_dir}/lumina-jetson-bootstrap" \
+    "${iso_tree}/jetson/lumina-jetson-bootstrap"
 install -m 0644 "${script_dir}/layouts/orin.sfdisk.in" \
     "${iso_tree}/jetson/layouts/orin.sfdisk.in"
 install -m 0644 "${script_dir}/grub.cfg.fragment" \
