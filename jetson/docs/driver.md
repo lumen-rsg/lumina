@@ -74,6 +74,54 @@ the Jetson camera and NVIDIA multimedia paths.
 - Jetson-IO
 - OP-TEE integration
 
+### `lumina-jetson-graphics`
+
+NVIDIA installs its GBM backend in Debian's multiarch directory, while Fedora's
+Mesa `libgbm` searches `%{_libdir}/gbm`.  The integration package adds
+compatibility symlinks in Fedora's backend directory.
+
+L4T userspace also opens `/dev/nvmap`, several `/dev/nvhost-*-gpu` nodes, and
+the R39 `/dev/nvgpu/igpu0/*` interface directly.  NVIDIA's stock rules grant
+the runtime nodes to the static `video` group, but Fedora GDM creates transient
+greeter accounts that are not members of that group.  Waiting for logind's
+active-seat ACL is insufficient because the greeter must initialize EGL before
+its graphical session can become active.
+
+Lumina therefore tags the runtime interfaces with systemd-logind's `uaccess`
+policy and gives the non-debug GPU nodes bootstrap access.  The nested
+`nvidia-gpu-v2` nodes are essential: allowing only the legacy `nvhost` aliases
+lets Mutter create a GBM renderer but EGL later rejects the selected primary
+GPU.  The `dbg` and `prof*` nodes remain root-only.
+
+The standalone probe used during bring-up can distinguish the NVIDIA and Mesa
+paths without starting a compositor:
+
+```bash
+GBM_BACKEND=nvidia-drm python3 jetson/tools/probe_egl_gbm.py /dev/dri/card2
+```
+
+On the validated Orin Nano this reports GBM backend `nvidia`, EGL 1.5, and EGL
+vendor `NVIDIA`, including when run as the transient greeter after applying the
+integration package.
+
+## Runtime validation
+
+The Fedora 44 bring-up was validated after a cold reboot with kernel
+`6.8.12-1021-tegra`.  GDM remained active, loaded NVIDIA's EGL core, opened
+`card2` and `renderD129`, and selected `/dev/dri/card2` as its integrated
+primary GPU.
+
+The short table form of `nvidia-smi` may print `No devices were found` on this
+integrated platform even while the driver is healthy.  Use the detailed query:
+
+```bash
+nvidia-smi -q
+```
+
+The validated stack reports one attached `Orin (nvgpu)` Ampere GPU and a GPU
+UUID.  Kernel health should also be checked for `nvgpu` initialization and
+NVRM Xid errors; no Xid errors were present during the validated boot.
+
 ## Services observed
 
 The stock system installed or enabled services including:

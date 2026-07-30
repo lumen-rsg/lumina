@@ -4,7 +4,7 @@
 
 Name:           nvidia-l4t-multimedia
 Version:        39.2.0
-Release:        1.lu26
+Release:        2.lu26
 Summary:        NVIDIA L4T camera and multimedia stack for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
@@ -47,5 +47,8 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-2.lu26
+- Rebuild against the corrected NVIDIA L4T driver package
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-1.lu26
 - Initial NVIDIA Jetson Orin package

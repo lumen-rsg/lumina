@@ -1,0 +1,30 @@
+# GDM's transient greeter must initialize GBM before logind can mark its
+# graphical session active and apply uaccess ACLs. Keep normal GPU runtime
+# nodes accessible from that bootstrap phase. NVIDIA debug and profiling nodes
+# retain the restrictive modes from its stock rules.
+SUBSYSTEM=="misc", KERNEL=="nvmap", OWNER="root", GROUP="video", MODE="0444"
+
+# R39's userspace opens the nvidia-gpu-v2 nodes below rather than only their
+# legacy nvhost aliases. These are normal rendering/runtime interfaces.
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="as", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="channel", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="ctrl", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="ctxsw", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="gsp_vm_sched", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="multimedia", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="nvsched", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="nvsched_ctrl_fifo", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="sched", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="tsg", OWNER="root", GROUP="video", MODE="0666"
+SUBSYSTEM=="nvidia-gpu-v2-power", KERNEL=="power", OWNER="root", GROUP="video", MODE="0666"
+
+KERNEL=="nvhost-as-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-ctrl-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-ctxsw-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-gsp_vm_sched-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-multimedia-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-nvsched-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-nvsched_ctrl_fifo-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-power-gpu", OWNER="root", GROUP="video", MODE="0666"
+KERNEL=="nvhost-tsg-gpu", OWNER="root", GROUP="video", MODE="0666"

@@ -6,7 +6,7 @@
 
 Name:           nvidia-l4t-driver
 Version:        39.2.0
-Release:        1.lu26
+Release:        2.lu26
 Summary:        NVIDIA L4T GPU and CUDA driver for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
@@ -38,6 +38,9 @@ services.
 %install
 mkdir -p %{buildroot}
 cp -a . %{buildroot}/
+# Fedora's alsa-lib owns the global configuration. Keep NVIDIA's named Tegra
+# templates without replacing the system-wide default selected by PipeWire.
+rm -f %{buildroot}%{_sysconfdir}/asound.conf
 find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
     sed '\#^/etc/# s#^#%%config(noreplace) #' > %{_builddir}/%{name}.files
 
@@ -53,5 +56,8 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-2.lu26
+- Avoid conflicting with alsa-lib's global /etc/asound.conf
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-1.lu26
 - Initial NVIDIA Jetson Orin package

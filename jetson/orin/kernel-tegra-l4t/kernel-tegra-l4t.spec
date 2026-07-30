@@ -7,7 +7,7 @@
 
 Name:           kernel-tegra-l4t
 Version:        39.2.0
-Release:        1.lu26
+Release:        2.lu26
 Summary:        NVIDIA L4T kernel for Jetson Orin
 License:        GPL-2.0-only AND LicenseRef-NVIDIA-Driver
 URL:            https://developer.nvidia.com/embedded/jetson-linux
@@ -51,5 +51,8 @@ fi
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-2.lu26
+- Rebuild the coherent Jetson R39.2 package set
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-1.lu26
 - Initial NVIDIA Jetson Orin package

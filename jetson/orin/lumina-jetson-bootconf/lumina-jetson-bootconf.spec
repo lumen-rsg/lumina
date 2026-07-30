@@ -2,7 +2,7 @@
 
 Name:           lumina-jetson-bootconf
 Version:        1.0
-Release:        1.lu26
+Release:        3.lu26
 Summary:        Lumina boot configuration for NVIDIA Jetson UEFI
 License:        MIT
 URL:            https://linux.1t.ru
@@ -28,5 +28,11 @@ install -Dpm 0755 %{SOURCE0} %{buildroot}%{_sbindir}/lumina-jetson-boot-setup
 %{_sbindir}/lumina-jetson-boot-setup
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-3.lu26
+- Preserve NVIDIA framebuffer handoff and ramoops boot parameters
+
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-2.lu26
+- Rebuild the coherent Jetson R39.2 package set
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-1.lu26
 - Initial NVIDIA Jetson Orin package

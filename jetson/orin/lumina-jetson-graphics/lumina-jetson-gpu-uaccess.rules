@@ -1,0 +1,19 @@
+# NVIDIA's L4T userspace opens these Tegra character devices directly.
+# Grant the active local seat session access in the same way as DRM devices.
+# Debug and profiling nodes remain under NVIDIA's more restrictive policy in
+# 99-tegra-devices.rules.
+SUBSYSTEM=="misc", KERNEL=="nvmap", TAG+="uaccess"
+
+SUBSYSTEM=="nvidia-gpu-v2", KERNEL=="as|channel|ctrl|ctxsw|gsp_vm_sched|multimedia|nvsched|nvsched_ctrl_fifo|sched|tsg", TAG+="uaccess"
+SUBSYSTEM=="nvidia-gpu-v2-power", KERNEL=="power", TAG+="uaccess"
+
+KERNEL=="nvhost-as-gpu", TAG+="uaccess"
+KERNEL=="nvhost-ctrl-gpu", TAG+="uaccess"
+KERNEL=="nvhost-ctxsw-gpu", TAG+="uaccess"
+KERNEL=="nvhost-gpu", TAG+="uaccess"
+KERNEL=="nvhost-gsp_vm_sched-gpu", TAG+="uaccess"
+KERNEL=="nvhost-multimedia-gpu", TAG+="uaccess"
+KERNEL=="nvhost-nvsched-gpu", TAG+="uaccess"
+KERNEL=="nvhost-nvsched_ctrl_fifo-gpu", TAG+="uaccess"
+KERNEL=="nvhost-power-gpu", TAG+="uaccess"
+KERNEL=="nvhost-tsg-gpu", TAG+="uaccess"

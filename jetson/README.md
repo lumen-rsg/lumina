@@ -24,6 +24,8 @@ MB2, UEFI, recovery, or any other boot-firmware partition.
   GStreamer integration.
 - `nvidia-l4t-tools`: `tegrastats`, `nvpmodel`, fan control, Jetson-IO, and
   OP-TEE integration.
+- `lumina-jetson-graphics`: Fedora GBM search-path and active-seat device
+  access integration for GDM and Wayland compositors.
 - `lumina-jetson-bootconf`: generates an L4T UEFI/extlinux entry without
   touching the QSPI firmware.
 
@@ -56,6 +58,7 @@ rpmbuild -ba jetson/orin/tegra-l4t-firmware/tegra-l4t-firmware.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-driver/nvidia-l4t-driver.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-multimedia/nvidia-l4t-multimedia.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-tools/nvidia-l4t-tools.spec
+rpmbuild -ba jetson/orin/lumina-jetson-graphics/lumina-jetson-graphics.spec
 rpmbuild -ba jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
 ```
 

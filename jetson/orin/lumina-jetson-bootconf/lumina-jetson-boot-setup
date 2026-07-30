@@ -64,7 +64,7 @@ LABEL lumina
       MENU LABEL Lumina Linux (${KVER})
       LINUX /boot/Image-${KVER}
       INITRD /boot/initramfs-${KVER}.img
-      APPEND \${cbootargs} root=${root_arg} rw rootwait rootfstype=${root_fstype} console=ttyTCU0,115200 efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
+      APPEND \${cbootargs} root=${root_arg} rw rootwait rootfstype=${root_fstype} mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 video=efifb:off efi_pstore.pstore_disable=1 pstore.backend=ramoops efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
 EOF
 
 install -m 0644 "${temp_config}" "${CONFIG}"
