@@ -4,14 +4,14 @@
 
 Name:           nvidia-l4t-tools
 Version:        39.2.0
-Release:        2.lu26
+Release:        3.lu26
 Summary:        NVIDIA platform tools for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
 ExclusiveArch:  aarch64
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       nvidia-l4t-driver = %{version}-%{release}
+Requires:       nvidia-l4t-driver >= %{version}
 Requires:       dtc
 Requires:       i2c-tools
 Requires:       python3
@@ -43,6 +43,9 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-3.lu26
+- Allow compatible NVIDIA L4T driver package revisions
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-2.lu26
 - Rebuild against the corrected NVIDIA L4T driver package
 

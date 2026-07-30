@@ -169,26 +169,31 @@ The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
 ```bash
 jetson/installer/build-iso.sh \
   /path/to/Fedora-Everything-netinst-aarch64-44-1.7.iso \
-  /path/to/downloaded-workstation-rpms \
+  /path/to/downloaded-fedora-rpms \
   /path/to/comps-Everything.aarch64.xml.zst \
   jetson/dist/Lumina-26.08-Jetson-Orin-aarch64.iso
 ```
 
-The RPM root is searched recursively. It must contain the complete Fedora
-Workstation transaction plus `dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
+The RPM root is searched recursively. It must contain the complete Fedora Core
+CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
+`dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
 Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 
+The installed system intentionally has no GNOME Shell or GDM. A desktop can be
+installed later from the configured Lumina and Fedora repositories.
+
 Installer SSH can be enabled for a development image without committing a
-personal key:
+personal key. The same key is installed for passwordless root SSH access to
+the CLI system after installation:
 
 ```bash
 LUMINA_INSTALLER_SSH_KEY_FILE="${HOME}/.ssh/id_ed25519.pub" \
   jetson/installer/build-iso.sh BASE_ISO RPM_ROOT COMPS_XML OUTPUT_ISO
 ```
 
-The key grants access only to the ephemeral installer environment. Release
-images should omit it.
+Release images should omit personal keys and provide a separate first-boot
+account-provisioning path.
 
 Before publishing an image, verify a complete offline dependency solve and
 test the destructive install path on actual Jetson hardware.

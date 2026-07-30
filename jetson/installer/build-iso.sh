@@ -99,6 +99,10 @@ for driver_rpm in "${package_dir}"/nvidia-l4t-driver-*.rpm; do
     if rpm -qpl "${driver_rpm}" | grep -qx /etc/asound.conf; then
         die "$(basename -- "${driver_rpm}") conflicts with Fedora alsa-lib"
     fi
+    if rpm -qpl "${driver_rpm}" |
+        grep -Eq '^/usr/share/alsa/init(/|$)'; then
+        die "$(basename -- "${driver_rpm}") conflicts with Fedora alsa-utils"
+    fi
 done
 
 "${script_dir}/remaster-runtime.sh" "${iso_tree}" "${tegra_kernel_rpm}"

@@ -6,7 +6,7 @@
 
 Name:           nvidia-l4t-driver
 Version:        39.2.0
-Release:        2.lu26
+Release:        3.lu26
 Summary:        NVIDIA L4T GPU and CUDA driver for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
@@ -41,6 +41,15 @@ cp -a . %{buildroot}/
 # Fedora's alsa-lib owns the global configuration. Keep NVIDIA's named Tegra
 # templates without replacing the system-wide default selected by PipeWire.
 rm -f %{buildroot}%{_sysconfdir}/asound.conf
+# Fedora's alsa-utils provides /usr/share/alsa/init as a symlink to this
+# canonical directory. Ubuntu's NVIDIA package instead treats that path as a
+# directory, which prevents the Fedora package from being unpacked.
+if [ -d %{buildroot}%{_datadir}/alsa/init/postinit ]; then
+    mkdir -p %{buildroot}%{_prefix}/lib/alsa/init
+    mv %{buildroot}%{_datadir}/alsa/init/postinit \
+        %{buildroot}%{_prefix}/lib/alsa/init/
+    rmdir %{buildroot}%{_datadir}/alsa/init
+fi
 find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
     sed '\#^/etc/# s#^#%%config(noreplace) #' > %{_builddir}/%{name}.files
 
@@ -56,6 +65,9 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-3.lu26
+- Relocate NVIDIA ALSA initialization fragments to Fedora's canonical path
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-2.lu26
 - Avoid conflicting with alsa-lib's global /etc/asound.conf
 

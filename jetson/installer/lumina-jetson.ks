@@ -6,14 +6,13 @@
 
 text
 eula --agreed
-firstboot --enable
 keyboard --xlayouts=us
 lang en_US.UTF-8
 network --bootproto=dhcp --device=link --activate
 repo --name="lumina-offline" --baseurl=file:///run/install/repo/LuminaPackages
 rootpw --lock
 selinux --enforcing
-services --enabled=NetworkManager,gdm
+services --enabled=NetworkManager,sshd
 shutdown
 timezone Europe/Moscow --utc
 
@@ -52,7 +51,7 @@ fi
 %end
 
 %packages --inst-langs=en
-@^workstation-product-environment
+@core
 lumina-release
 kernel-tegra-l4t
 tegra-l4t-firmware
@@ -63,6 +62,11 @@ nvme-cli
 lumina-jetson-graphics
 lumina-jetson-boot-assets
 lumina-jetson-bootconf
+NetworkManager
+openssh-server
+dnf5
+rpm
+sudo
 -grub2-efi-aa64
 -grub2-efi-aa64-cdboot
 -grub2-tools-efi
@@ -70,8 +74,32 @@ lumina-jetson-bootconf
 -kernel-core
 -kernel-modules
 -kernel-modules-core
+-gdm
+-gnome-shell
 %end
 
 %post --erroronfail --log=/root/lumina-jetson-post.log
 /usr/sbin/lumina-jetson-boot-setup --non-interactive
+%end
+
+%post --nochroot --erroronfail --log=/mnt/sysroot/root/lumina-jetson-ssh.log
+installer_key=/run/install/repo/jetson/installer_authorized_key
+if [ -s "${installer_key}" ]; then
+    mkdir -p /mnt/sysroot/root/.ssh
+    cp "${installer_key}" /mnt/sysroot/root/.ssh/authorized_keys
+    chmod 0700 /mnt/sysroot/root/.ssh
+    chmod 0600 /mnt/sysroot/root/.ssh/authorized_keys
+
+    mkdir -p /mnt/sysroot/etc/ssh/sshd_config.d
+    printf '%s\n' \
+        'PermitRootLogin prohibit-password' \
+        'PasswordAuthentication no' \
+        'PubkeyAuthentication yes' \
+        >/mnt/sysroot/etc/ssh/sshd_config.d/10-lumina-installer.conf
+    chmod 0600 \
+        /mnt/sysroot/etc/ssh/sshd_config.d/10-lumina-installer.conf
+
+    chroot /mnt/sysroot /usr/sbin/restorecon -RF \
+        /root/.ssh /etc/ssh/sshd_config.d/10-lumina-installer.conf
+fi
 %end
