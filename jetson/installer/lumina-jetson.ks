@@ -79,7 +79,16 @@ sudo
 %end
 
 %post --erroronfail --log=/root/lumina-jetson-post.log
-/usr/sbin/lumina-jetson-boot-setup --non-interactive
+test -f /boot/Image-6.8.12-1021-tegra
+/usr/bin/dracut --force \
+    /boot/initramfs-6.8.12-1021-tegra.img \
+    6.8.12-1021-tegra
+test -f /boot/initramfs-6.8.12-1021-tegra.img
+%end
+
+%post --nochroot --erroronfail --log=/mnt/sysroot/root/lumina-jetson-boot.log
+/run/install/repo/jetson/lumina-jetson-finalize \
+    /mnt/sysroot /tmp/lumina-jetson-storage.ks
 %end
 
 %post --nochroot --erroronfail --log=/mnt/sysroot/root/lumina-jetson-ssh.log

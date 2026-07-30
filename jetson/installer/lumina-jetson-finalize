@@ -1,0 +1,143 @@
+#!/usr/bin/bash
+#
+# Finalize the rootfs-side Jetson boot chain after Anaconda has installed all
+# packages. This runs outside the target chroot so it can address the APP and
+# ESP block devices unambiguously.
+
+set -euo pipefail
+
+readonly KVER="6.8.12-1021-tegra"
+
+die()
+{
+    printf 'lumina-jetson-finalize: %s\n' "$*" >&2
+    exit 1
+}
+
+onpart_for_mount()
+{
+    local mount_point="$1"
+    local storage_ks="$2"
+
+    awk -v mount_point="${mount_point}" '
+        $1 == "part" && $2 == mount_point {
+            for (field = 3; field <= NF; field++) {
+                if ($field ~ /^--onpart=/) {
+                    sub(/^--onpart=/, "", $field)
+                    print $field
+                    found++
+                }
+            }
+        }
+        END {
+            if (found != 1)
+                exit 1
+        }
+    ' "${storage_ks}"
+}
+
+main()
+{
+    [[ $# -eq 2 ]] ||
+        die "usage: $0 TARGET_ROOT GENERATED_STORAGE_KICKSTART"
+
+    local target_root="$1"
+    local storage_ks="$2"
+    local app_name
+    local esp_name
+    local app_device
+    local esp_device
+    local app_partuuid
+    local app_fstype
+    local config
+    local backup
+    local temporary_config
+    local launcher
+    local esp_mount
+    local esp_launcher
+    local mounted_here=false
+
+    [[ -d "${target_root}" ]] ||
+        die "target root does not exist: ${target_root}"
+    [[ -f "${storage_ks}" ]] ||
+        die "generated storage Kickstart does not exist: ${storage_ks}"
+
+    app_name="$(onpart_for_mount / "${storage_ks}")" ||
+        die "cannot identify APP from ${storage_ks}"
+    esp_name="$(onpart_for_mount /boot/efi "${storage_ks}")" ||
+        die "cannot identify ESP from ${storage_ks}"
+    app_device="/dev/${app_name}"
+    esp_device="/dev/${esp_name}"
+
+    [[ -b "${app_device}" ]] || die "APP is not a block device: ${app_device}"
+    [[ -b "${esp_device}" ]] || die "ESP is not a block device: ${esp_device}"
+
+    app_partuuid="$(blkid -s PARTUUID -o value "${app_device}")"
+    [[ -n "${app_partuuid}" ]] ||
+        die "APP has no PARTUUID: ${app_device}"
+    app_fstype="$(blkid -s TYPE -o value "${app_device}")"
+    [[ "${app_fstype}" == ext4 ]] ||
+        die "APP must be ext4, found '${app_fstype}'"
+
+    [[ -f "${target_root}/boot/Image-${KVER}" ]] ||
+        die "installed Tegra kernel is missing"
+    [[ -f "${target_root}/boot/initramfs-${KVER}.img" ]] ||
+        die "installed Tegra initramfs is missing"
+
+    config="${target_root}/boot/extlinux/extlinux.conf"
+    backup="${config}.pre-lumina"
+    mkdir -p "$(dirname -- "${config}")"
+    if [[ -f "${config}" && ! -e "${backup}" ]]; then
+        cp -a "${config}" "${backup}"
+    fi
+
+    temporary_config="${config}.tmp.$$"
+    trap 'rm -f -- "${temporary_config}"' EXIT
+    cat >"${temporary_config}" <<EOF
+TIMEOUT 30
+DEFAULT lumina
+
+MENU TITLE 1T Lumina on NVIDIA Jetson
+
+LABEL lumina
+      MENU LABEL 1T Lumina (${KVER})
+      LINUX /boot/Image-${KVER}
+      INITRD /boot/initramfs-${KVER}.img
+      APPEND \${cbootargs} root=PARTUUID=${app_partuuid} rw rootwait rootfstype=${app_fstype} mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 video=efifb:off efi_pstore.pstore_disable=1 pstore.backend=ramoops efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
+EOF
+    chmod 0644 "${temporary_config}"
+    mv "${temporary_config}" "${config}"
+    trap - EXIT
+
+    launcher="${target_root}/usr/lib/lumina-jetson/BOOTAA64.efi"
+    esp_mount="${target_root}/boot/efi"
+    esp_launcher="${esp_mount}/EFI/BOOT/BOOTAA64.efi"
+    [[ -f "${launcher}" ]] ||
+        die "packaged NVIDIA L4TLauncher is missing"
+
+    mkdir -p "${esp_mount}"
+    if ! findmnt -rn -M "${esp_mount}" >/dev/null; then
+        mount -t vfat "${esp_device}" "${esp_mount}"
+        mounted_here=true
+    fi
+    [[ "$(findmnt -rn -o SOURCE -M "${esp_mount}")" == "${esp_device}" ]] ||
+        die "${esp_mount} is not mounted from ${esp_device}"
+
+    mkdir -p "$(dirname -- "${esp_launcher}")"
+    cp "${launcher}" "${esp_launcher}"
+    chmod 0644 "${esp_launcher}"
+    cmp "${launcher}" "${esp_launcher}" ||
+        die "L4TLauncher verification failed"
+    sync
+
+    if "${mounted_here}"; then
+        umount "${esp_mount}"
+    fi
+
+    printf 'Wrote extlinux for APP PARTUUID=%s\n' "${app_partuuid}"
+    printf 'Installed NVIDIA L4TLauncher on %s\n' "${esp_device}"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

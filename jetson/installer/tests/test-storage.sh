@@ -7,6 +7,8 @@ readonly INSTALLER_DIR="$(cd -- "${TEST_DIR}/.." && pwd)"
 
 # shellcheck source=../lumina-jetson-storage
 source "${INSTALLER_DIR}/lumina-jetson-storage"
+# shellcheck source=../lumina-jetson-finalize
+source "${INSTALLER_DIR}/lumina-jetson-finalize"
 
 fail()
 {
@@ -73,6 +75,10 @@ grep -Fq -- '--onpart=nvme0n1p1' "${ks_nvme}" ||
     fail "NVMe APP Kickstart path is wrong"
 grep -Fq -- '--onpart=nvme0n1p10' "${ks_nvme}" ||
     fail "NVMe ESP Kickstart path is wrong"
+assert_equal nvme0n1p1 "$(onpart_for_mount / "${ks_nvme}")" \
+    "finalizer APP lookup"
+assert_equal nvme0n1p10 "$(onpart_for_mount /boot/efi "${ks_nvme}")" \
+    "finalizer ESP lookup"
 grep -Fq -- '--onpart=sda1' "${ks_usb}" ||
     fail "USB APP Kickstart path is wrong"
 grep -Fq -- '--onpart=sda10 --noformat' "${ks_usb}" ||

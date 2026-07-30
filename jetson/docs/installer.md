@@ -100,9 +100,12 @@ The implementation is under `jetson/installer/`:
 
 - `lumina-jetson-storage` performs board/target validation, creates or checks
   the GPT, and emits an Anaconda storage include;
+- `lumina-jetson-finalize` identifies APP and ESP from that generated include,
+  writes extlinux using APP's PARTUUID, mounts the ESP explicitly, installs
+  L4TLauncher, and verifies every boot artifact;
 - `layouts/orin.sfdisk.in` is the audited Orin layout;
-- `lumina-jetson.ks` installs the Lumina desktop and complete Jetson RPM set,
-  disables GRUB, and runs `lumina-jetson-boot-setup`;
+- `lumina-jetson.ks` installs the Lumina Core CLI and complete Jetson RPM set,
+  disables GRUB, builds the Tegra initramfs, and runs the finalizer;
 - `grub.cfg.fragment` supplies explicit NVMe, eMMC, microSD, and USB entries.
 
 Fresh mode requires root, a Tegra234 device tree, a supported whole disk of at
