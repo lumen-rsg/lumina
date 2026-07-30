@@ -36,6 +36,24 @@ onpart_for_mount()
     ' "${storage_ks}"
 }
 
+efi_disk_and_partition()
+{
+    local esp_name="$1"
+
+    case "${esp_name}" in
+        nvme*p*|mmcblk*p*)
+            printf '/dev/%s %s\n' "${esp_name%p*}" "${esp_name##*p}"
+            ;;
+        sd*)
+            printf '/dev/%s %s\n' \
+                "${esp_name%%[0-9]*}" "${esp_name##*[!0-9]}"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 main()
 {
     [[ $# -eq 2 ]] ||
@@ -55,6 +73,9 @@ main()
     local launcher
     local esp_mount
     local esp_launcher
+    local esp_disk
+    local esp_partition
+    local efibootmgr_command
     local mounted_here=false
 
     [[ -d "${target_root}" ]] ||
@@ -130,12 +151,33 @@ EOF
         die "L4TLauncher verification failed"
     sync
 
+    read -r esp_disk esp_partition < <(
+        efi_disk_and_partition "${esp_name}"
+    ) || die "cannot derive EFI disk from ${esp_name}"
+
+    if command -v efibootmgr >/dev/null; then
+        efibootmgr_command=(efibootmgr)
+    else
+        efibootmgr_command=(chroot "${target_root}" /usr/sbin/efibootmgr)
+    fi
+    "${efibootmgr_command[@]}" \
+        --create \
+        --disk "${esp_disk}" \
+        --part "${esp_partition}" \
+        --label "L4TLauncher" \
+        --loader '\EFI\BOOT\BOOTAA64.efi' ||
+        die "cannot register L4TLauncher with UEFI"
+    "${efibootmgr_command[@]}" |
+        grep -Fq 'L4TLauncher' ||
+        die "L4TLauncher UEFI entry was not registered"
+
     if "${mounted_here}"; then
         umount "${esp_mount}"
     fi
 
     printf 'Wrote extlinux for APP PARTUUID=%s\n' "${app_partuuid}"
     printf 'Installed NVIDIA L4TLauncher on %s\n' "${esp_device}"
+    printf 'Registered L4TLauncher in UEFI BootOrder\n'
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

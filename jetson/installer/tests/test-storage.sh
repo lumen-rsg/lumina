@@ -79,6 +79,12 @@ assert_equal nvme0n1p1 "$(onpart_for_mount / "${ks_nvme}")" \
     "finalizer APP lookup"
 assert_equal nvme0n1p10 "$(onpart_for_mount /boot/efi "${ks_nvme}")" \
     "finalizer ESP lookup"
+assert_equal "/dev/nvme0n1 10" "$(efi_disk_and_partition nvme0n1p10)" \
+    "NVMe EFI registration target"
+assert_equal "/dev/mmcblk0 10" "$(efi_disk_and_partition mmcblk0p10)" \
+    "MMC EFI registration target"
+assert_equal "/dev/sda 10" "$(efi_disk_and_partition sda10)" \
+    "USB EFI registration target"
 grep -Fq -- '--onpart=sda1' "${ks_usb}" ||
     fail "USB APP Kickstart path is wrong"
 grep -Fq -- '--onpart=sda10 --noformat' "${ks_usb}" ||

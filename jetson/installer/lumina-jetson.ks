@@ -59,6 +59,7 @@ nvidia-l4t-driver
 nvidia-l4t-multimedia
 nvidia-l4t-tools
 nvme-cli
+efibootmgr
 lumina-jetson-graphics
 lumina-jetson-boot-assets
 lumina-jetson-bootconf

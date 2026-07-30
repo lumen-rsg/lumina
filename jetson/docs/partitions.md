@@ -27,6 +27,8 @@ than using Fedora's default Btrfs layout.
 
 The firmware must report chain A as `Normal` and set `L4T Boot Mode` to
 `ExtLinux`; otherwise it will not dispatch the rootfs-side extlinux entry.
+Because a fresh GPT gives the ESP a new partition identity, the installer must
+also register a new `L4TLauncher` UEFI boot entry for that ESP.
 
 ## Observed partitions
 

@@ -28,6 +28,11 @@ L4T Boot Mode: ExtLinux
 L4TLauncher will not follow `/boot/extlinux/extlinux.conf` when the firmware is
 configured for a different L4T boot mode.
 
+Fresh installation changes the ESP's GPT identity, invalidating any old UEFI
+device path for L4TLauncher. The finalizer therefore creates a new
+`L4TLauncher` boot entry for `\EFI\BOOT\BOOTAA64.efi`, verifies it, and treats
+registration failure as fatal.
+
 ## How NVIDIA selects an installation target
 
 The GRUB menu boots one kernel and initrd for every installation mode:
@@ -189,7 +194,7 @@ jetson/installer/build-iso.sh \
 
 The RPM root is searched recursively. It must contain the complete Fedora Core
 CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
-`dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
+`dtc`, `i2c-tools`, `libi2c`, `nvme-cli`, and `efibootmgr`.
 Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 

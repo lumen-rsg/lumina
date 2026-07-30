@@ -93,7 +93,11 @@ esac
 createrepo_c -g "${iso_tree}/LuminaPackages/comps.xml" \
     "${iso_tree}/LuminaPackages"
 
-for required_rpm in nvme-cli kernel-tegra-l4t nvidia-l4t-driver; do
+for required_rpm in \
+    nvme-cli \
+    efibootmgr \
+    kernel-tegra-l4t \
+    nvidia-l4t-driver; do
     compgen -G "${package_dir}/${required_rpm}-*.rpm" >/dev/null ||
         die "offline repository is missing ${required_rpm}"
 done
