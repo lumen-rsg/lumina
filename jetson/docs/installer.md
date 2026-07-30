@@ -129,25 +129,38 @@ The extractor locates `nvidia-l4t-bootloader`, extracts only L4TLauncher and
 its copyright file, verifies the known SHA-256, and creates the ignored source
 archive consumed by `lumina-jetson-boot-assets.spec`.
 
-## Remaining image-build integration
+## Building the offline ISO
 
 The Fedora 44 Workstation Live ARM image is not a valid base for this flow.
 Its `/usr/bin/liveinst` explicitly rejects every Kickstart argument and
 continues interactively. An ISO made by merely adding this Kickstart to the
 Workstation Live image would boot but would not use the Jetson partitioner.
 
-The final Lumina ISO compose must therefore use Fedora's standard/Everything
-or network-install Anaconda stage2, not `anaconda --liveinst`. The compose must
-also use the Tegra kernel and initrd, place the storage helper in the installer
-runtime, include the Kickstart and GRUB menu, include every RPM named in the
-Kickstart in an offline repository, and use the volume label referenced by the
-GRUB fragment.
+`build-iso.sh` remasters Fedora's standard/Everything ARM64 network installer,
+not `anaconda --liveinst`. It adds the Kickstart, storage helper, exact Orin
+layout, GRUB menu, and an offline RPM repository. It also updates both GRUB
+configurations: the copy in the ISO filesystem and the copy in the El Torito
+EFI FAT image.
 
-An alternative would be a Lumina-specific live filesystem-copy installer, but
-that would need to reproduce Anaconda's copy, SELinux relabel, user setup,
-bootloader, cleanup, and error-recovery behavior. Maintaining a parallel
-installer is not justified while standard Anaconda already supports the
-required `%pre`, storage include, package, and `%post` phases.
+The Fedora installer kernel is intentionally retained because it is already
+known to boot the Jetson and provides Anaconda's supported runtime. The
+installed system uses `kernel-tegra-l4t`; the Kickstart excludes Fedora's
+generic target kernel and GRUB packages.
 
-These points must be verified against a composed standard installer ISO before
-it is advertised as an install image.
+The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
+
+```bash
+jetson/installer/build-iso.sh \
+  /path/to/Fedora-Everything-netinst-aarch64-44-1.7.iso \
+  /path/to/downloaded-workstation-rpms \
+  /path/to/comps-Everything.aarch64.xml.zst \
+  jetson/dist/Lumina-26.08-Jetson-Orin-aarch64.iso
+```
+
+The RPM root is searched recursively. It must contain the complete Fedora
+Workstation transaction plus `dtc`, `i2c-tools`, and `libi2c`. Lumina and L4T
+RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is accompanied by
+an `.iso.sha256` file.
+
+Before publishing an image, verify a complete offline dependency solve and
+test the destructive install path on actual Jetson hardware.

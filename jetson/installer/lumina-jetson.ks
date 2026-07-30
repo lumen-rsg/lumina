@@ -10,6 +10,7 @@ firstboot --enable
 keyboard --xlayouts=us
 lang en_US.UTF-8
 network --bootproto=dhcp --device=link --activate
+repo --name="lumina-offline" --baseurl=file:///run/install/repo/LuminaPackages
 rootpw --lock
 selinux --enforcing
 services --enabled=NetworkManager,gdm
@@ -28,7 +29,7 @@ fi
 
 %include /tmp/lumina-jetson-storage.ks
 
-%packages
+%packages --inst-langs=en
 @^workstation-product-environment
 lumina-release
 kernel-tegra-l4t
