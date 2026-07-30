@@ -5,6 +5,9 @@ set -euo pipefail
 readonly KVER="6.8.12-1021-tegra"
 readonly CONFIG="/boot/extlinux/extlinux.conf"
 readonly BACKUP="${CONFIG}.pre-lumina"
+readonly ESP_MOUNT="/boot/efi"
+readonly ESP_LAUNCHER="${ESP_MOUNT}/EFI/BOOT/BOOTAA64.efi"
+readonly PACKAGED_LAUNCHER="/usr/lib/lumina-jetson/BOOTAA64.efi"
 non_interactive=false
 
 if [[ "${1:-}" == "--non-interactive" ]]; then
@@ -37,6 +40,16 @@ for required in "/boot/Image-${KVER}" "/boot/initramfs-${KVER}.img"; do
         exit 1
     fi
 done
+
+if mountpoint -q "${ESP_MOUNT}"; then
+    if [[ -f "${PACKAGED_LAUNCHER}" ]]; then
+        install -Dpm 0644 "${PACKAGED_LAUNCHER}" "${ESP_LAUNCHER}"
+        echo "Installed NVIDIA L4TLauncher at ${ESP_LAUNCHER}."
+    elif [[ ! -f "${ESP_LAUNCHER}" ]]; then
+        echo "The mounted ESP has no L4TLauncher; install lumina-jetson-boot-assets." >&2
+        exit 1
+    fi
+fi
 
 root_source="$(findmnt -n -o SOURCE /)"
 root_fstype="$(findmnt -n -o FSTYPE /)"

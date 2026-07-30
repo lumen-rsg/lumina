@@ -10,7 +10,8 @@ nvidia,tegra234
 
 The board must already have the matching NVIDIA R39.2 boot firmware in QSPI.
 The RPMs replace the root filesystem and kernel payload; they do not flash MB1,
-MB2, UEFI, recovery, or any other boot-firmware partition.
+MB2, UEFI, recovery, or any other boot-firmware partition. The separate
+installer can create NVIDIA's target GPT after QSPI/UEFI has been flashed.
 
 ## Package layout
 
@@ -32,6 +33,10 @@ MB2, UEFI, recovery, or any other boot-firmware partition.
   CPU, and NVMe namespace capacity in GNOME System Details.
 - `lumina-jetson-bootconf`: generates an L4T UEFI/extlinux entry without
   touching the QSPI firmware.
+- `lumina-jetson-boot-assets`: packages the matching L4TLauncher for a newly
+  formatted EFI System Partition.
+- `lumina-jetson-installer`: creates or validates the NVIDIA-compatible Orin
+  GPT and generates Anaconda storage configuration.
 
 The proprietary files are taken, unmodified, from NVIDIA's public L4T Debian
 repository.  Each source archive and resulting RPM retains the copyright and
@@ -66,6 +71,15 @@ rpmbuild -ba jetson/orin/lumina-jetson-graphics/lumina-jetson-graphics.spec
 rpmbuild -ba jetson/orin/btop/btop.spec
 rpmbuild -ba jetson/orin/gnome-control-center/gnome-control-center.spec
 rpmbuild -ba jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
+rpmbuild -ba jetson/orin/lumina-jetson-boot-assets/lumina-jetson-boot-assets.spec
+rpmbuild -ba jetson/orin/lumina-jetson-installer/lumina-jetson-installer.spec
+```
+
+Generate the boot-assets source archive from NVIDIA's matching installer ISO:
+
+```bash
+jetson/tools/extract_l4t_installer_assets.sh \
+  /path/to/jetsoninstaller-r39.2.0-2026-06-01-23-53-13-arm64.iso
 ```
 
 Install the kernel, firmware, driver, tools, and boot configuration packages
@@ -80,8 +94,10 @@ sudo lumina-jetson-boot-setup
 
 The command preserves an existing `extlinux.conf` as
 `/boot/extlinux/extlinux.conf.pre-lumina` and writes a versioned kernel entry.
-Do not erase or reformat the NVIDIA boot, recovery, ESP, or A/B firmware
-partitions.
+For an in-place conversion, do not erase or reformat the NVIDIA boot, recovery,
+ESP, or A/B firmware partitions. A fresh install instead uses the guarded
+layout creator under `installer/`; it recreates the complete NVIDIA GPT before
+Anaconda formats `APP` and the ESP.
 
 ## Bring-up notes
 

@@ -1,0 +1,437 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly PROGRAM="${0##*/}"
+readonly MINIMUM_DISK_SECTORS=$((16 * 1024 * 1024 * 1024 / 512))
+readonly APP_START=3131968
+readonly ESP_TYPE="C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+
+die()
+{
+    echo "${PROGRAM}: $*" >&2
+    exit 1
+}
+
+usage()
+{
+    cat >&2 <<EOF
+Usage:
+  ${PROGRAM} inspect --target /dev/DEVICE
+  ${PROGRAM} prepare --target /dev/DEVICE --mode fresh|reuse \\
+      --kickstart-output FILE [--confirm-erase /dev/DEVICE]
+  ${PROGRAM} prepare --from-cmdline --kickstart-output FILE
+
+Fresh mode destroys the target. It requires both --confirm-erase with the exact
+canonical device path and a Jetson whose QSPI/UEFI was flashed beforehand.
+
+Kernel command line mode accepts:
+  lumina.jetson.target=DEVICE
+  lumina.jetson.mode=fresh|reuse
+  lumina.jetson.erase=YES   (mandatory for fresh mode)
+EOF
+    exit 2
+}
+
+partition_path()
+{
+    local target="$1"
+    local number="$2"
+
+    if [[ "${target}" =~ [0-9]$ ]]; then
+        printf '%sp%s\n' "${target}" "${number}"
+    else
+        printf '%s%s\n' "${target}" "${number}"
+    fi
+}
+
+canonical_target()
+{
+    local value="$1"
+
+    [[ "${value}" == /dev/* ]] || value="/dev/${value}"
+    readlink -f -- "${value}"
+}
+
+resolve_microsd_target()
+{
+    local model
+
+    model="$(tr -d '\0' </proc/device-tree/model)"
+    case "${model}" in
+        "NVIDIA Jetson AGX Orin"*) echo /dev/mmcblk1 ;;
+        *) echo /dev/mmcblk0 ;;
+    esac
+}
+
+detect_usb_target()
+{
+    local candidate
+    local -a candidates=()
+
+    while read -r candidate; do
+        [[ -n "${candidate}" ]] || continue
+        if ! lsblk -nrpo FSTYPE,MOUNTPOINTS "${candidate}" |
+            grep -Eq '(^|[[:space:]])(iso9660|squashfs)([[:space:]]|$)|/run/install|/run/initramfs'; then
+            candidates+=("${candidate}")
+        fi
+    done < <(lsblk -dnrpo PATH,TYPE,TRAN |
+        awk '$2 == "disk" && $3 == "usb" { print $1 }')
+
+    ((${#candidates[@]} == 1)) ||
+        die "USB installation needs exactly one non-installer USB disk; found ${#candidates[@]}"
+    printf '%s\n' "${candidates[0]}"
+}
+
+resolve_target()
+{
+    case "$1" in
+        microsd) resolve_microsd_target ;;
+        usb) detect_usb_target ;;
+        *) canonical_target "$1" ;;
+    esac
+}
+
+validate_target_name()
+{
+    local target="$1"
+    local name="${target##*/}"
+
+    [[ "${name}" =~ ^(nvme[0-9]+n[0-9]+|mmcblk[0-9]+|sd[a-z]+)$ ]] ||
+        die "unsupported target name: ${target}"
+}
+
+require_jetson()
+{
+    local compatible="/proc/device-tree/compatible"
+
+    [[ -r "${compatible}" ]] ||
+        die "device-tree compatibility is unavailable; boot this on the Jetson"
+    tr '\0' '\n' <"${compatible}" | grep -qx 'nvidia,tegra234' ||
+        die "this installer currently supports only Tegra234 Jetson Orin"
+}
+
+validate_whole_disk()
+{
+    local target="$1"
+    local kind
+    local sectors
+
+    [[ -b "${target}" ]] || die "target is not a block device: ${target}"
+    kind="$(lsblk -dnro TYPE -- "${target}")"
+    [[ "${kind}" == "disk" ]] || die "target is not a whole disk: ${target}"
+    sectors="$(blockdev --getsz "${target}")"
+    (( sectors >= MINIMUM_DISK_SECTORS )) ||
+        die "target must be at least 16 GiB"
+}
+
+reject_in_use_target()
+{
+    local target="$1"
+    local mounted
+
+    mounted="$(lsblk -nrpo MOUNTPOINT -- "${target}" | sed '/^[[:space:]]*$/d')"
+    [[ -z "${mounted}" ]] ||
+        die "target or one of its partitions is mounted: ${mounted//$'\n'/, }"
+}
+
+expected_label()
+{
+    case "$1" in
+        1)  echo APP ;;
+        2)  echo A_kernel ;;
+        3)  echo A_kernel-dtb ;;
+        4)  echo reserved_for_chain_A_user ;;
+        5)  echo B_kernel ;;
+        6)  echo B_kernel-dtb ;;
+        7)  echo reserved_for_chain_B_user ;;
+        8)  echo recovery ;;
+        9)  echo recovery-dtb ;;
+        10) echo esp ;;
+        11) echo recovery_alt ;;
+        12) echo recovery-dtb_alt ;;
+        13) echo esp_alt ;;
+        14) echo UDA ;;
+        15) echo reserved ;;
+        *) return 1 ;;
+    esac
+}
+
+expected_start()
+{
+    case "$1" in
+        1) echo "${APP_START}" ;;
+        2) echo 40 ;;
+        3) echo 262184 ;;
+        4) echo 263720 ;;
+        5) echo 328488 ;;
+        6) echo 590632 ;;
+        7) echo 592168 ;;
+        8) echo 656936 ;;
+        9) echo 861736 ;;
+        10) echo 862760 ;;
+        11) echo 993832 ;;
+        12) echo 1198632 ;;
+        13) echo 1199656 ;;
+        14) echo 1330752 ;;
+        15) echo 2149952 ;;
+        *) return 1 ;;
+    esac
+}
+
+expected_size()
+{
+    case "$1" in
+        2|5) echo 262144 ;;
+        3|6) echo 1536 ;;
+        4|7) echo 64768 ;;
+        8|11) echo 204800 ;;
+        9|12) echo 1024 ;;
+        10|13) echo 131072 ;;
+        14) echo 819200 ;;
+        15) echo 982016 ;;
+        *) return 1 ;;
+    esac
+}
+
+label_is_compatible()
+{
+    local number="$1"
+    local actual="$2"
+
+    case "${number}:${actual}" in
+        4:A_reserved_on_user|4:A_sd_reserved_on_user|\
+        7:B_reserved_on_user|7:B_sd_reserved_on_user)
+            return 0
+            ;;
+    esac
+    [[ "${actual}" == "$(expected_label "${number}")" ]]
+}
+
+validate_existing_layout()
+{
+    local target="$1"
+    local number
+    local actual
+    local dump
+    local line
+    local start
+    local size
+    local type
+
+    dump="$(sfdisk -d "${target}")" ||
+        die "cannot read the partition table on ${target}"
+    for number in {1..15}; do
+        actual="$(sfdisk --part-label "${target}" "${number}" 2>/dev/null)" ||
+            die "${target} does not have the required 15-partition L4T layout"
+        label_is_compatible "${number}" "${actual}" ||
+            die "partition ${number} is '${actual}', expected '$(expected_label "${number}")'"
+
+        line="$(grep -F "$(partition_path "${target}" "${number}") :" <<<"${dump}")" ||
+            die "partition ${number} is absent from ${target}"
+        [[ "${line}" =~ start=[[:space:]]*([0-9]+),[[:space:]]size=[[:space:]]*([0-9]+), ]] ||
+            die "cannot parse partition ${number} geometry"
+        start="${BASH_REMATCH[1]}"
+        size="${BASH_REMATCH[2]}"
+        [[ "${start}" == "$(expected_start "${number}")" ]] ||
+            die "partition ${number} starts at ${start}, not $(expected_start "${number}")"
+        if ((number > 1)); then
+            [[ "${size}" == "$(expected_size "${number}")" ]] ||
+                die "partition ${number} has ${size} sectors, not $(expected_size "${number}")"
+        fi
+    done
+
+    type="$(sfdisk --part-type "${target}" 10)"
+    [[ "${type^^}" == "${ESP_TYPE}" ]] ||
+        die "partition 10 is not an EFI System Partition"
+}
+
+resolve_layout_template()
+{
+    local self_dir
+
+    self_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "${self_dir}/layouts/orin.sfdisk.in" ]]; then
+        printf '%s\n' "${self_dir}/layouts/orin.sfdisk.in"
+    elif [[ -f /usr/share/lumina-jetson-installer/orin.sfdisk.in ]]; then
+        printf '%s\n' /usr/share/lumina-jetson-installer/orin.sfdisk.in
+    else
+        die "cannot find the Orin partition template"
+    fi
+}
+
+render_layout()
+{
+    local target="$1"
+    local template="$2"
+    local rendered="$3"
+    local expression="s|@TARGET@|${target}|g"
+    local number
+
+    for number in {1..15}; do
+        expression+=";s|@PART${number}@|$(partition_path "${target}" "${number}")|g"
+    done
+    sed "${expression}" "${template}" >"${rendered}"
+}
+
+create_fresh_layout()
+{
+    local target="$1"
+    local rendered
+
+    rendered="$(mktemp)"
+    render_layout "${target}" "$(resolve_layout_template)" "${rendered}"
+
+    echo "Erasing partition metadata on ${target}."
+    sgdisk --zap-all "${target}"
+    if ! sfdisk --wipe always --wipe-partitions always "${target}" <"${rendered}"; then
+        rm -f "${rendered}"
+        return 1
+    fi
+    rm -f "${rendered}"
+    partprobe "${target}"
+    udevadm settle
+}
+
+write_kickstart_storage()
+{
+    local target="$1"
+    local mode="$2"
+    local output="$3"
+    local disk="${target##*/}"
+    local app="${disk}"
+    local esp="${disk}"
+
+    if [[ "${disk}" =~ [0-9]$ ]]; then
+        app+="p1"
+        esp+="p10"
+    else
+        app+="1"
+        esp+="10"
+    fi
+
+    {
+        echo "# Generated by ${PROGRAM}; do not edit."
+        echo "ignoredisk --only-use=${disk}"
+        echo "clearpart --none"
+        echo "bootloader --disabled"
+        echo "part / --fstype=ext4 --label=APP --onpart=${app}"
+        if [[ "${mode}" == "fresh" ]]; then
+            echo "part /boot/efi --fstype=efi --label=EFI --onpart=${esp}"
+        else
+            echo "part /boot/efi --onpart=${esp} --noformat"
+        fi
+    } >"${output}"
+}
+
+parse_cmdline()
+{
+    local argument
+
+    CMDLINE_TARGET=""
+    CMDLINE_MODE="fresh"
+    CMDLINE_ERASE=""
+    for argument in $(</proc/cmdline); do
+        case "${argument}" in
+            lumina.jetson.target=*) CMDLINE_TARGET="${argument#*=}" ;;
+            lumina.jetson.mode=*) CMDLINE_MODE="${argument#*=}" ;;
+            lumina.jetson.erase=*) CMDLINE_ERASE="${argument#*=}" ;;
+        esac
+    done
+    [[ -n "${CMDLINE_TARGET}" ]] ||
+        die "missing lumina.jetson.target=DEVICE on the kernel command line"
+}
+
+inspect_target()
+{
+    local target="$1"
+
+    validate_target_name "${target}"
+    validate_whole_disk "${target}"
+    validate_existing_layout "${target}"
+    lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,PARTLABEL,PARTTYPE,MOUNTPOINTS "${target}"
+}
+
+prepare_target()
+{
+    local target="$1"
+    local mode="$2"
+    local confirmation="$3"
+    local output="$4"
+
+    [[ "${EUID}" -eq 0 ]] || die "prepare must run as root"
+    require_jetson
+    validate_target_name "${target}"
+    validate_whole_disk "${target}"
+    reject_in_use_target "${target}"
+
+    case "${mode}" in
+        fresh)
+            [[ "${confirmation}" == "${target}" ]] ||
+                die "fresh mode requires --confirm-erase ${target}"
+            create_fresh_layout "${target}"
+            ;;
+        reuse)
+            validate_existing_layout "${target}"
+            ;;
+        *)
+            die "mode must be fresh or reuse"
+            ;;
+    esac
+
+    validate_existing_layout "${target}"
+    write_kickstart_storage "${target}" "${mode}" "${output}"
+    echo "Wrote Anaconda storage configuration to ${output}."
+}
+
+main()
+{
+    local command="${1:-}"
+    local target=""
+    local mode="fresh"
+    local confirmation=""
+    local output=""
+    local from_cmdline=false
+
+    [[ -n "${command}" ]] || usage
+    shift
+    while (($#)); do
+        case "$1" in
+            --target) target="${2:-}"; shift 2 ;;
+            --mode) mode="${2:-}"; shift 2 ;;
+            --confirm-erase) confirmation="${2:-}"; shift 2 ;;
+            --kickstart-output) output="${2:-}"; shift 2 ;;
+            --from-cmdline) from_cmdline=true; shift ;;
+            *) usage ;;
+        esac
+    done
+
+    if "${from_cmdline}"; then
+        parse_cmdline
+        target="${CMDLINE_TARGET}"
+        mode="${CMDLINE_MODE}"
+    fi
+
+    [[ -n "${target}" ]] || usage
+    target="$(resolve_target "${target}")"
+    if "${from_cmdline}" && [[ "${CMDLINE_ERASE}" == "YES" ]]; then
+        confirmation="${target}"
+    fi
+    case "${command}" in
+        inspect)
+            [[ -z "${output}" ]] || usage
+            inspect_target "${target}"
+            ;;
+        prepare)
+            [[ -n "${output}" ]] || usage
+            prepare_target "${target}" "${mode}" "${confirmation}" "${output}"
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

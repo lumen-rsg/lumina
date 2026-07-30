@@ -2,7 +2,7 @@
 
 Name:           lumina-jetson-bootconf
 Version:        1.0
-Release:        3.lu26
+Release:        4.lu26
 Summary:        Lumina boot configuration for NVIDIA Jetson UEFI
 License:        MIT
 URL:            https://linux.1t.ru
@@ -12,6 +12,7 @@ Source0:        lumina-jetson-boot-setup
 
 Requires:       coreutils
 Requires:       util-linux
+Recommends:     lumina-jetson-boot-assets = 39.2.0
 
 %description
 Creates an NVIDIA L4T UEFI-compatible extlinux configuration for Lumina while
@@ -28,6 +29,9 @@ install -Dpm 0755 %{SOURCE0} %{buildroot}%{_sbindir}/lumina-jetson-boot-setup
 %{_sbindir}/lumina-jetson-boot-setup
 
 %changelog
+* Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-4.lu26
+- Install the packaged L4TLauncher onto a fresh EFI system partition
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-3.lu26
 - Preserve NVIDIA framebuffer handoff and ramoops boot parameters
 

@@ -20,6 +20,7 @@ Userspace:   Ubuntu 24.04 aarch64
 Documents:
 
 - [NVMe partition layout](partitions.md)
+- [NVIDIA ISO analysis and Lumina installer design](installer.md)
 - [Kernel and boot findings](kernel.md)
 - [NVIDIA driver and userspace findings](driver.md)
 - [NVIDIA L4T README volume](L4T-README/README.md)

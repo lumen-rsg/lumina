@@ -1,0 +1,21 @@
+label: gpt
+device: @TARGET@
+unit: sectors
+first-lba: 40
+sector-size: 512
+
+@PART1@  : start=3131968, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="APP"
+@PART2@  : start=40,      size=262144, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="A_kernel"
+@PART3@  : start=262184,  size=1536,   type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="A_kernel-dtb"
+@PART4@  : start=263720,  size=64768,  type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="reserved_for_chain_A_user"
+@PART5@  : start=328488,  size=262144, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="B_kernel"
+@PART6@  : start=590632,  size=1536,   type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="B_kernel-dtb"
+@PART7@  : start=592168,  size=64768,  type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="reserved_for_chain_B_user"
+@PART8@  : start=656936,  size=204800, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="recovery"
+@PART9@  : start=861736,  size=1024,   type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="recovery-dtb"
+@PART10@ : start=862760,  size=131072, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, name="esp"
+@PART11@ : start=993832,  size=204800, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="recovery_alt"
+@PART12@ : start=1198632, size=1024,   type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="recovery-dtb_alt"
+@PART13@ : start=1199656, size=131072, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="esp_alt"
+@PART14@ : start=1330752, size=819200, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="UDA"
+@PART15@ : start=2149952, size=982016, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, name="reserved"

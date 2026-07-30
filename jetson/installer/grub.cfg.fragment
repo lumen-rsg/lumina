@@ -1,0 +1,21 @@
+submenu "Install 1T Lumina 26.08 on NVIDIA Jetson Orin" {
+    menuentry "Install to NVMe (ERASE nvme0n1)" {
+        linux /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.ks=hd:LABEL=Lumina-26-08-aarch64:/jetson/lumina-jetson.ks lumina.jetson.target=nvme0n1 lumina.jetson.mode=fresh lumina.jetson.erase=YES
+        initrd /images/pxeboot/initrd.img
+    }
+
+    menuentry "Install to eMMC (ERASE mmcblk0)" {
+        linux /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.ks=hd:LABEL=Lumina-26-08-aarch64:/jetson/lumina-jetson.ks lumina.jetson.target=mmcblk0 lumina.jetson.mode=fresh lumina.jetson.erase=YES
+        initrd /images/pxeboot/initrd.img
+    }
+
+    menuentry "Install to microSD (ERASE detected microSD)" {
+        linux /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.ks=hd:LABEL=Lumina-26-08-aarch64:/jetson/lumina-jetson.ks lumina.jetson.target=microsd lumina.jetson.mode=fresh lumina.jetson.erase=YES
+        initrd /images/pxeboot/initrd.img
+    }
+
+    menuentry "Install to USB (ERASE the only non-installer USB disk)" {
+        linux /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.ks=hd:LABEL=Lumina-26-08-aarch64:/jetson/lumina-jetson.ks lumina.jetson.target=usb lumina.jetson.mode=fresh lumina.jetson.erase=YES
+        initrd /images/pxeboot/initrd.img
+    }
+}
