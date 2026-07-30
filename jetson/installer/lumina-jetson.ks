@@ -48,13 +48,6 @@ fi
 
 %pre-install --erroronfail --log=/tmp/lumina-jetson-bootstrap.log
 /run/install/repo/jetson/lumina-jetson-bootstrap /mnt/sysroot
-
-# Fedora's signed shim RPM contains hard-linked aliases. FAT32 cannot create
-# hard links, so unpack the RPM onto the ext4 root and let the finalizer copy
-# the signed EFI payloads onto the ESP after the transaction.
-if findmnt -rn -M /mnt/sysroot/boot/efi >/dev/null; then
-    umount /mnt/sysroot/boot/efi
-fi
 %end
 
 %packages --inst-langs=en
@@ -67,17 +60,16 @@ nvidia-l4t-multimedia
 nvidia-l4t-tools
 nvme-cli
 lumina-jetson-graphics
+lumina-jetson-boot-assets
+lumina-jetson-bootconf
 NetworkManager
 openssh-server
 dnf5
 rpm
 sudo
-grub2-efi-aa64
-grub2-common
-grub2-tools
-grub2-tools-extra
-shim-aa64
-efibootmgr
+-grub2-efi-aa64
+-grub2-efi-aa64-cdboot
+-grub2-tools-efi
 -kernel
 -kernel-core
 -kernel-modules

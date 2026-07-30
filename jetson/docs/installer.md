@@ -18,6 +18,16 @@ The Jetson must first be flashed with the matching NVIDIA release. Flashing
 provisions the module's QSPI firmware and UEFI. It does not provision an empty
 NVMe drive. The on-device installer creates the NVMe/eMMC/SD/USB GPT.
 
+Before installing Lumina, verify these NVIDIA UEFI settings:
+
+```text
+OS chain A status: Normal
+L4T Boot Mode: ExtLinux
+```
+
+L4TLauncher will not follow `/boot/extlinux/extlinux.conf` when the firmware is
+configured for a different L4T boot mode.
+
 ## How NVIDIA selects an installation target
 
 The GRUB menu boots one kernel and initrd for every installation mode:
@@ -101,25 +111,12 @@ The implementation is under `jetson/installer/`:
 - `lumina-jetson-storage` performs board/target validation, creates or checks
   the GPT, and emits an Anaconda storage include;
 - `lumina-jetson-finalize` identifies APP and ESP from that generated include,
-  writes an explicit Tegra GRUB entry using APP's filesystem UUID, mounts the
-  ESP explicitly, installs Fedora's ARM64 GRUB/shim fallback chain, and
-  verifies every boot artifact;
+  writes extlinux using APP's PARTUUID, mounts the ESP explicitly, installs
+  L4TLauncher, and verifies every boot artifact;
 - `layouts/orin.sfdisk.in` is the audited Orin layout;
 - `lumina-jetson.ks` installs the Lumina Core CLI and complete Jetson RPM set,
-  builds the Tegra initramfs, and runs the GRUB finalizer;
+  disables GRUB, builds the Tegra initramfs, and runs the finalizer;
 - `grub.cfg.fragment` supplies explicit NVMe, eMMC, microSD, and USB entries.
-
-Anaconda's automatic bootloader step remains disabled because the custom
-`kernel-tegra-l4t` package is not a Fedora kernel subpackage. The finalizer
-installs Fedora's signed ARM64 shim and GRUB binaries directly, writes both
-the standard fallback path and the `fedora` vendor path, and registers a
-best-effort `1T Lumina` UEFI entry. The fallback path does not depend on a
-successful NVRAM update.
-
-The ESP is temporarily unmounted before the RPM transaction. Fedora's signed
-shim package contains hard-linked aliases, which FAT32 cannot represent. The
-RPM therefore unpacks onto the ext4 root, after which the finalizer mounts the
-ESP and copies the signed EFI payloads as ordinary files.
 
 Fresh mode requires root, a Tegra234 device tree, a supported whole disk of at
 least 16 GiB, no mounted target partitions, and an exact erase confirmation.
@@ -180,8 +177,7 @@ The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
 only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
 configures the installed Lumina system with SELinux enforcing.
 
-The builder needs `xorriso`, `createrepo_c`, `mtools`, `zstd`, and
-`diffutils`:
+The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
 
 ```bash
 jetson/installer/build-iso.sh \
@@ -193,8 +189,7 @@ jetson/installer/build-iso.sh \
 
 The RPM root is searched recursively. It must contain the complete Fedora Core
 CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
-`dtc`, `i2c-tools`, `libi2c`, `nvme-cli`, `grub2-efi-aa64`, `shim-aa64`, and
-their dependencies.
+`dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
 Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 

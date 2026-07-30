@@ -16,15 +16,17 @@ For an in-place Lumina or Fedora-derived installation:
 4. Preserve partitions 2 through 15.
 5. Do not let a generic installer format the existing EFI System Partition or
    replace `EFI/BOOT/BOOTAA64.efi`.
-6. The original in-place port used NVIDIA L4TLauncher with
-   `/boot/extlinux/extlinux.conf`. The current fresh Lumina installer instead
-   installs Fedora's ARM64 UEFI GRUB/shim chain on the ESP.
-7. Install the Tegra kernel RPMs and finalize either boot path before the first
-   reboot.
+6. Do not install GRUB.  NVIDIA UEFI loads the L4T extlinux configuration from
+   `/boot/extlinux/extlinux.conf` in the root filesystem.
+7. Install the Tegra kernel RPMs and run `lumina-jetson-boot-setup` before the
+   first reboot.
 
 The boot filesystem must be readable by NVIDIA UEFI.  The initial port
 therefore uses ext4 for the root filesystem and keeps `/boot` inside it rather
 than using Fedora's default Btrfs layout.
+
+The firmware must report chain A as `Normal` and set `L4T Boot Mode` to
+`ExtLinux`; otherwise it will not dispatch the rootfs-side extlinux entry.
 
 ## Observed partitions
 

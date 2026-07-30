@@ -41,24 +41,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-copy_rpm_tree()
-{
-    local source_root="$1"
-    local source_rpm
-    local destination_rpm
-
-    while IFS= read -r -d '' source_rpm; do
-        destination_rpm="${package_dir}/$(basename -- "${source_rpm}")"
-        if [[ -e "${destination_rpm}" ]]; then
-            cmp -s "${source_rpm}" "${destination_rpm}" ||
-                die "different RPMs have the same filename: $(basename -- "${source_rpm}")"
-            continue
-        fi
-        cp -a "${source_rpm}" "${destination_rpm}"
-    done < <(find "${source_root}" -type f -name '*.rpm' -print0 | sort -z)
-}
-
-for command in cmp createrepo_c mcopy realpath rpm sha256sum xorriso; do
+for command in createrepo_c mcopy realpath rpm sha256sum xorriso; do
     command -v "${command}" >/dev/null ||
         die "missing required command: ${command}"
 done
@@ -73,7 +56,8 @@ done
 mkdir -p "${iso_tree}" "${package_dir}" "$(dirname -- "${output_iso}")"
 xorriso -osirrox on -indev "${base_iso}" -extract / "${iso_tree}"
 
-copy_rpm_tree "${fedora_rpm_root}"
+find "${fedora_rpm_root}" -type f -name '*.rpm' \
+    -exec cp -a -t "${package_dir}" {} +
 find "${jetson_dir}/dist/l4t-r39.2/RPMS" -type f -name '*.rpm' \
     ! -name 'lumina-jetson-bootconf-1.0-1.lu26.noarch.rpm' \
     -exec cp -a -t "${package_dir}" {} +
@@ -109,12 +93,7 @@ esac
 createrepo_c -g "${iso_tree}/LuminaPackages/comps.xml" \
     "${iso_tree}/LuminaPackages"
 
-for required_rpm in \
-    nvme-cli \
-    kernel-tegra-l4t \
-    nvidia-l4t-driver \
-    grub2-efi-aa64 \
-    shim-aa64; do
+for required_rpm in nvme-cli kernel-tegra-l4t nvidia-l4t-driver; do
     compgen -G "${package_dir}/${required_rpm}-*.rpm" >/dev/null ||
         die "offline repository is missing ${required_rpm}"
 done
