@@ -35,17 +35,24 @@ mapfile -t libtinfo_files < <(
 [[ ${#libtinfo_files[@]} -gt 0 ]] ||
     die "installer runtime is missing libtinfo.so.6"
 
-install -d -m 0755 \
+mkdir -p \
     "${target_root}/usr/bin" \
     "${target_root}/usr/lib" \
     "${target_root}/usr/lib64"
-install -m 0755 /usr/bin/bash \
-    "${target_root}/usr/bin/bash"
-install -m 0755 /usr/lib/ld-linux-aarch64.so.1 \
+chmod 0755 \
+    "${target_root}/usr" \
+    "${target_root}/usr/bin" \
+    "${target_root}/usr/lib" \
+    "${target_root}/usr/lib64"
+cp /usr/bin/bash "${target_root}/usr/bin/bash"
+cp /usr/lib/ld-linux-aarch64.so.1 \
     "${target_root}/usr/lib/ld-linux-aarch64.so.1"
-install -m 0755 /usr/lib64/libc.so.6 \
-    "${target_root}/usr/lib64/libc.so.6"
+cp /usr/lib64/libc.so.6 "${target_root}/usr/lib64/libc.so.6"
 cp -a "${libtinfo_files[@]}" "${target_root}/usr/lib64/"
+chmod 0755 \
+    "${target_root}/usr/bin/bash" \
+    "${target_root}/usr/lib/ld-linux-aarch64.so.1" \
+    "${target_root}/usr/lib64/libc.so.6"
 
 for link_spec in \
     "bin usr/bin" \
