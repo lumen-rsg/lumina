@@ -65,6 +65,10 @@ install -m 0644 "${script_dir}/layouts/orin.sfdisk.in" \
     "${iso_tree}/jetson/layouts/orin.sfdisk.in"
 install -m 0644 "${script_dir}/grub.cfg.fragment" \
     "${iso_tree}/EFI/BOOT/grub.cfg"
+if [[ -n "${LUMINA_INSTALLER_SSH_KEY_FILE:-}" ]]; then
+    install -m 0600 "${LUMINA_INSTALLER_SSH_KEY_FILE}" \
+        "${iso_tree}/jetson/installer_authorized_key"
+fi
 
 case "${comps_xml}" in
     *.zst)
@@ -78,6 +82,11 @@ esac
 
 createrepo_c -g "${iso_tree}/LuminaPackages/comps.xml" \
     "${iso_tree}/LuminaPackages"
+
+for required_rpm in nvme-cli kernel-tegra-l4t nvidia-l4t-driver; do
+    compgen -G "${package_dir}/${required_rpm}-*.rpm" >/dev/null ||
+        die "offline repository is missing ${required_rpm}"
+done
 
 # The El Torito FAT image has its own copy of grub.cfg.
 mcopy -o -i "${iso_tree}/images/efiboot.img" \

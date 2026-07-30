@@ -18,6 +18,24 @@ shutdown
 timezone Europe/Moscow --utc
 
 %pre --erroronfail --log=/tmp/lumina-jetson-pre.log
+installer_key=/run/install/repo/jetson/installer_authorized_key
+if [ -s "${installer_key}" ]; then
+    install -d -m 0700 /root/.ssh
+    install -m 0600 "${installer_key}" /root/.ssh/authorized_keys
+    if [ ! -e /etc/ssh/sshd_config ]; then
+        install -d -m 0755 /etc/ssh
+        printf '%s\n' \
+            'PermitRootLogin prohibit-password' \
+            'PasswordAuthentication no' \
+            'PubkeyAuthentication yes' \
+            'AuthorizedKeysFile .ssh/authorized_keys' \
+            >/etc/ssh/sshd_config
+    fi
+    ssh-keygen -A
+    systemctl restart anaconda-sshd.service ||
+        systemctl restart sshd.service
+fi
+
 helper=/run/install/repo/jetson/lumina-jetson-storage
 if [ ! -x "${helper}" ]; then
     helper=/usr/libexec/lumina-jetson-installer/lumina-jetson-storage
@@ -37,6 +55,7 @@ tegra-l4t-firmware
 nvidia-l4t-driver
 nvidia-l4t-multimedia
 nvidia-l4t-tools
+nvme-cli
 lumina-jetson-graphics
 lumina-jetson-boot-assets
 lumina-jetson-bootconf

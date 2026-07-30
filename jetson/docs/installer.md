@@ -158,9 +158,20 @@ jetson/installer/build-iso.sh \
 ```
 
 The RPM root is searched recursively. It must contain the complete Fedora
-Workstation transaction plus `dtc`, `i2c-tools`, and `libi2c`. Lumina and L4T
-RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is accompanied by
-an `.iso.sha256` file.
+Workstation transaction plus `dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
+Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
+accompanied by an `.iso.sha256` file.
+
+Installer SSH can be enabled for a development image without committing a
+personal key:
+
+```bash
+LUMINA_INSTALLER_SSH_KEY_FILE="${HOME}/.ssh/id_ed25519.pub" \
+  jetson/installer/build-iso.sh BASE_ISO RPM_ROOT COMPS_XML OUTPUT_ISO
+```
+
+The key grants access only to the ephemeral installer environment. Release
+images should omit it.
 
 Before publishing an image, verify a complete offline dependency solve and
 test the destructive install path on actual Jetson hardware.
