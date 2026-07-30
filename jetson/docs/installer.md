@@ -116,6 +116,11 @@ the standard fallback path and the `fedora` vendor path, and registers a
 best-effort `1T Lumina` UEFI entry. The fallback path does not depend on a
 successful NVRAM update.
 
+The ESP is temporarily unmounted before the RPM transaction. Fedora's signed
+shim package contains hard-linked aliases, which FAT32 cannot represent. The
+RPM therefore unpacks onto the ext4 root, after which the finalizer mounts the
+ESP and copies the signed EFI payloads as ordinary files.
+
 Fresh mode requires root, a Tegra234 device tree, a supported whole disk of at
 least 16 GiB, no mounted target partitions, and an exact erase confirmation.
 The ISO menu supplies the confirmation only for entries whose label explicitly
