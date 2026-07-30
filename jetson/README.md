@@ -26,6 +26,10 @@ MB2, UEFI, recovery, or any other boot-firmware partition.
   OP-TEE integration.
 - `lumina-jetson-graphics`: Fedora GBM search-path and active-seat device
   access integration for GDM and Wayland compositors.
+- `btop`: enables aarch64 GPU monitoring and uses Tegra's nvgpu load counter
+  when Jetson NVML does not expose utilization.
+- `gnome-control-center`: reports the Jetson platform renderer, Cortex-A78AE
+  CPU, and NVMe namespace capacity in GNOME System Details.
 - `lumina-jetson-bootconf`: generates an L4T UEFI/extlinux entry without
   touching the QSPI firmware.
 
@@ -59,6 +63,8 @@ rpmbuild -ba jetson/orin/nvidia-l4t-driver/nvidia-l4t-driver.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-multimedia/nvidia-l4t-multimedia.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-tools/nvidia-l4t-tools.spec
 rpmbuild -ba jetson/orin/lumina-jetson-graphics/lumina-jetson-graphics.spec
+rpmbuild -ba jetson/orin/btop/btop.spec
+rpmbuild -ba jetson/orin/gnome-control-center/gnome-control-center.spec
 rpmbuild -ba jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
 ```
 

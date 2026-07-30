@@ -1,0 +1,83 @@
+diff --git a/panels/system/about/cc-system-details-window.c b/panels/system/about/cc-system-details-window.c
+index 58e8846..9a5c20c 100644
+--- a/panels/system/about/cc-system-details-window.c
++++ b/panels/system/about/cc-system-details-window.c
+@@ -257,6 +257,13 @@ get_renderer_from_switcheroo (void)
+       renderer = get_renderer_from_helper (env_s);
+       default_variant = g_variant_lookup_value (gpu, "Default", NULL);
+ 
++      /* Platform DRM devices do not have PCI database names, and Mesa's
++       * DRI_PRIME selector is not usable with every vendor backend. If both
++       * sources fail, omit the anonymous entry so the caller can fall back to
++       * the renderer from the active session. */
++      if (!renderer && g_strcmp0 (name_s, "Unknown Graphics Controller") == 0)
++        continue;
++
+       /* We could give up if we don't have a renderer, but that
+        * might just mean gnome-session isn't installed. We fall back
+        * to the device name in udev instead, which is better than nothing */
+@@ -389,6 +396,7 @@ get_primary_disk_info (void)
+   for (l = objects; l != NULL; l = l->next)
+     {
+       UDisksDrive *drive;
++      guint64 drive_size;
+       drive = udisks_object_peek_drive (UDISKS_OBJECT (l->data));
+ 
+       /* Skip removable devices */
+@@ -399,7 +407,35 @@ get_primary_disk_info (void)
+           continue;
+         }
+ 
+-      total_size += udisks_drive_get_size (drive);
++      drive_size = udisks_drive_get_size (drive);
++
++      /* NVMe controllers may not provide TNVMCAP even though their namespace
++       * block device has a valid capacity. Fall back to the largest top-level
++       * block object associated with this drive. */
++      if (drive_size == 0)
++        {
++          const char *drive_path = g_dbus_object_get_object_path (l->data);
++          GList *block_object;
++
++          for (block_object = objects; block_object != NULL; block_object = block_object->next)
++            {
++              UDisksBlock *block;
++              guint64 block_size;
++
++              if (udisks_object_peek_partition (UDISKS_OBJECT (block_object->data)) != NULL)
++                continue;
++
++              block = udisks_object_peek_block (UDISKS_OBJECT (block_object->data));
++              if (block == NULL ||
++                  g_strcmp0 (udisks_block_get_drive (block), drive_path) != 0)
++                continue;
++
++              block_size = udisks_block_get_size (block);
++              drive_size = MAX (drive_size, block_size);
++            }
++        }
++
++      total_size += drive_size;
+     }
+ 
+   if (total_size > 0)
+@@ -514,6 +550,19 @@ get_cpu_info ()
+                                        keys[j]);
+         }
+ 
++      if (model == NULL)
++        {
++          const char *implementer;
++          const char *part;
++
++          implementer = g_hash_table_lookup (info->cpuinfo[i].values, "CPU implementer");
++          part = g_hash_table_lookup (info->cpuinfo[i].values, "CPU part");
++
++          if (g_strcmp0 (implementer, "0x41") == 0 &&
++              g_strcmp0 (part, "0xd42") == 0)
++            model = "ARM Cortex-A78AE";
++        }
++
+       if (model == NULL)
+           continue;
+ 
