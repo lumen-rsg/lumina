@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+set -o errexit
+set -o nounset
+
+grub_defaults=/etc/default/grub
+
+if [[ -f ${grub_defaults} ]]; then
+    if grep -qE '^[[:space:]]*GRUB_DISTRIBUTOR=' "${grub_defaults}"; then
+        sed -i -E 's|^[[:space:]]*GRUB_DISTRIBUTOR=.*$|GRUB_DISTRIBUTOR="1T Lumina"|' "${grub_defaults}"
+    else
+        printf '\nGRUB_DISTRIBUTOR="1T Lumina"\n' >> "${grub_defaults}"
+    fi
+fi
+
+shopt -s nullglob
+for entry in /boot/loader/entries/*.conf; do
+    sed -i -E \
+        's#^title[[:space:]]+(Fedora Linux|Fedora Linux Asahi Remix)([[:space:]].*)?$#title 1T Lumina\2#' \
+        "${entry}"
+done

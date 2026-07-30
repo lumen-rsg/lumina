@@ -1,0 +1,18 @@
+# 1T Lumina distribution macros.
+
+%__bootstrap         ~bootstrap
+%lumina              26.08
+%lumina_version      26.08
+%lu26                1
+%lu2608              1
+%fedora              44
+%fc44                1
+%distcore            .lu26
+%dist                %{!?distprefix0:%{?distprefix}}%{expand:%{lua:for i=0,9999 do print("%{?distprefix" .. i .."}") end}}%{distcore}%{?with_bootstrap:%{__bootstrap}}%{?buildrelease:+build%{buildrelease}}
+%dist_vendor         1T
+%dist_name           1T Lumina
+%dist_purl_namespace lumina
+%dist_home_url       https://linux.1t.ru/
+%dist_bug_report_url https://github.com/lumen-rsg/lumina/issues
+%dist_packages_url   https://packages.lumina.1t.ru/
+%dist_debuginfod_url %{nil}
