@@ -1,0 +1,9 @@
+[Main]
+Product=1T Lumina
+Version=26.08
+BugURL=https://github.com/lumen-rsg/lumina/issues
+IsFinal=True
+UUID=lumina-26.08.aarch64
+Variant=Jetson Orin
+[Compose]
+Lorax=44.6-1

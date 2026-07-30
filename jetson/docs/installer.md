@@ -142,10 +142,16 @@ layout, GRUB menu, and an offline RPM repository. It also updates both GRUB
 configurations: the copy in the ISO filesystem and the copy in the El Torito
 EFI FAT image.
 
-The Fedora installer kernel is intentionally retained because it is already
-known to boot the Jetson and provides Anaconda's supported runtime. The
-installed system uses `kernel-tegra-l4t`; the Kickstart excludes Fedora's
-generic target kernel and GRUB packages.
+`remaster-runtime.sh` preserves Anaconda's dracut userspace while replacing
+Fedora's installer kernel and the kernel modules in both the initramfs and
+stage2 with `kernel-tegra-l4t`. It also changes the runtime buildstamp, OS
+identity, console issue, and Anaconda profile to 1T Lumina. The installed
+system uses the same Tegra kernel; the Kickstart excludes Fedora's generic
+target kernel and GRUB packages.
+
+The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
+only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
+configures the installed Lumina system with SELinux enforcing.
 
 The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
 

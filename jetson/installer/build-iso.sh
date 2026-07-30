@@ -30,6 +30,10 @@ readonly output_iso="$(realpath -m "$4")"
 readonly work_dir="$(mktemp -d)"
 readonly iso_tree="${work_dir}/iso-tree"
 readonly package_dir="${iso_tree}/LuminaPackages/Packages"
+readonly tegra_kernel_rpm="$(
+    find "${jetson_dir}/dist/l4t-r39.2/RPMS" -type f \
+        -name 'kernel-tegra-l4t-*.rpm' -print -quit
+)"
 
 cleanup()
 {
@@ -46,6 +50,8 @@ done
 [[ -d "${fedora_rpm_root}" ]] ||
     die "Fedora RPM root does not exist: ${fedora_rpm_root}"
 [[ -f "${comps_xml}" ]] || die "comps file does not exist: ${comps_xml}"
+[[ -n "${tegra_kernel_rpm}" ]] ||
+    die "kernel-tegra-l4t RPM was not built"
 
 mkdir -p "${iso_tree}" "${package_dir}" "$(dirname -- "${output_iso}")"
 xorriso -osirrox on -indev "${base_iso}" -extract / "${iso_tree}"
@@ -93,6 +99,8 @@ for driver_rpm in "${package_dir}"/nvidia-l4t-driver-*.rpm; do
     fi
 done
 
+"${script_dir}/remaster-runtime.sh" "${iso_tree}" "${tegra_kernel_rpm}"
+
 # The El Torito FAT image has its own copy of grub.cfg.
 mcopy -o -i "${iso_tree}/images/efiboot.img" \
     "${script_dir}/grub.cfg.fragment" ::/EFI/BOOT/grub.cfg
@@ -107,6 +115,10 @@ xorriso -as mkisofs \
     -o "${output_iso}" \
     "${iso_tree}"
 
-sha256sum "${output_iso}" >"${output_iso}.sha256"
+(
+    cd -- "$(dirname -- "${output_iso}")"
+    sha256sum "$(basename -- "${output_iso}")" \
+        >"$(basename -- "${output_iso}").sha256"
+)
 printf 'Built %s\n' "${output_iso}"
 printf 'Checksum: %s.sha256\n' "${output_iso}"

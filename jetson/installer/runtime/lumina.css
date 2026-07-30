@@ -1,0 +1,24 @@
+/* 1T Lumina Anaconda style overrides. */
+
+@define-color lumina_indigo #4b0082;
+
+.logo-sidebar {
+    background-image: none;
+    background-color: @lumina_indigo;
+}
+
+.logo {
+    background-image: none;
+    background-color: transparent;
+}
+
+.product-logo {
+    background-image: none;
+    background-color: transparent;
+}
+
+AnacondaSpokeWindow #nav-box {
+    background-color: @lumina_indigo;
+    background-image: none;
+    color: white;
+}
