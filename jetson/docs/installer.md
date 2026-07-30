@@ -149,6 +149,10 @@ identity, console issue, and Anaconda profile to 1T Lumina. The installed
 system uses the same Tegra kernel; the Kickstart excludes Fedora's generic
 target kernel and GRUB packages.
 
+The installer is local-media-only. The remaster removes Fedora dracut's iSCSI
+root parser because it unconditionally probes `iscsi_tcp`, which NVIDIA's
+Tegra kernel does not provide, even when no iSCSI root was requested.
+
 The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
 only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
 configures the installed Lumina system with SELinux enforcing.

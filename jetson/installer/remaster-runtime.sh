@@ -83,6 +83,14 @@ if [[ -d "${kernel_root}/etc/modprobe.d" ]]; then
     cp -a "${kernel_root}/etc/modprobe.d/." \
         "${initrd_root}/etc/modprobe.d/"
 fi
+
+# Fedora's generic installer kernel provides iscsi_tcp. Its inherited dracut
+# hook probes that module unconditionally, before checking whether an iSCSI
+# root was requested, and calls die when it is absent. This image supports
+# local Jetson installation media only, so omit the incompatible parser.
+rm -f \
+    "${initrd_root}/var/lib/dracut/hooks/cmdline/90-parse-iscsiroot.sh"
+
 install -m 0644 "${script_dir}/runtime/buildstamp" \
     "${initrd_root}/.buildstamp"
 install -m 0644 "${script_dir}/runtime/os-release" \
