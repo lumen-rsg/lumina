@@ -37,7 +37,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-for command in createrepo_c mcopy realpath sha256sum xorriso; do
+for command in createrepo_c mcopy realpath rpm sha256sum xorriso; do
     command -v "${command}" >/dev/null ||
         die "missing required command: ${command}"
 done
@@ -86,6 +86,11 @@ createrepo_c -g "${iso_tree}/LuminaPackages/comps.xml" \
 for required_rpm in nvme-cli kernel-tegra-l4t nvidia-l4t-driver; do
     compgen -G "${package_dir}/${required_rpm}-*.rpm" >/dev/null ||
         die "offline repository is missing ${required_rpm}"
+done
+for driver_rpm in "${package_dir}"/nvidia-l4t-driver-*.rpm; do
+    if rpm -qpl "${driver_rpm}" | grep -qx /etc/asound.conf; then
+        die "$(basename -- "${driver_rpm}") conflicts with Fedora alsa-lib"
+    fi
 done
 
 # The El Torito FAT image has its own copy of grub.cfg.

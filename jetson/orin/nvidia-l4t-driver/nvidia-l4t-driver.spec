@@ -13,8 +13,8 @@ URL:            https://developer.nvidia.com/embedded/jetson-linux
 ExclusiveArch:  aarch64
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       kernel-tegra-l4t = %{version}-%{release}
-Requires:       tegra-l4t-firmware = %{version}-%{release}
+Requires:       kernel-tegra-l4t >= %{version}
+Requires:       tegra-l4t-firmware >= %{version}
 Requires:       glibc
 Requires:       libgcc
 Requires:       libstdc++
