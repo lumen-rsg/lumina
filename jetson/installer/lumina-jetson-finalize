@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 #
-# Finalize the rootfs-side Jetson boot chain after Anaconda has installed all
-# packages. This runs outside the target chroot so it can address the APP and
-# ESP block devices unambiguously.
+# Install Fedora's ARM64 UEFI GRUB chain and an explicit Tegra kernel entry
+# after Anaconda has installed all packages. This runs outside the target
+# chroot so it can address the APP and ESP devices unambiguously.
 
 set -euo pipefail
 
@@ -47,14 +47,20 @@ main()
     local esp_name
     local app_device
     local esp_device
-    local app_partuuid
+    local app_uuid
     local app_fstype
     local config
     local backup
     local temporary_config
-    local launcher
+    local grub_efi
+    local grub_source
+    local shim_boot_source
+    local shim_fedora_source
     local esp_mount
-    local esp_launcher
+    local esp_boot
+    local esp_fedora
+    local esp_disk
+    local esp_partition
     local mounted_here=false
 
     [[ -d "${target_root}" ]] ||
@@ -72,9 +78,9 @@ main()
     [[ -b "${app_device}" ]] || die "APP is not a block device: ${app_device}"
     [[ -b "${esp_device}" ]] || die "ESP is not a block device: ${esp_device}"
 
-    app_partuuid="$(blkid -s PARTUUID -o value "${app_device}")"
-    [[ -n "${app_partuuid}" ]] ||
-        die "APP has no PARTUUID: ${app_device}"
+    app_uuid="$(blkid -s UUID -o value "${app_device}")"
+    [[ -n "${app_uuid}" ]] ||
+        die "APP has no filesystem UUID: ${app_device}"
     app_fstype="$(blkid -s TYPE -o value "${app_device}")"
     [[ "${app_fstype}" == ext4 ]] ||
         die "APP must be ext4, found '${app_fstype}'"
@@ -84,7 +90,7 @@ main()
     [[ -f "${target_root}/boot/initramfs-${KVER}.img" ]] ||
         die "installed Tegra initramfs is missing"
 
-    config="${target_root}/boot/extlinux/extlinux.conf"
+    config="${target_root}/boot/grub2/grub.cfg"
     backup="${config}.pre-lumina"
     mkdir -p "$(dirname -- "${config}")"
     if [[ -f "${config}" && ! -e "${backup}" ]]; then
@@ -94,27 +100,41 @@ main()
     temporary_config="${config}.tmp.$$"
     trap 'rm -f -- "${temporary_config}"' EXIT
     cat >"${temporary_config}" <<EOF
-TIMEOUT 30
-DEFAULT lumina
+set default=0
+set timeout=5
 
-MENU TITLE 1T Lumina on NVIDIA Jetson
-
-LABEL lumina
-      MENU LABEL 1T Lumina (${KVER})
-      LINUX /boot/Image-${KVER}
-      INITRD /boot/initramfs-${KVER}.img
-      APPEND \${cbootargs} root=PARTUUID=${app_partuuid} rw rootwait rootfstype=${app_fstype} mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 video=efifb:off efi_pstore.pstore_disable=1 pstore.backend=ramoops efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
+menuentry '1T Lumina 26.08 (${KVER})' --class lumina --class gnu-linux {
+    insmod gzio
+    insmod part_gpt
+    insmod ext2
+    linux /boot/Image-${KVER} root=UUID=${app_uuid} rw rootwait rootfstype=${app_fstype} mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 video=efifb:off efi_pstore.pstore_disable=1 pstore.backend=ramoops efi=runtime pci=pcie_bus_perf nvme.use_threaded_interrupts=1
+    initrd /boot/initramfs-${KVER}.img
+}
 EOF
     chmod 0644 "${temporary_config}"
     mv "${temporary_config}" "${config}"
     trap - EXIT
 
-    launcher="${target_root}/usr/lib/lumina-jetson/BOOTAA64.efi"
-    esp_mount="${target_root}/boot/efi"
-    esp_launcher="${esp_mount}/EFI/BOOT/BOOTAA64.efi"
-    [[ -f "${launcher}" ]] ||
-        die "packaged NVIDIA L4TLauncher is missing"
+    grub_source="$(
+        find "${target_root}/usr/lib/efi/grub2" -type f \
+            -path '*/EFI/fedora/grubaa64.efi' -print -quit
+    )"
+    shim_boot_source="$(
+        find "${target_root}/usr/lib/efi/shim" -type f \
+            -path '*/EFI/BOOT/BOOTAA64.EFI' -printf '%h\n' -quit
+    )"
+    shim_fedora_source="$(
+        find "${target_root}/usr/lib/efi/shim" -type f \
+            -path '*/EFI/fedora/shimaa64.efi' -printf '%h\n' -quit
+    )"
+    [[ -f "${grub_source}" ]] ||
+        die "packaged Fedora ARM64 GRUB EFI binary is missing"
+    [[ -d "${shim_boot_source}" ]] ||
+        die "packaged Fedora ARM64 fallback shim is missing"
+    [[ -d "${shim_fedora_source}" ]] ||
+        die "packaged Fedora ARM64 vendor shim is missing"
 
+    esp_mount="${target_root}/boot/efi"
     mkdir -p "${esp_mount}"
     if ! findmnt -rn -M "${esp_mount}" >/dev/null; then
         mount -t vfat "${esp_device}" "${esp_mount}"
@@ -123,19 +143,59 @@ EOF
     [[ "$(findmnt -rn -o SOURCE -M "${esp_mount}")" == "${esp_device}" ]] ||
         die "${esp_mount} is not mounted from ${esp_device}"
 
-    mkdir -p "$(dirname -- "${esp_launcher}")"
-    cp "${launcher}" "${esp_launcher}"
-    chmod 0644 "${esp_launcher}"
-    cmp "${launcher}" "${esp_launcher}" ||
-        die "L4TLauncher verification failed"
+    esp_boot="${esp_mount}/EFI/BOOT"
+    esp_fedora="${esp_mount}/EFI/fedora"
+    mkdir -p "${esp_boot}" "${esp_fedora}"
+    cp -a "${shim_boot_source}/." "${esp_boot}/"
+    cp -a "${shim_fedora_source}/." "${esp_fedora}/"
+    cp "${grub_source}" "${esp_fedora}/grubaa64.efi"
+    cp "${grub_source}" "${esp_boot}/grubaa64.efi"
+    cp "${shim_fedora_source}/mmaa64.efi" "${esp_boot}/mmaa64.efi"
+
+    cat >"${esp_fedora}/grub.cfg" <<EOF
+search --no-floppy --root-dev-only --fs-uuid --set=dev ${app_uuid}
+set prefix=(\$dev)/boot/grub2
+export \$prefix
+configfile \$prefix/grub.cfg
+EOF
+    chmod 0600 "${esp_fedora}/grub.cfg"
+
+    grub_efi="${esp_fedora}/grubaa64.efi"
+    cmp "${grub_source}" "${grub_efi}" ||
+        die "GRUB EFI binary verification failed"
+    cmp "${grub_source}" "${esp_boot}/grubaa64.efi" ||
+        die "fallback GRUB EFI binary verification failed"
+    cmp "${shim_boot_source}/BOOTAA64.EFI" \
+        "${esp_boot}/BOOTAA64.EFI" ||
+        die "fallback shim verification failed"
     sync
+
+    case "${esp_name}" in
+        nvme*p*|mmcblk*p*)
+            esp_disk="/dev/${esp_name%p*}"
+            esp_partition="${esp_name##*p}"
+            ;;
+        sd*)
+            esp_disk="/dev/${esp_name%%[0-9]*}"
+            esp_partition="${esp_name##*[!0-9]}"
+            ;;
+        *)
+            die "cannot derive EFI disk from ${esp_name}"
+            ;;
+    esac
+    chroot "${target_root}" /usr/sbin/efibootmgr \
+        --create --disk "${esp_disk}" \
+        --part "${esp_partition}" \
+        --label "1T Lumina" \
+        --loader '\EFI\fedora\shimaa64.efi' ||
+        printf 'UEFI variable registration failed; fallback path remains usable\n' >&2
 
     if "${mounted_here}"; then
         umount "${esp_mount}"
     fi
 
-    printf 'Wrote extlinux for APP PARTUUID=%s\n' "${app_partuuid}"
-    printf 'Installed NVIDIA L4TLauncher on %s\n' "${esp_device}"
+    printf 'Wrote GRUB configuration for APP UUID=%s\n' "${app_uuid}"
+    printf 'Installed Fedora ARM64 GRUB and shim on %s\n' "${esp_device}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

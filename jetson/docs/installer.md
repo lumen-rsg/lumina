@@ -101,12 +101,20 @@ The implementation is under `jetson/installer/`:
 - `lumina-jetson-storage` performs board/target validation, creates or checks
   the GPT, and emits an Anaconda storage include;
 - `lumina-jetson-finalize` identifies APP and ESP from that generated include,
-  writes extlinux using APP's PARTUUID, mounts the ESP explicitly, installs
-  L4TLauncher, and verifies every boot artifact;
+  writes an explicit Tegra GRUB entry using APP's filesystem UUID, mounts the
+  ESP explicitly, installs Fedora's ARM64 GRUB/shim fallback chain, and
+  verifies every boot artifact;
 - `layouts/orin.sfdisk.in` is the audited Orin layout;
 - `lumina-jetson.ks` installs the Lumina Core CLI and complete Jetson RPM set,
-  disables GRUB, builds the Tegra initramfs, and runs the finalizer;
+  builds the Tegra initramfs, and runs the GRUB finalizer;
 - `grub.cfg.fragment` supplies explicit NVMe, eMMC, microSD, and USB entries.
+
+Anaconda's automatic bootloader step remains disabled because the custom
+`kernel-tegra-l4t` package is not a Fedora kernel subpackage. The finalizer
+installs Fedora's signed ARM64 shim and GRUB binaries directly, writes both
+the standard fallback path and the `fedora` vendor path, and registers a
+best-effort `1T Lumina` UEFI entry. The fallback path does not depend on a
+successful NVRAM update.
 
 Fresh mode requires root, a Tegra234 device tree, a supported whole disk of at
 least 16 GiB, no mounted target partitions, and an exact erase confirmation.
@@ -167,7 +175,8 @@ The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
 only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
 configures the installed Lumina system with SELinux enforcing.
 
-The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
+The builder needs `xorriso`, `createrepo_c`, `mtools`, `zstd`, and
+`diffutils`:
 
 ```bash
 jetson/installer/build-iso.sh \
@@ -179,7 +188,8 @@ jetson/installer/build-iso.sh \
 
 The RPM root is searched recursively. It must contain the complete Fedora Core
 CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
-`dtc`, `i2c-tools`, `libi2c`, and `nvme-cli`.
+`dtc`, `i2c-tools`, `libi2c`, `nvme-cli`, `grub2-efi-aa64`, `shim-aa64`, and
+their dependencies.
 Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 
