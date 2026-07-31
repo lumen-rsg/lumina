@@ -1,0 +1,8 @@
+version: 1
+packages:
+  neofetch:
+    spec: common/neofetch/neofetch.spec
+    paths:
+      - common/neofetch/**
+    targets:
+      - fedora-44-x86_64
