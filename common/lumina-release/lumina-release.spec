@@ -3,7 +3,7 @@
 Name:           lumina-release
 Epoch:          2
 Version:        26.08
-Release:        2.lu26
+Release:        3.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -152,6 +152,9 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Fri Jul 31 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-3.lu26
+- Rebuild through the immutable Kubernetes package pipeline
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-2.lu26
 - Preserve the Fedora 44 system-release capability
 
