@@ -6,3 +6,79 @@ packages:
       - common/lumina-release/**
     targets:
       - fedora-44-x86_64
+  lumina-jetson-bootconf:
+    spec: jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
+    paths:
+      - jetson/orin/lumina-jetson-bootconf/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2
+  tegra-l4t-firmware:
+    spec: jetson/orin/tegra-l4t-firmware/tegra-l4t-firmware.spec
+    paths:
+      - jetson/orin/tegra-l4t-firmware/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2
+    lookaside_sources:
+      - file: tegra-l4t-firmware-39.2.0.tar.gz
+        size: 66183345
+        sha256: 7cb199f1f0a3f82f50e69bcb8b750faa59e240eeaeb274a7abf6fa31e580bd6a
+  kernel-tegra-l4t:
+    spec: jetson/orin/kernel-tegra-l4t/kernel-tegra-l4t.spec
+    paths:
+      - jetson/orin/kernel-tegra-l4t/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - tegra-l4t-firmware
+    promotion_group: jetson-r39.2
+    lookaside_sources:
+      - file: kernel-tegra-l4t-39.2.0.tar.gz
+        size: 59697442
+        sha256: 58dcbb6dadf4829d50e786d9dbbfb4839324885b4360fcfde5032568aabda592
+  nvidia-l4t-driver:
+    spec: jetson/orin/nvidia-l4t-driver/nvidia-l4t-driver.spec
+    paths:
+      - jetson/orin/nvidia-l4t-driver/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - kernel-tegra-l4t
+      - tegra-l4t-firmware
+    promotion_group: jetson-r39.2
+    lookaside_sources:
+      - file: nvidia-l4t-driver-39.2.0.tar.gz
+        size: 211399634
+        sha256: 08c17ca25cab8f2e313c811fd660106e89c39806a5a18748a3a5bd21fd8e857c
+  nvidia-l4t-multimedia:
+    spec: jetson/orin/nvidia-l4t-multimedia/nvidia-l4t-multimedia.spec
+    paths:
+      - jetson/orin/nvidia-l4t-multimedia/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+    promotion_group: jetson-r39.2
+    lookaside_sources:
+      - file: nvidia-l4t-multimedia-39.2.0.tar.gz
+        size: 67079481
+        sha256: b79815d798351e5f9ecf9cec8d6e1c285ac1c8b291da0dc9ca90133924077cee
+  nvidia-l4t-tools:
+    spec: jetson/orin/nvidia-l4t-tools/nvidia-l4t-tools.spec
+    paths:
+      - jetson/orin/nvidia-l4t-tools/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+    promotion_group: jetson-r39.2
+    lookaside_sources:
+      - file: nvidia-l4t-tools-39.2.0.tar.gz
+        size: 3620952
+        sha256: c1dafc48200d4d20be051c5476ddfa53d0e20acd4c30bcb2a16941bd4e7bf5c1
