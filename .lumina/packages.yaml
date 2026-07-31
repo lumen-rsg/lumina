@@ -1,8 +1,8 @@
 version: 1
 packages:
-  neofetch:
-    spec: common/neofetch/neofetch.spec
+  lumina-release:
+    spec: common/lumina-release/lumina-release.spec
     paths:
-      - common/neofetch/**
+      - common/lumina-release/**
     targets:
       - fedora-44-x86_64
