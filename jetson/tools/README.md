@@ -7,3 +7,5 @@ coherent `jetson-r39.2` promotion group.
 
 Keep the archives out of Git. Upload each exact payload to the lookaside store
 under its content-addressed name before changing a checksum or file size here.
+Changes under this directory intentionally rebuild the complete Jetson promotion
+group so the version-matched stack is never published partially.
