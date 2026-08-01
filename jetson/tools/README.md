@@ -4,3 +4,6 @@
 the Fedora RPM build. LuminaCI verifies these checksums while sealing the
 lookaside sources declared in `.lumina/packages.yaml` before dispatching the
 coherent `jetson-r39.2` promotion group.
+
+Keep the archives out of Git. Upload each exact payload to the lookaside store
+under its content-addressed name before changing a checksum or file size here.
