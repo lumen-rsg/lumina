@@ -1,0 +1,9 @@
+version: 1
+packages:
+  lumina-rollback-canary:
+    spec: ci/rollback-canary/lumina-rollback-canary.spec
+    paths:
+      - ci/rollback-canary/**
+    targets:
+      - fedora-44-x86_64
+    promotion_group: rollback-exercise
