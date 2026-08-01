@@ -2,7 +2,7 @@
 
 Name:           lumina-jetson-bootconf
 Version:        1.0
-Release:        4.lu26
+Release:        5.lu26
 Summary:        Lumina boot configuration for NVIDIA Jetson UEFI
 License:        MIT
 URL:            https://linux.1t.ru
@@ -29,6 +29,9 @@ install -Dpm 0755 %{SOURCE0} %{buildroot}%{_sbindir}/lumina-jetson-boot-setup
 %{_sbindir}/lumina-jetson-boot-setup
 
 %changelog
+* Sat Aug 01 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-5.lu26
+- Validate the coherent Jetson R39.2 set through the native LuminaCI fabric
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-4.lu26
 - Install the packaged L4TLauncher onto a fresh EFI system partition
 
