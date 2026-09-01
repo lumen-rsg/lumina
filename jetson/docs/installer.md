@@ -227,6 +227,15 @@ choose a replacement before the first shell is granted. Password login over
 SSH remains disabled; SSH root access is key-only when an installer key is
 embedded.
 
+Jetson can start the offline installer with a stale RTC. RPM signature
+verification rejects an otherwise valid package when its signature appears to
+come from the future. The builder therefore records the ISO build epoch in
+`jetson/build.env`; the Kickstart advances an older system clock to that epoch
+before Anaconda starts the package transaction and makes a best-effort attempt
+to persist it to the hardware clock. A correct newer clock is never moved
+backwards. `SOURCE_DATE_EPOCH` can provide a reproducible explicit value when
+building the ISO.
+
 Installer SSH can be enabled for a development image without committing a
 personal key. The same key is installed for passwordless root SSH access to
 the CLI system after installation:

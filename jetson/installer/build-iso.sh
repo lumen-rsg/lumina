@@ -27,6 +27,7 @@ readonly base_iso="$(realpath "$1")"
 readonly fedora_rpm_root="$(realpath "$2")"
 readonly comps_xml="$(realpath "$3")"
 readonly output_iso="$(realpath -m "$4")"
+readonly build_epoch="${SOURCE_DATE_EPOCH:-$(date -u +%s)}"
 readonly work_dir="$(mktemp -d)"
 readonly iso_tree="${work_dir}/iso-tree"
 readonly package_dir="${iso_tree}/LuminaPackages/Packages"
@@ -41,10 +42,13 @@ cleanup()
 }
 trap cleanup EXIT
 
-for command in createrepo_c mcopy realpath rpm sha256sum xorriso; do
+for command in createrepo_c date mcopy realpath rpm sha256sum xorriso; do
     command -v "${command}" >/dev/null ||
         die "missing required command: ${command}"
 done
+
+[[ "${build_epoch}" =~ ^[0-9]+$ ]] ||
+    die "SOURCE_DATE_EPOCH must be an integer Unix timestamp"
 
 [[ -f "${base_iso}" ]] || die "base ISO does not exist: ${base_iso}"
 [[ -d "${fedora_rpm_root}" ]] ||
@@ -65,6 +69,8 @@ find "${jetson_dir}/dist/l4t-r39.2.1/RPMS" -type f -name '*.rpm' \
 mkdir -p "${iso_tree}/jetson/layouts" "${iso_tree}/LuminaPackages"
 install -m 0644 "${script_dir}/lumina-jetson.ks" \
     "${iso_tree}/jetson/lumina-jetson.ks"
+printf 'LUMINA_INSTALLER_MIN_EPOCH=%s\n' "${build_epoch}" \
+    >"${iso_tree}/jetson/build.env"
 install -m 0755 "${script_dir}/lumina-jetson-storage" \
     "${iso_tree}/jetson/lumina-jetson-storage"
 install -m 0755 "${script_dir}/lumina-jetson-bootstrap" \

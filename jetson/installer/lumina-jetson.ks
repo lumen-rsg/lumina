@@ -19,6 +19,27 @@ shutdown
 timezone Europe/Moscow --utc
 
 %pre --erroronfail --log=/tmp/lumina-jetson-pre.log
+clock_seed=/run/install/repo/jetson/build.env
+if [ ! -r "${clock_seed}" ]; then
+    echo "Installer clock seed is missing: ${clock_seed}" >&2
+    exit 1
+fi
+. "${clock_seed}"
+case "${LUMINA_INSTALLER_MIN_EPOCH:-}" in
+    ''|*[!0-9]*)
+        echo "Invalid installer clock seed" >&2
+        exit 1
+        ;;
+esac
+current_epoch=$(date -u +%s)
+if [ "${current_epoch}" -lt "${LUMINA_INSTALLER_MIN_EPOCH}" ]; then
+    date -u --set="@${LUMINA_INSTALLER_MIN_EPOCH}"
+    if command -v hwclock >/dev/null; then
+        hwclock --systohc --utc ||
+            echo "Warning: could not persist installer time to the RTC" >&2
+    fi
+fi
+
 installer_key=/run/install/repo/jetson/installer_authorized_key
 if [ -s "${installer_key}" ]; then
     install -d -m 0700 /root/.ssh
