@@ -4,17 +4,19 @@
 # the Lumina Jetson RPM repository. Select the target with the kernel arguments
 # documented in README.md.
 
-text
+# Install Anaconda's payload unattended, then boot the installed system into
+# GNOME Initial Setup. The temporary password only satisfies Anaconda's
+# account validation and is locked in %post before the first boot.
+graphical
 eula --agreed
 keyboard --xlayouts=us
 lang en_US.UTF-8
 network --bootproto=dhcp --device=link --activate
 repo --name="lumina-offline" --baseurl=file:///run/install/repo/LuminaPackages
-# Temporary local-console credential. It is expired in %post so Anaconda's
-# installed system requires a replacement before granting a shell.
+# Temporary installer-only credential; %post locks it before first boot.
 rootpw --plaintext root
 selinux --enforcing
-services --enabled=NetworkManager,sshd
+services --enabled=NetworkManager,sshd,gdm
 shutdown
 timezone Europe/Moscow --utc
 
@@ -75,22 +77,36 @@ fi
 
 %packages --inst-langs=en
 @core
+@gnome-desktop
+gnome-initial-setup
+gnome-control-center
+gnome-shell-extension-appindicator
+lumina-artwork
 lumina-release
 kernel-tegra-l4t
 tegra-l4t-firmware
 nvidia-l4t-driver
 nvidia-l4t-multimedia
 nvidia-l4t-tools
+nvidia-l4t-power-gui
+nvidia-cuda-runtime
+nvidia-cuda-toolkit
+jetson-stats
 nvme-cli
 efibootmgr
 lumina-jetson-graphics
 lumina-jetson-boot-assets
 lumina-jetson-bootconf
 NetworkManager
+NetworkManager-wifi
 openssh-server
 dnf5
 rpm
 sudo
+pciutils
+usbutils
+iw
+btop
 -grub2-efi-aa64
 -grub2-efi-aa64-cdboot
 -grub2-tools-efi
@@ -98,16 +114,30 @@ sudo
 -kernel-core
 -kernel-modules
 -kernel-modules-core
--gdm
--gnome-shell
 %end
 
 %post --erroronfail --log=/root/lumina-jetson-post.log
 test -f /boot/Image-6.8.12-1021-tegra
+
+# rtl8822ce is host-only hardware and is therefore pulled into the initramfs.
+# Its firmware is not declared in the vendor module metadata, so dracut cannot
+# discover it automatically. Without the explicit files the first probe fails
+# in the initramfs; unloading and reloading the module after switch-root works.
+install -d -m 0755 /etc/dracut.conf.d
+cat >/etc/dracut.conf.d/91-lumina-realtek.conf <<'REALTEK_DRACUT_EOF'
+install_items+=" /usr/lib/firmware/rtl8822_setting.bin /usr/lib/firmware/rtl8822cu_config /usr/lib/firmware/rtl8822cu_fw "
+REALTEK_DRACUT_EOF
 /usr/bin/dracut --force \
     /boot/initramfs-6.8.12-1021-tegra.img \
     6.8.12-1021-tegra
 test -f /boot/initramfs-6.8.12-1021-tegra.img
+
+# GNOME Initial Setup starts from GDM when no regular account exists. Lock the
+# installer-only root password first; the new administrator account receives
+# sudo access and can deliberately enable direct root login later if desired.
+/usr/bin/passwd --lock root
+/usr/bin/systemctl set-default graphical.target
+/usr/bin/systemctl enable gdm.service
 
 # The installer runtime is intentionally booted with SELinux disabled. Restore
 # the complete local-account authentication path explicitly before the first
@@ -122,30 +152,6 @@ test -f /boot/initramfs-6.8.12-1021-tegra.img
     /usr/bin/passwd \
     /usr/sbin/unix_chkpwd
 
-install -d -m 0755 /var/lib/lumina
-touch /var/lib/lumina/temporary-root-password
-chmod 0600 /var/lib/lumina/temporary-root-password
-cat >/etc/profile.d/00-lumina-root-password.sh <<'FIRST_LOGIN_EOF'
-# Prompt until the temporary installer password has been replaced. A failed or
-# interrupted passwd invocation must never prevent access to the recovery shell.
-if [ "$(id -u)" -eq 0 ] &&
-   [ -t 0 ] && [ -t 1 ] &&
-   [ -e /var/lib/lumina/temporary-root-password ]; then
-    printf '\nWARNING: the temporary root password is still active.\n'
-    printf 'Choose a new root password now, or interrupt passwd to continue.\n\n'
-    if /usr/bin/passwd; then
-        rm -f /var/lib/lumina/temporary-root-password
-        printf 'Root password changed successfully.\n'
-    else
-        printf '\nPassword unchanged; the root shell remains available.\n'
-        printf 'Run passwd again as soon as possible.\n'
-    fi
-fi
-FIRST_LOGIN_EOF
-chmod 0644 /etc/profile.d/00-lumina-root-password.sh
-/usr/sbin/restorecon -RF \
-    /etc/profile.d/00-lumina-root-password.sh \
-    /var/lib/lumina
 /usr/bin/ls -ldZ \
     /etc/passwd \
     /etc/shadow \
@@ -155,8 +161,6 @@ chmod 0644 /etc/profile.d/00-lumina-root-password.sh
     /etc/pam.d \
     /usr/bin/passwd \
     /usr/sbin/unix_chkpwd \
-    /etc/profile.d/00-lumina-root-password.sh \
-    /var/lib/lumina \
     >/root/lumina-account-labels.log
 %end
 

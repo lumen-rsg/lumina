@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=NVIDIA Jetson Power
+Comment=Monitor Jetson power, thermals, clocks, and fan state
+Exec=pkexec /usr/bin/python3 /usr/share/jetsonpowergui
+Icon=/usr/share/jetsonpowergui/logo/nv_logo.png
+Terminal=false
+Type=Application
+Categories=System;Monitor;
+Keywords=Jetson;NVIDIA;Power;Thermal;GPU;

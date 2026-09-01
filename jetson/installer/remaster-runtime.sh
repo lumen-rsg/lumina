@@ -126,6 +126,12 @@ install -m 0644 "${script_dir}/runtime/lumina.conf" \
     "${stage2_root}/etc/anaconda/profile.d/lumina.conf"
 install -m 0644 "${script_dir}/runtime/lumina.css" \
     "${stage2_root}/usr/share/anaconda/pixmaps/lumina.css"
+install -m 0644 \
+    "${script_dir}/../../common/lumina-artwork/files/lumina-logo.svg" \
+    "${stage2_root}/usr/share/anaconda/pixmaps/lumina-logo.svg"
+install -m 0644 \
+    "${script_dir}/../../common/lumina-artwork/files/lumina-logo-white.svg" \
+    "${stage2_root}/usr/share/anaconda/pixmaps/lumina-logo-white.svg"
 printf '1T Lumina 26.08 Jetson Installer\n' \
     >"${stage2_root}/usr/lib/issue"
 printf '1T Lumina 26.08 Jetson Installer\n' \

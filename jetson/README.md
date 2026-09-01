@@ -26,6 +26,12 @@ installer can create NVIDIA's target GPT after QSPI/UEFI has been flashed.
   GStreamer integration.
 - `nvidia-l4t-tools`: `tegrastats`, `nvpmodel`, fan control, Jetson-IO, and
   OP-TEE integration.
+- `nvidia-l4t-power-gui`: NVIDIA's Jetson Power monitor and NVPModel desktop
+  indicator.
+- `nvidia-cuda-runtime`: CUDA 13.2 runtime and accelerated math libraries.
+- `nvidia-cuda-toolkit`: nvcc, CUDA headers, development libraries, and
+  command-line debugging and profiling tools.
+- `jetson-stats`: the `jtop` Jetson monitor and privileged monitoring service.
 - `lumina-jetson-graphics`: Fedora GBM search-path and active-seat device
   access integration for GDM and Wayland compositors.
 - `btop`: enables aarch64 GPU monitoring and uses Tegra's nvgpu load counter
@@ -70,6 +76,10 @@ rpmbuild -ba jetson/orin/tegra-l4t-firmware/tegra-l4t-firmware.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-driver/nvidia-l4t-driver.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-multimedia/nvidia-l4t-multimedia.spec
 rpmbuild -ba jetson/orin/nvidia-l4t-tools/nvidia-l4t-tools.spec
+rpmbuild -ba jetson/orin/nvidia-l4t-power-gui/nvidia-l4t-power-gui.spec
+rpmbuild -ba jetson/orin/nvidia-cuda-runtime/nvidia-cuda-runtime.spec
+rpmbuild -ba jetson/orin/nvidia-cuda-toolkit/nvidia-cuda-toolkit.spec
+rpmbuild -ba jetson/orin/jetson-stats/jetson-stats.spec
 rpmbuild -ba jetson/orin/lumina-jetson-graphics/lumina-jetson-graphics.spec
 rpmbuild -ba jetson/orin/btop/btop.spec
 rpmbuild -ba jetson/orin/gnome-control-center/gnome-control-center.spec
@@ -77,6 +87,18 @@ rpmbuild -ba jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
 rpmbuild -ba jetson/orin/lumina-jetson-boot-assets/lumina-jetson-boot-assets.spec
 rpmbuild -ba jetson/orin/lumina-jetson-installer/lumina-jetson-installer.spec
 ```
+
+CUDA and the graphical NVIDIA power tools use independently pinned public
+repository inputs. Generate their source archives before building:
+
+```bash
+jetson/tools/grab_cuda_13_2.sh
+jetson/tools/grab_l4t_power_gui.sh
+```
+
+`jetson-stats` additionally uses the Fedora-style `python3-smbus2` and
+`python3-nvidia-ml-py` packages under `common/`. The desktop image takes its
+GNOME, installer, and Plymouth identity from `common/lumina-artwork`.
 
 Alternatively, regenerate only the boot-assets source archive from NVIDIA's
 matching installer ISO:

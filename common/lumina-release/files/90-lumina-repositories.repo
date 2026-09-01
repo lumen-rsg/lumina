@@ -1,0 +1,5 @@
+# Fedora's Cisco-hosted OpenH264 endpoint is not globally reachable. Keep the
+# optional repository disabled so it cannot block normal Lumina updates.
+# Users can deliberately override this policy under /etc/dnf/repos.override.d.
+[fedora-cisco-openh264]
+enabled=false

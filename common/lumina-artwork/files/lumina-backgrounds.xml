@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>1T Lumina</name>
+    <filename>/usr/share/backgrounds/lumina/lumina-default.png</filename>
+    <filename-dark>/usr/share/backgrounds/lumina/lumina-default.png</filename-dark>
+    <options>zoom</options>
+    <pcolor>#080718</pcolor>
+    <scolor>#4b0082</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+</wallpapers>

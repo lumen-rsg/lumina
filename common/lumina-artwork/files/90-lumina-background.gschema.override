@@ -1,0 +1,12 @@
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/lumina/lumina-default.png'
+picture-uri-dark='file:///usr/share/backgrounds/lumina/lumina-default.png'
+picture-options='zoom'
+primary-color='#080718'
+secondary-color='#4b0082'
+
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/lumina/lumina-default.png'
+picture-options='zoom'
+primary-color='#080718'
+secondary-color='#4b0082'

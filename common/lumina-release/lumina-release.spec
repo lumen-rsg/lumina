@@ -3,7 +3,7 @@
 Name:           lumina-release
 Epoch:          2
 Version:        26.08
-Release:        3.lu26
+Release:        4.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -26,6 +26,7 @@ Source13:       90-default-user.preset
 Source14:       99-default-disable.preset
 Source15:       80-workstation.preset
 Source16:       81-desktop.preset
+Source17:       90-lumina-repositories.repo
 
 Requires:       fedora-repos(%{fedora_version})
 Requires:       bash
@@ -103,6 +104,7 @@ install -Dpm0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/system-preset/99
 install -Dpm0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/user-preset/99-default-disable.preset
 install -Dpm0644 %{SOURCE15} %{buildroot}%{_prefix}/lib/systemd/system-preset/80-workstation.preset
 install -Dpm0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/systemd/system-preset/81-desktop.preset
+install -Dpm0644 %{SOURCE17} %{buildroot}%{_datadir}/dnf5/repos.override.d/90-lumina-repositories.repo
 
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 ln -s ../usr/lib/lumina-release %{buildroot}%{_sysconfdir}/lumina-release
@@ -148,10 +150,14 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_prefix}/lib/systemd/user-preset/90-default-user.preset
 %{_prefix}/lib/systemd/user-preset/99-default-disable.preset
 %{_datadir}/dnf5/libdnf.conf.d/20-lumina-defaults.conf
+%{_datadir}/dnf5/repos.override.d/90-lumina-repositories.repo
 %{_datadir}/lumina/logo.txt
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-4.lu26
+- Disable the geographically unreliable Cisco OpenH264 repository by default
+
 * Fri Jul 31 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-3.lu26
 - Rebuild through the immutable Kubernetes package pipeline
 

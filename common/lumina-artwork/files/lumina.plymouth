@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=1T Lumina
+Description=1T Lumina graphical boot theme
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/lumina
+ScriptFile=/usr/share/plymouth/themes/lumina/lumina.script

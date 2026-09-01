@@ -42,7 +42,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-for command in createrepo_c date mcopy realpath rpm sha256sum xorriso; do
+for command in cmp createrepo_c date mcopy realpath rpm sha256sum xorriso; do
     command -v "${command}" >/dev/null ||
         die "missing required command: ${command}"
 done
@@ -60,11 +60,26 @@ done
 mkdir -p "${iso_tree}" "${package_dir}" "$(dirname -- "${output_iso}")"
 xorriso -osirrox on -indev "${base_iso}" -extract / "${iso_tree}"
 
-find "${fedora_rpm_root}" -type f -name '*.rpm' \
-    -exec cp -a -t "${package_dir}" {} +
-find "${jetson_dir}/dist/l4t-r39.2.1/RPMS" -type f -name '*.rpm' \
-    ! -name 'lumina-jetson-bootconf-1.0-1.lu26.noarch.rpm' \
-    -exec cp -a -t "${package_dir}" {} +
+copy_rpm()
+{
+    local source="$1"
+    local destination="${package_dir}/$(basename -- "${source}")"
+
+    if [[ -e "${destination}" ]]; then
+        cmp --silent "${source}" "${destination}" ||
+            die "different RPMs have the same filename: $(basename -- "${source}")"
+        return
+    fi
+    cp -a "${source}" "${destination}"
+}
+
+while IFS= read -r -d '' rpm_file; do
+    copy_rpm "${rpm_file}"
+done < <(find "${fedora_rpm_root}" -type f -name '*.rpm' -print0)
+while IFS= read -r -d '' rpm_file; do
+    copy_rpm "${rpm_file}"
+done < <(find "${jetson_dir}/dist/l4t-r39.2.1/RPMS" -type f -name '*.rpm' \
+    ! -name 'lumina-jetson-bootconf-1.0-1.lu26.noarch.rpm' -print0)
 
 mkdir -p "${iso_tree}/jetson/layouts" "${iso_tree}/LuminaPackages"
 install -m 0644 "${script_dir}/lumina-jetson.ks" \
@@ -102,8 +117,28 @@ createrepo_c -g "${iso_tree}/LuminaPackages/comps.xml" \
 for required_rpm in \
     nvme-cli \
     efibootmgr \
+    NetworkManager-wifi \
+    pciutils \
+    usbutils \
+    iw \
+    btop \
+    gdm \
+    gnome-initial-setup \
+    gnome-control-center \
+    gnome-shell-extension-appindicator \
+    gnome-shell \
+    lumina-artwork \
+    lumina-release \
     kernel-tegra-l4t \
-    nvidia-l4t-driver; do
+    tegra-l4t-firmware \
+    nvidia-l4t-driver \
+    nvidia-l4t-tools \
+    nvidia-l4t-power-gui \
+    nvidia-cuda-runtime \
+    nvidia-cuda-toolkit \
+    jetson-stats \
+    python3-smbus2 \
+    python3-nvidia-ml-py; do
     compgen -G "${package_dir}/${required_rpm}-*.rpm" >/dev/null ||
         die "offline repository is missing ${required_rpm}"
 done

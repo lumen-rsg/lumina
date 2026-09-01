@@ -132,8 +132,10 @@ The implementation is under `jetson/installer/`:
   writes extlinux using APP's PARTUUID, mounts the ESP explicitly, installs
   L4TLauncher, and verifies every boot artifact;
 - `layouts/orin.sfdisk.in` is the audited Orin layout;
-- `lumina-jetson.ks` installs the Lumina Core CLI and complete Jetson RPM set,
-  disables GRUB, builds the Tegra initramfs, and runs the finalizer;
+- `lumina-jetson.ks` installs the GNOME desktop and complete Jetson RPM set,
+  including NetworkManager's Wi-Fi backend and basic PCI/USB/wireless
+  diagnostics, disables GRUB, builds the Tegra initramfs, and runs the
+  finalizer;
 - `grub.cfg.fragment` supplies a non-destructive rescue entry plus explicit
   NVMe, eMMC, microSD, and USB installation entries.
 
@@ -192,6 +194,13 @@ identity, console issue, and Anaconda profile to 1T Lumina. The installed
 system uses the same Tegra kernel; the Kickstart excludes Fedora's generic
 target kernel and GRUB packages.
 
+The RTL8822CE module is selected for the host-only initramfs on systems with
+the Realtek `10ec:c822` PCIe Wi-Fi function. NVIDIA's vendor module does not
+declare its firmware to dracut, so the Kickstart explicitly includes
+`rtl8822_setting.bin` along with the USB Bluetooth firmware. Otherwise the
+early probe can fail and only succeed after manually unloading and reloading
+`rtl8822ce` once the real root filesystem is mounted.
+
 The installer is local-media-only. The remaster removes Fedora dracut's iSCSI
 root parser because it unconditionally probes `iscsi_tcp`, which NVIDIA's
 Tegra kernel does not provide, even when no iSCSI root was requested.
@@ -207,7 +216,8 @@ The rootless compose omits SELinux xattrs from the rebuilt stage2 and boots
 only the ephemeral installer runtime with `selinux=0`. The Kickstart explicitly
 configures the installed Lumina system with SELinux enforcing.
 
-The builder needs `xorriso`, `createrepo_c`, `mtools`, and `zstd`:
+The builder needs `xorriso`, `createrepo_c`, `mtools`, `zstd`, and `cmp`
+(from `diffutils`):
 
 ```bash
 jetson/installer/build-iso.sh \
@@ -218,25 +228,33 @@ jetson/installer/build-iso.sh \
 ```
 
 The RPM root is searched recursively. It must contain the complete Fedora Core
-CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
-`dtc`, `i2c-tools`, `libi2c`, `nvme-cli`, and `efibootmgr`.
+and GNOME transactions plus `NetworkManager-wifi`, `openssh-server`, `dnf5`,
+`rpm`, `sudo`, `pciutils`, `usbutils`, `iw`, `nvme-cli`, and `efibootmgr`.
 Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2.1/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 
-The installed system intentionally has no GNOME Shell or GDM. A desktop can be
-installed later from the configured Lumina and Fedora repositories.
+The GNOME image also installs the complete CUDA 13.2 runtime and command-line
+toolkit, jetson-stats, NVIDIA's Jetson Power GUI and NVPModel indicator, and
+Lumina desktop and Plymouth artwork. Nsight GUI profilers remain optional so
+they do not add another roughly 600 MiB of compressed payload to the base
+installer.
 
-The fresh CLI image accepts the temporary local-console login `root` / `root`.
-An interactive root shell prompts for a replacement password on every login
-until `passwd` succeeds. A failed or interrupted change leaves the shell
-available for recovery rather than locking out the only local account.
-Password login over SSH remains disabled; SSH root access is key-only when an
-installer key is embedded.
+The R20 GNOME/CUDA image built from this configuration was installed on the
+Jetson Orin Nano reference board and successfully booted to the graphical
+desktop on 2026-09-02.
+
+The installed system boots to GDM. Because Kickstart creates no regular user,
+GDM starts GNOME Initial Setup in system mode for language, keyboard, network,
+time-zone, and first-administrator creation. The temporary password used to
+satisfy Anaconda is locked before first boot and is never a valid installed
+system credential. The administrator created by GNOME receives sudo access;
+direct root login can be enabled deliberately with `sudo passwd root`.
+Password login over SSH remains disabled.
 
 The installer runtime itself uses `selinux=0`, while the installed system is
 enforcing. Before first boot, Kickstart explicitly restores the expected
-labels across the local-account database, PAM configuration, password tools,
-first-login reminder, and marker state. It records the resulting contexts in
+labels across the local-account database, PAM configuration, and password
+tools. It records the resulting contexts in
 `/root/lumina-account-labels.log`. In particular, Fedora policy expects
 `shadow_t` for `/etc/shadow`, `passwd_file_t` for `/etc/passwd`,
 `passwd_exec_t` for `/usr/bin/passwd`, and `chkpwd_exec_t` for
@@ -252,16 +270,16 @@ backwards. `SOURCE_DATE_EPOCH` can provide a reproducible explicit value when
 building the ISO.
 
 Installer SSH can be enabled for a development image without committing a
-personal key. The same key is installed for passwordless root SSH access to
-the CLI system after installation:
+personal key. The same key is copied to the target for recovery after an
+administrator deliberately enables the root account:
 
 ```bash
 LUMINA_INSTALLER_SSH_KEY_FILE="${HOME}/.ssh/id_ed25519.pub" \
   jetson/installer/build-iso.sh BASE_ISO RPM_ROOT COMPS_XML OUTPUT_ISO
 ```
 
-Release images should omit personal keys and provide a separate first-boot
-account-provisioning path.
+Release images omit personal keys and use GNOME Initial Setup for first-boot
+account provisioning.
 
 Before publishing an image, verify a complete offline dependency solve and
 test the destructive install path on actual Jetson hardware.

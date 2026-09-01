@@ -1,0 +1,21 @@
+--- a/jtop/core/jetson_variables.py
++++ b/jtop/core/jetson_variables.py
+@@ -45,6 +45,7 @@
+ # https://developer.nvidia.com/embedded/jetpack-archive
+ NVIDIA_JETPACK = {
+     # -------- JP7 --------
++    "39.2.1": "7.2.1",
+     "39.2.0": "7.2 GA",
+     "39.0.0": "7.2 EA",
+     "38.4.0": "7.1",
+--- a/jtop/service.py
++++ b/jtop/service.py
+@@ -85,7 +85,7 @@
+ # https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch05s13.html
+ # https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard
+ JTOP_PIPE = '/run/jtop.sock'
+-JTOP_USER = 'jtop'
++JTOP_USER = 'wheel'
+ JTOP_SERVICE_NAME = 'jtop.service'
+ # Gain timeout lost connection
+ TIMEOUT_GAIN = 3

@@ -1,0 +1,14 @@
+[Unit]
+Description=Jetson hardware monitoring service
+After=systemd-modules-load.service nvpower.service nvpmodel.service
+
+[Service]
+Environment=JTOP_SERVICE=True
+ExecStart=/usr/bin/jtop --force
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target

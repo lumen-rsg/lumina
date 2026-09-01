@@ -21,6 +21,13 @@ The package provides:
 - `/usr/share/lumina/logo.txt` and a system fallback configuration for
   fastfetch;
 - Fedora repository and release-package compatibility for Fedora 44.
+- a DNF5 distribution override that disables Fedora's optional Cisco-hosted
+  OpenH264 repository so an unreachable endpoint cannot block system updates.
+
+The OpenH264 override lives under `/usr/share/dnf5/repos.override.d`, so an
+administrator can deliberately re-enable the repository with `dnf5
+config-manager setopt fedora-cisco-openh264.enabled=1`; DNF5 stores that user
+choice under `/etc`, which takes precedence over Lumina's distribution policy.
 
 User fastfetch configuration continues to take precedence over the system
 fallback.

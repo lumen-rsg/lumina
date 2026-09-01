@@ -3,7 +3,10 @@
 @define-color lumina_indigo #4b0082;
 
 .logo-sidebar {
-    background-image: none;
+    background-image: url("lumina-logo-white.svg");
+    background-repeat: no-repeat;
+    background-position: center 24px;
+    background-size: 96px 96px;
     background-color: @lumina_indigo;
 }
 
@@ -13,7 +16,10 @@
 }
 
 .product-logo {
-    background-image: none;
+    background-image: url("lumina-logo.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 160px 160px;
     background-color: transparent;
 }
 

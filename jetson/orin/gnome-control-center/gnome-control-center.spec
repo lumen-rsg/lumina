@@ -12,8 +12,8 @@
 %global nm_version 1.52.0
 
 Name:           gnome-control-center
-Version:        50.0
-Release:        2.lu26
+Version:        50.3
+Release:        1.lu26
 Summary:        Utilities to configure the GNOME desktop
 License:        GPL-2.0-or-later AND CC0-1.0
 URL:            https://gitlab.gnome.org/GNOME/gnome-control-center/
@@ -162,5 +162,8 @@ rm -rf %{buildroot}%{_datadir}/gnome/cursor-fonts
 %dir %{_datadir}/gnome/wm-properties
 
 %changelog
+* Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 50.3-1.lu26
+- Rebase Jetson hardware reporting onto GNOME Control Center 50.3
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 50.0-2.lu26
 - Report Jetson GPU, Cortex-A78AE CPU, and NVMe namespace capacity
