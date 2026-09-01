@@ -10,7 +10,9 @@ keyboard --xlayouts=us
 lang en_US.UTF-8
 network --bootproto=dhcp --device=link --activate
 repo --name="lumina-offline" --baseurl=file:///run/install/repo/LuminaPackages
-rootpw --lock
+# Temporary local-console credential. It is expired in %post so Anaconda's
+# installed system requires a replacement before granting a shell.
+rootpw --plaintext root
 selinux --enforcing
 services --enabled=NetworkManager,sshd
 shutdown
@@ -85,6 +87,7 @@ test -f /boot/Image-6.8.12-1021-tegra
     /boot/initramfs-6.8.12-1021-tegra.img \
     6.8.12-1021-tegra
 test -f /boot/initramfs-6.8.12-1021-tegra.img
+/usr/bin/chage --lastday 0 root
 %end
 
 %post --nochroot --erroronfail --log=/mnt/sysroot/root/lumina-jetson-boot.log

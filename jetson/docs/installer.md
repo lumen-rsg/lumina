@@ -88,7 +88,8 @@ other partitions the Microsoft basic-data GUID, including `APP`.
 Subiquity is then told that all 15 partitions already exist and must be
 preserved as partition objects. It formats `APP` as ext4, formats `esp` as
 FAT32, mounts them at `/` and `/boot/efi`, and leaves every other partition
-unformatted.
+unformatted. Unformatted does not necessarily mean unused: package post-install
+scripts can subsequently write signed payloads directly to the raw partitions.
 
 ## Boot finalization performed by NVIDIA
 
@@ -104,10 +105,22 @@ The late commands:
 8. move the installer USB to the end of UEFI `BootOrder`.
 
 The matching `nvidia-l4t-kernel-partitions` package also carries signed
-kernel-only update payloads for the A/B kernel and DTB partitions. Lumina does
-not need those partitions for the normal L4TLauncher/extlinux boot path, but
-it preserves their exact layout so a future RPM can enable NVIDIA-compatible
-A/B kernel updates and recovery.
+kernel-only update payloads. On a single-rootfs installation its kernel
+post-install hook invokes `nv_bootloader_payload_updater` for `A_kernel` and
+`A_kernel-dtb`; this is one reason a newly installed NVIDIA disk has data in
+raw partitions even though Subiquity did not format them. The captured disk,
+which was empty before NVIDIA's on-device installation, also had nonzero
+recovery, alternate ESP, UDA, and reserved areas. Lumina does not currently
+reproduce those recovery/update payloads.
+
+Lumina fresh mode nevertheless creates all 15 GPT entries so their numbers,
+starts, sizes, and labels remain NVIDIA-compatible. It formats and populates
+only `APP` and the primary `esp`. The first R39.2.1 hardware install from this
+path booted successfully through L4TLauncher in UEFI `Automatic` mode, proving
+that the raw A/B and recovery payloads are not prerequisites for the normal
+filesystem extlinux path. They remain important for NVIDIA recovery, redundant
+boot-chain, and OTA behavior; fresh mode does not currently promise those
+features. Reuse mode preserves every existing NVIDIA payload.
 
 ## Lumina installer
 
@@ -207,6 +220,12 @@ accompanied by an `.iso.sha256` file.
 
 The installed system intentionally has no GNOME Shell or GDM. A desktop can be
 installed later from the configured Lumina and Fedora repositories.
+
+The fresh CLI image accepts the temporary local-console login `root` / `root`.
+That password is expired during installation, so PAM requires the operator to
+choose a replacement before the first shell is granted. Password login over
+SSH remains disabled; SSH root access is key-only when an installer key is
+embedded.
 
 Installer SSH can be enabled for a development image without committing a
 personal key. The same key is installed for passwordless root SSH access to

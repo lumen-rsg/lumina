@@ -75,8 +75,17 @@ two recovery paths, redundant EFI payloads, and reserved update space so that
 an interrupted update has a recoverable boot chain.
 
 The rootfs RPMs intentionally do not flash QSPI, the A/B partitions, recovery,
-or either ESP.  They install a versioned kernel and initramfs under `/boot` and
-write only the rootfs-side extlinux configuration.
+or the alternate ESP. They install a versioned kernel and initramfs under
+`/boot`, write the rootfs-side extlinux configuration, and install L4TLauncher
+on the primary ESP when preparing a fresh disk.
+
+Fresh installation recreates all 15 GPT entries but populates only `APP` and
+the primary `esp`. The successful R39.2.1 fresh-disk boot confirms that this is
+sufficient for the normal L4TLauncher/extlinux path in UEFI `Automatic` mode.
+Unlike NVIDIA's installer, it does not yet write the A/B kernel/DTB, recovery,
+alternate ESP, UDA, or reserved payloads, so NVIDIA recovery and redundant OTA
+semantics are not provided. Reuse installation preserves those existing raw
+payloads unchanged.
 
 ## Backup
 
