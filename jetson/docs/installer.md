@@ -134,7 +134,12 @@ The implementation is under `jetson/installer/`:
 - `layouts/orin.sfdisk.in` is the audited Orin layout;
 - `lumina-jetson.ks` installs the Lumina Core CLI and complete Jetson RPM set,
   disables GRUB, builds the Tegra initramfs, and runs the finalizer;
-- `grub.cfg.fragment` supplies explicit NVMe, eMMC, microSD, and USB entries.
+- `grub.cfg.fragment` supplies a non-destructive rescue entry plus explicit
+  NVMe, eMMC, microSD, and USB installation entries.
+
+The rescue entry is first and therefore the timeout default. Installation
+always requires deliberately selecting an entry whose label says `ERASE`;
+letting the boot menu time out cannot destroy an installed system.
 
 Fresh mode requires root, a Tegra234 device tree, a supported whole disk of at
 least 16 GiB, no mounted target partitions, and an exact erase confirmation.
@@ -222,10 +227,20 @@ The installed system intentionally has no GNOME Shell or GDM. A desktop can be
 installed later from the configured Lumina and Fedora repositories.
 
 The fresh CLI image accepts the temporary local-console login `root` / `root`.
-That password is expired during installation, so PAM requires the operator to
-choose a replacement before the first shell is granted. Password login over
-SSH remains disabled; SSH root access is key-only when an installer key is
-embedded.
+An interactive root shell prompts for a replacement password on every login
+until `passwd` succeeds. A failed or interrupted change leaves the shell
+available for recovery rather than locking out the only local account.
+Password login over SSH remains disabled; SSH root access is key-only when an
+installer key is embedded.
+
+The installer runtime itself uses `selinux=0`, while the installed system is
+enforcing. Before first boot, Kickstart explicitly restores the expected
+labels across the local-account database, PAM configuration, password tools,
+first-login reminder, and marker state. It records the resulting contexts in
+`/root/lumina-account-labels.log`. In particular, Fedora policy expects
+`shadow_t` for `/etc/shadow`, `passwd_file_t` for `/etc/passwd`,
+`passwd_exec_t` for `/usr/bin/passwd`, and `chkpwd_exec_t` for
+`/usr/sbin/unix_chkpwd`.
 
 Jetson can start the offline installer with a stale RTC. RPM signature
 verification rejects an otherwise valid package when its signature appears to

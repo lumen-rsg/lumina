@@ -19,6 +19,11 @@ set timeout=60
 
 search --no-floppy --set=root -l 'Lumina-26-08-aarch64'
 
+menuentry "Rescue installed 1T Lumina (SAFE - no disk erase)" {
+    linux /images/pxeboot/vmlinuz selinux=0 inst.text inst.sshd inst.rescue console=tty0 inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.repo=hd:LABEL=Lumina-26-08-aarch64:/LuminaPackages
+    initrd /images/pxeboot/initrd.img
+}
+
 menuentry "Install 1T Lumina 26.08 to NVMe (ERASE nvme0n1)" {
     linux /images/pxeboot/vmlinuz selinux=0 inst.text inst.sshd console=tty0 inst.stage2=hd:LABEL=Lumina-26-08-aarch64 inst.repo=hd:LABEL=Lumina-26-08-aarch64:/LuminaPackages inst.ks=hd:LABEL=Lumina-26-08-aarch64:/jetson/lumina-jetson.ks lumina.jetson.target=nvme0n1 lumina.jetson.mode=fresh lumina.jetson.erase=YES
     initrd /images/pxeboot/initrd.img

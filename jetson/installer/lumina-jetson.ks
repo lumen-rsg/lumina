@@ -108,7 +108,56 @@ test -f /boot/Image-6.8.12-1021-tegra
     /boot/initramfs-6.8.12-1021-tegra.img \
     6.8.12-1021-tegra
 test -f /boot/initramfs-6.8.12-1021-tegra.img
-/usr/bin/chage --lastday 0 root
+
+# The installer runtime is intentionally booted with SELinux disabled. Restore
+# the complete local-account authentication path explicitly before the first
+# enforcing boot instead of relying on implicit transaction-time labeling.
+/usr/sbin/restorecon -RF \
+    /etc/passwd \
+    /etc/shadow \
+    /etc/group \
+    /etc/gshadow \
+    /etc/security \
+    /etc/pam.d \
+    /usr/bin/passwd \
+    /usr/sbin/unix_chkpwd
+
+install -d -m 0755 /var/lib/lumina
+touch /var/lib/lumina/temporary-root-password
+chmod 0600 /var/lib/lumina/temporary-root-password
+cat >/etc/profile.d/00-lumina-root-password.sh <<'FIRST_LOGIN_EOF'
+# Prompt until the temporary installer password has been replaced. A failed or
+# interrupted passwd invocation must never prevent access to the recovery shell.
+if [ "$(id -u)" -eq 0 ] &&
+   [ -t 0 ] && [ -t 1 ] &&
+   [ -e /var/lib/lumina/temporary-root-password ]; then
+    printf '\nWARNING: the temporary root password is still active.\n'
+    printf 'Choose a new root password now, or interrupt passwd to continue.\n\n'
+    if /usr/bin/passwd; then
+        rm -f /var/lib/lumina/temporary-root-password
+        printf 'Root password changed successfully.\n'
+    else
+        printf '\nPassword unchanged; the root shell remains available.\n'
+        printf 'Run passwd again as soon as possible.\n'
+    fi
+fi
+FIRST_LOGIN_EOF
+chmod 0644 /etc/profile.d/00-lumina-root-password.sh
+/usr/sbin/restorecon -RF \
+    /etc/profile.d/00-lumina-root-password.sh \
+    /var/lib/lumina
+/usr/bin/ls -ldZ \
+    /etc/passwd \
+    /etc/shadow \
+    /etc/group \
+    /etc/gshadow \
+    /etc/security \
+    /etc/pam.d \
+    /usr/bin/passwd \
+    /usr/sbin/unix_chkpwd \
+    /etc/profile.d/00-lumina-root-password.sh \
+    /var/lib/lumina \
+    >/root/lumina-account-labels.log
 %end
 
 %post --nochroot --erroronfail --log=/mnt/sysroot/root/lumina-jetson-boot.log
