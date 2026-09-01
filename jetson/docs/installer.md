@@ -135,12 +135,19 @@ NVMe, eMMC, and SD are accepted.
 
 ## L4TLauncher asset
 
-A fresh FAT ESP needs NVIDIA's 110,592-byte R39.2 `BOOTAA64.efi`. Build its
-source archive reproducibly from the official ISO:
+A fresh FAT ESP needs NVIDIA's 114,688-byte R39.2.1 `BOOTAA64.efi`. The source
+grabber extracts it from the exact installed `nvidia-l4t-bootloader` package as
+part of the coherent source set:
+
+```bash
+jetson/tools/grab_l4t_r39.sh cv2@192.168.1.22
+```
+
+It can alternatively be reproduced from the matching official installer ISO:
 
 ```bash
 jetson/tools/extract_l4t_installer_assets.sh \
-  /path/to/jetsoninstaller-r39.2.0-2026-06-01-23-53-13-arm64.iso
+  /path/to/jetsoninstaller-r39.2.1-*.iso
 ```
 
 The extractor locates `nvidia-l4t-bootloader`, extracts only L4TLauncher and
@@ -195,7 +202,7 @@ jetson/installer/build-iso.sh \
 The RPM root is searched recursively. It must contain the complete Fedora Core
 CLI transaction plus `NetworkManager`, `openssh-server`, `dnf5`, `rpm`, `sudo`,
 `dtc`, `i2c-tools`, `libi2c`, `nvme-cli`, and `efibootmgr`.
-Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2/RPMS`. The output is
+Lumina and L4T RPMs are read from `jetson/dist/l4t-r39.2.1/RPMS`. The output is
 accompanied by an `.iso.sha256` file.
 
 The installed system intentionally has no GNOME Shell or GDM. A desktop can be

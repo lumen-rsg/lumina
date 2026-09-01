@@ -27,3 +27,9 @@ Documents:
 
 The observations were collected over SSH on 2026-07-30 before replacing the
 stock root filesystem.
+
+An updated reference capture on 2026-09-01 used Jetson Linux R39.2.1
+(`39.2.1-20260806224157`) and the `p3767-0005-super` configuration. It retained
+the `6.8.12-1021-tegra` ABI but replaced the kernel image, modules, firmware,
+NVIDIA userspace, and L4TLauncher. The RPM sources now follow that coherent
+R39.2.1 set; the original notes remain below as historical bring-up evidence.

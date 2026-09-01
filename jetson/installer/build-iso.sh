@@ -6,7 +6,7 @@
 #   build-iso.sh BASE_ISO FEDORA_RPM_ROOT COMPS_XML OUTPUT_ISO
 #
 # FEDORA_RPM_ROOT is searched recursively. COMPS_XML may be plain XML or zstd
-# compressed. Binary Lumina RPMs are taken from jetson/dist/l4t-r39.2/RPMS.
+# compressed. Binary Lumina RPMs are taken from jetson/dist/l4t-r39.2.1/RPMS.
 
 set -euo pipefail
 
@@ -31,7 +31,7 @@ readonly work_dir="$(mktemp -d)"
 readonly iso_tree="${work_dir}/iso-tree"
 readonly package_dir="${iso_tree}/LuminaPackages/Packages"
 readonly tegra_kernel_rpm="$(
-    find "${jetson_dir}/dist/l4t-r39.2/RPMS" -type f \
+    find "${jetson_dir}/dist/l4t-r39.2.1/RPMS" -type f \
         -name 'kernel-tegra-l4t-*.rpm' -print -quit
 )"
 
@@ -58,7 +58,7 @@ xorriso -osirrox on -indev "${base_iso}" -extract / "${iso_tree}"
 
 find "${fedora_rpm_root}" -type f -name '*.rpm' \
     -exec cp -a -t "${package_dir}" {} +
-find "${jetson_dir}/dist/l4t-r39.2/RPMS" -type f -name '*.rpm' \
+find "${jetson_dir}/dist/l4t-r39.2.1/RPMS" -type f -name '*.rpm' \
     ! -name 'lumina-jetson-bootconf-1.0-1.lu26.noarch.rpm' \
     -exec cp -a -t "${package_dir}" {} +
 

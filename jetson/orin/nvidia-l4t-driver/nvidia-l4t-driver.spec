@@ -5,16 +5,16 @@
 %global __os_install_post %{nil}
 
 Name:           nvidia-l4t-driver
-Version:        39.2.0
-Release:        4.lu26
+Version:        39.2.1
+Release:        1.lu26
 Summary:        NVIDIA L4T GPU and CUDA driver for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
 ExclusiveArch:  aarch64
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       kernel-tegra-l4t >= %{version}
-Requires:       tegra-l4t-firmware >= %{version}
+Requires:       kernel-tegra-l4t = %{version}-%{release}
+Requires:       tegra-l4t-firmware = %{version}-%{release}
 Requires:       glibc
 Requires:       libgcc
 Requires:       libstdc++
@@ -28,7 +28,7 @@ Requires:       libwayland-client
 AutoReqProv:    no
 
 %description
-The unmodified NVIDIA Jetson Linux R39.2 GPU userspace: OpenRM and nvgpu CUDA
+The unmodified NVIDIA Jetson Linux R39.2.1 GPU userspace: OpenRM and nvgpu CUDA
 drivers, EGL/OpenGL/Vulkan integration, NVML, and NVIDIA initialization
 services.
 
@@ -65,6 +65,10 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Tue Sep 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.1-1.lu26
+- Update the NVIDIA GPU and CUDA userspace to L4T R39.2.1
+- Require the exact matching Lumina kernel and firmware build
+
 * Sat Aug 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-4.lu26
 - Validate the coherent Jetson R39.2 set through the native LuminaCI fabric
 

@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           lumina-jetson-boot-assets
-Version:        39.2.0
+Version:        39.2.1
 Release:        1.lu26
 Summary:        NVIDIA L4TLauncher asset for Lumina on Jetson Orin
 License:        LicenseRef-NVIDIA-Proprietary
@@ -29,5 +29,8 @@ install -Dpm 0644 BOOTAA64.efi \
 %{_prefix}/lib/lumina-jetson/BOOTAA64.efi
 
 %changelog
+* Tue Sep 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.1-1.lu26
+- Package the matching R39.2.1 L4TLauncher
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-1.lu26
 - Package the R39.2 L4TLauncher for fresh Jetson storage installs

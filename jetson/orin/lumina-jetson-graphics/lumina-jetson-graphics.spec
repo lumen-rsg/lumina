@@ -1,6 +1,6 @@
 Name:           lumina-jetson-graphics
 Version:        1.0
-Release:        3.lu26
+Release:        4.lu26
 Summary:        Fedora desktop integration for NVIDIA Jetson graphics
 License:        MIT
 URL:            https://github.com/Lumina-Linux/lumina
@@ -9,7 +9,7 @@ ExclusiveArch:  aarch64
 Source0:        lumina-jetson-gpu-uaccess.rules
 Source1:        lumina-jetson-gpu-modes.rules
 
-Requires:       nvidia-l4t-driver >= 39.2.0
+Requires:       nvidia-l4t-driver >= 39.2.1
 Requires:       systemd-udev
 
 %description
@@ -51,6 +51,9 @@ udevadm control --reload >/dev/null 2>&1 || :
 /usr/lib64/gbm/tegra_gbm.so
 
 %changelog
+* Tue Sep 01 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-4.lu26
+- Require the NVIDIA L4T R39.2.1 graphics stack
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-3.lu26
 - Grant greeter bootstrap access to the R39 nvidia-gpu-v2 runtime nodes
 

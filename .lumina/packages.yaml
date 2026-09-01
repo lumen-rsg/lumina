@@ -12,7 +12,21 @@ packages:
       - jetson/orin/lumina-jetson-bootconf/**
     targets:
       - fedora-44-aarch64
-    promotion_group: jetson-r39.2
+    depends_on:
+      - lumina-jetson-boot-assets
+    promotion_group: jetson-r39.2.1
+  lumina-jetson-boot-assets:
+    spec: jetson/orin/lumina-jetson-boot-assets/lumina-jetson-boot-assets.spec
+    paths:
+      - jetson/orin/lumina-jetson-boot-assets/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: lumina-jetson-boot-assets-39.2.1.tar.gz
+        size: 54629
+        sha256: a1afeb3b49694597981e36a9cb6049e4a45669d580116ed508f3ed9310be0045
   tegra-l4t-firmware:
     spec: jetson/orin/tegra-l4t-firmware/tegra-l4t-firmware.spec
     paths:
@@ -20,11 +34,11 @@ packages:
       - jetson/tools/**
     targets:
       - fedora-44-aarch64
-    promotion_group: jetson-r39.2
+    promotion_group: jetson-r39.2.1
     lookaside_sources:
-      - file: tegra-l4t-firmware-39.2.0.tar.gz
-        size: 66183345
-        sha256: 7cb199f1f0a3f82f50e69bcb8b750faa59e240eeaeb274a7abf6fa31e580bd6a
+      - file: tegra-l4t-firmware-39.2.1.tar.gz
+        size: 66185348
+        sha256: f074853f50cb81c1eebdeb233a395b04659cda14f3029b07d9426f460ceee144
   kernel-tegra-l4t:
     spec: jetson/orin/kernel-tegra-l4t/kernel-tegra-l4t.spec
     paths:
@@ -34,11 +48,11 @@ packages:
       - fedora-44-aarch64
     depends_on:
       - tegra-l4t-firmware
-    promotion_group: jetson-r39.2
+    promotion_group: jetson-r39.2.1
     lookaside_sources:
-      - file: kernel-tegra-l4t-39.2.0.tar.gz
-        size: 59697442
-        sha256: 58dcbb6dadf4829d50e786d9dbbfb4839324885b4360fcfde5032568aabda592
+      - file: kernel-tegra-l4t-39.2.1.tar.gz
+        size: 59831004
+        sha256: 13303e94c2dcc287d665d2bae3fccdae84a507aa539b76b36305d36dfac692f3
   nvidia-l4t-driver:
     spec: jetson/orin/nvidia-l4t-driver/nvidia-l4t-driver.spec
     paths:
@@ -49,11 +63,11 @@ packages:
     depends_on:
       - kernel-tegra-l4t
       - tegra-l4t-firmware
-    promotion_group: jetson-r39.2
+    promotion_group: jetson-r39.2.1
     lookaside_sources:
-      - file: nvidia-l4t-driver-39.2.0.tar.gz
-        size: 211399634
-        sha256: 08c17ca25cab8f2e313c811fd660106e89c39806a5a18748a3a5bd21fd8e857c
+      - file: nvidia-l4t-driver-39.2.1.tar.gz
+        size: 211388638
+        sha256: a5548ec3022e7c5b980e615514c1fd381a4cfa7263909d15679f4a26e37f1205
   nvidia-l4t-multimedia:
     spec: jetson/orin/nvidia-l4t-multimedia/nvidia-l4t-multimedia.spec
     paths:
@@ -63,11 +77,11 @@ packages:
       - fedora-44-aarch64
     depends_on:
       - nvidia-l4t-driver
-    promotion_group: jetson-r39.2
+    promotion_group: jetson-r39.2.1
     lookaside_sources:
-      - file: nvidia-l4t-multimedia-39.2.0.tar.gz
-        size: 67079481
-        sha256: b79815d798351e5f9ecf9cec8d6e1c285ac1c8b291da0dc9ca90133924077cee
+      - file: nvidia-l4t-multimedia-39.2.1.tar.gz
+        size: 67088731
+        sha256: aa3c6e177f0f0e5828172ca08e237091144332a65140bc7796c9bb4c970c343d
   nvidia-l4t-tools:
     spec: jetson/orin/nvidia-l4t-tools/nvidia-l4t-tools.spec
     paths:
@@ -77,8 +91,17 @@ packages:
       - fedora-44-aarch64
     depends_on:
       - nvidia-l4t-driver
-    promotion_group: jetson-r39.2
+    promotion_group: jetson-r39.2.1
     lookaside_sources:
-      - file: nvidia-l4t-tools-39.2.0.tar.gz
-        size: 3620952
-        sha256: c1dafc48200d4d20be051c5476ddfa53d0e20acd4c30bcb2a16941bd4e7bf5c1
+      - file: nvidia-l4t-tools-39.2.1.tar.gz
+        size: 3622331
+        sha256: 162b2c89ed88676414394d687ce0a50531bea2d1af4c9f07f69bcfc70b8e8158
+  lumina-jetson-graphics:
+    spec: jetson/orin/lumina-jetson-graphics/lumina-jetson-graphics.spec
+    paths:
+      - jetson/orin/lumina-jetson-graphics/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+    promotion_group: jetson-r39.2.1

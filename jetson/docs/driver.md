@@ -172,3 +172,14 @@ The NVIDIA driver license shipped with the packages permits distribution for
 use with an OSI-approved kernel when the binary files remain unmodified and
 the agreement accompanies the software.  Copyright and license files from
 each selected Debian package are retained in the source archives and RPMs.
+
+## R39.2.1 update
+
+The 2026-09-01 reference update reported NVIDIA build
+`39.2.1-20260806224157`. Compared with the R39.2.0 sources, eight firmware
+files, 41 core-driver files, 29 multimedia files, and 47 tools files changed.
+The OpenRM `libnvcuvid.so` payload moved to
+`/opt/nvidia/l4t-gpu-libs/openrm`, matching the updated
+`nv-load-gpu-libs.service` variant selector. Lumina therefore updates the
+kernel, firmware, driver, multimedia, tools, and launcher as one exact package
+set rather than mixing revisions.

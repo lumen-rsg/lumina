@@ -121,4 +121,9 @@ entry for the versioned kernel and initramfs.  It does not update QSPI or raw
 NVMe firmware partitions.
 
 The QSPI/UEFI firmware and rootfs BSP should remain on the same L4T branch.
-The initial package set is specifically tied to R39.2.
+The current package set is specifically tied to R39.2.1. Although its ABI name
+remains `6.8.12-1021-tegra`, the kernel image hash changed from
+`d912f16edc206c79bff63af970784d19bfbe96d2b1e8232138b37c55501cdca8`
+to `8e3738af56e08768157ef7fd225638d35a4f06e18201102338c6f537f866761e`.
+The update changed 1,493 packaged kernel files and added three Tegra264 DTBs,
+so the common ABI string must not be used to infer binary compatibility.

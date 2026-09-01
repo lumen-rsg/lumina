@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
 # Build RPM source archives from the exact public NVIDIA Debian packages
-# installed on a reference L4T R39.2 Jetson.
+# installed on a reference L4T R39 Jetson.
 
 set -euo pipefail
 
 readonly TARGET="${1:-cv2@192.168.1.22}"
-readonly L4T_VERSION="39.2.0"
-readonly OUTPUT_DIR="${OUTPUT_DIR:-$(pwd)/jetson/dist/l4t-r39.2}"
+readonly L4T_VERSION="${L4T_VERSION:-39.2.1}"
+readonly OUTPUT_DIR="${OUTPUT_DIR:-$(pwd)/jetson/dist/l4t-r${L4T_VERSION}}"
 
 declare -Ar BUNDLES=(
     [kernel-tegra-l4t]="
@@ -84,9 +84,13 @@ remote_work="$(ssh "${TARGET}" mktemp -d /tmp/lumina-l4t-r39.XXXXXX)"
 
 for bundle in kernel-tegra-l4t tegra-l4t-firmware nvidia-l4t-driver nvidia-l4t-multimedia nvidia-l4t-tools; do
     echo "Creating ${bundle}-${L4T_VERSION}.tar.gz"
-    packages="${BUNDLES[${bundle}]}"
+    mapfile -t packages < <(
+        awk '{ for (field = 1; field <= NF; field++) print $field }' \
+            <<<"${BUNDLES[${bundle}]}"
+    )
 
-    ssh "${TARGET}" bash -s -- "${remote_work}" "${bundle}" "${L4T_VERSION}" ${packages} <<'REMOTE'
+    ssh "${TARGET}" bash -s -- \
+        "${remote_work}" "${bundle}" "${L4T_VERSION}" "${packages[@]}" <<'REMOTE'
 set -euo pipefail
 work="$1"
 bundle="$2"
@@ -167,5 +171,42 @@ REMOTE
         "${OUTPUT_DIR}/"
     sha256sum "${OUTPUT_DIR}/${bundle}-${L4T_VERSION}.tar.gz"
 done
+
+echo "Creating lumina-jetson-boot-assets-${L4T_VERSION}.tar.gz"
+ssh "${TARGET}" bash -s -- "${remote_work}" "${L4T_VERSION}" <<'REMOTE'
+set -euo pipefail
+work="$1"
+version="$2"
+bundle="lumina-jetson-boot-assets-${version}"
+bundle_dir="${work}/${bundle}"
+debs_dir="${work}/bootloader-debs"
+
+rm -rf "${bundle_dir}" "${debs_dir}"
+mkdir -p "${bundle_dir}" "${debs_dir}"
+cd "${debs_dir}"
+
+installed_version="$(dpkg-query -W -f='${Version}' nvidia-l4t-bootloader)"
+apt-get download "nvidia-l4t-bootloader=${installed_version}" >/dev/null
+bootloader_deb="$(find . -maxdepth 1 -type f -name 'nvidia-l4t-bootloader_*.deb' -print -quit)"
+[[ -n "${bootloader_deb}" ]]
+dpkg-deb --fsys-tarfile "${bootloader_deb}" |
+    tar -x -C "${bundle_dir}" \
+        ./opt/ota_package/t23x/BOOTAA64.efi \
+        ./usr/share/doc/nvidia-l4t-bootloader/copyright
+mv "${bundle_dir}/opt/ota_package/t23x/BOOTAA64.efi" \
+    "${bundle_dir}/BOOTAA64.efi"
+mv "${bundle_dir}/usr/share/doc/nvidia-l4t-bootloader/copyright" \
+    "${bundle_dir}/copyright"
+rm -rf "${bundle_dir}/opt" "${bundle_dir}/usr"
+
+tar --sort=name --mtime="@0" --owner=0 --group=0 --numeric-owner \
+    -C "${work}" -czf "${work}/${bundle}.tar.gz" "${bundle}"
+REMOTE
+
+scp -q \
+    "${TARGET}:${remote_work}/lumina-jetson-boot-assets-${L4T_VERSION}.tar.gz" \
+    "${OUTPUT_DIR}/"
+sha256sum \
+    "${OUTPUT_DIR}/lumina-jetson-boot-assets-${L4T_VERSION}.tar.gz"
 
 echo "Source archives are ready in ${OUTPUT_DIR}"

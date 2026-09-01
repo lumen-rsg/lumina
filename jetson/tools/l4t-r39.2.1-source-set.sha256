@@ -1,0 +1,7 @@
+# NVIDIA L4T R39.2.1 immutable lookaside source set.
+13303e94c2dcc287d665d2bae3fccdae84a507aa539b76b36305d36dfac692f3  kernel-tegra-l4t-39.2.1.tar.gz
+a1afeb3b49694597981e36a9cb6049e4a45669d580116ed508f3ed9310be0045  lumina-jetson-boot-assets-39.2.1.tar.gz
+a5548ec3022e7c5b980e615514c1fd381a4cfa7263909d15679f4a26e37f1205  nvidia-l4t-driver-39.2.1.tar.gz
+aa3c6e177f0f0e5828172ca08e237091144332a65140bc7796c9bb4c970c343d  nvidia-l4t-multimedia-39.2.1.tar.gz
+162b2c89ed88676414394d687ce0a50531bea2d1af4c9f07f69bcfc70b8e8158  nvidia-l4t-tools-39.2.1.tar.gz
+f074853f50cb81c1eebdeb233a395b04659cda14f3029b07d9426f460ceee144  tegra-l4t-firmware-39.2.1.tar.gz

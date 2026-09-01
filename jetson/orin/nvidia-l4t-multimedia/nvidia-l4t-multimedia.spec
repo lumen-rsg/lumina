@@ -3,15 +3,15 @@
 %global __os_install_post %{nil}
 
 Name:           nvidia-l4t-multimedia
-Version:        39.2.0
-Release:        4.lu26
+Version:        39.2.1
+Release:        1.lu26
 Summary:        NVIDIA L4T camera and multimedia stack for Jetson
 License:        LicenseRef-NVIDIA-Driver AND BSD-3-Clause
 URL:            https://developer.nvidia.com/embedded/jetson-linux
 ExclusiveArch:  aarch64
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:       nvidia-l4t-driver >= %{version}
+Requires:       nvidia-l4t-driver = %{version}-%{release}
 Requires:       alsa-lib
 Requires:       cairo
 Requires:       glib2
@@ -24,7 +24,7 @@ AutoReqProv:    no
 
 %description
 The unmodified NVIDIA camera, Argus, NvSci, PVA, video codec, multimedia, and
-accelerated GStreamer userspace for Jetson Linux R39.2.
+accelerated GStreamer userspace for Jetson Linux R39.2.1.
 
 %prep
 %setup -c -q
@@ -47,6 +47,9 @@ find %{buildroot} \( -type f -o -type l \) -printf '/%%P\n' | sort |
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Tue Sep 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.1-1.lu26
+- Update the camera and multimedia userspace to NVIDIA L4T R39.2.1
+
 * Sat Aug 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-4.lu26
 - Validate the coherent Jetson R39.2 set through the native LuminaCI fabric
 

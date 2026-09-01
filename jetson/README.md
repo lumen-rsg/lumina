@@ -1,14 +1,15 @@
 # NVIDIA Jetson support
 
-This directory repackages the NVIDIA Jetson Linux (L4T) R39.2 payload for
+This directory repackages the NVIDIA Jetson Linux (L4T) R39.2.1 payload for
 Lumina.  The first supported target is the Jetson Orin Nano Developer Kit:
 
 ```text
 nvidia,p3768-0000+p3767-0005
+nvidia,p3768-0000+p3767-0005-super
 nvidia,tegra234
 ```
 
-The board must already have the matching NVIDIA R39.2 boot firmware in QSPI.
+The board must already have the matching NVIDIA R39.2.1 boot firmware in QSPI.
 The RPMs replace the root filesystem and kernel payload; they do not flash MB1,
 MB2, UEFI, recovery, or any other boot-firmware partition. The separate
 installer can create NVIDIA's target GPT after QSPI/UEFI has been flashed.
@@ -54,8 +55,10 @@ reproducible source tarballs locally:
 jetson/tools/grab_l4t_r39.sh cv2@192.168.1.22
 ```
 
-Output goes to `jetson/dist/l4t-r39.2/`.  Override it with `OUTPUT_DIR`.
-Neither the downloaded Debian packages nor generated tarballs are committed.
+Output goes to `jetson/dist/l4t-r39.2.1/`. Override it with `OUTPUT_DIR`. The
+matching T23x L4TLauncher is extracted from `nvidia-l4t-bootloader` as part of
+the same operation. Neither the downloaded Debian packages nor generated
+tarballs are committed.
 
 ## Build
 
@@ -75,11 +78,12 @@ rpmbuild -ba jetson/orin/lumina-jetson-boot-assets/lumina-jetson-boot-assets.spe
 rpmbuild -ba jetson/orin/lumina-jetson-installer/lumina-jetson-installer.spec
 ```
 
-Generate the boot-assets source archive from NVIDIA's matching installer ISO:
+Alternatively, regenerate only the boot-assets source archive from NVIDIA's
+matching installer ISO:
 
 ```bash
 jetson/tools/extract_l4t_installer_assets.sh \
-  /path/to/jetsoninstaller-r39.2.0-2026-06-01-23-53-13-arm64.iso
+  /path/to/jetsoninstaller-r39.2.1-*.iso
 ```
 
 Install the kernel, firmware, driver, tools, and boot configuration packages
@@ -102,6 +106,6 @@ Anaconda formats `APP` and the ESP.
 ## Bring-up notes
 
 The hardware inventory and rationale behind the package split are recorded in
-[`docs/`](docs/README.md).  These notes describe the exact R39.2 reference
+[`docs/`](docs/README.md). These notes describe the exact R39 reference
 Jetson used for the initial port, including its NVMe partition table, kernel,
 modules, proprietary userspace, and NVIDIA's mounted L4T README material.

@@ -6,8 +6,8 @@
 %global kver 6.8.12-1021-tegra
 
 Name:           kernel-tegra-l4t
-Version:        39.2.0
-Release:        3.lu26
+Version:        39.2.1
+Release:        1.lu26
 Summary:        NVIDIA L4T kernel for Jetson Orin
 License:        GPL-2.0-only AND LicenseRef-NVIDIA-Driver
 URL:            https://developer.nvidia.com/embedded/jetson-linux
@@ -21,7 +21,7 @@ Recommends:     lumina-jetson-bootconf
 AutoReqProv:    no
 
 %description
-NVIDIA Jetson Linux R39.2 kernel, device trees, and in-tree and out-of-tree
+NVIDIA Jetson Linux R39.2.1 kernel, device trees, and in-tree and out-of-tree
 modules for Tegra234 Jetson Orin systems.
 
 %prep
@@ -51,6 +51,9 @@ fi
 %files -f %{_builddir}/%{name}.files
 
 %changelog
+* Tue Sep 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.1-1.lu26
+- Update the kernel, device trees, and modules to NVIDIA L4T R39.2.1
+
 * Sat Aug 01 2026 Lumina Linux <packages@linux.1t.ru> - 39.2.0-3.lu26
 - Validate the coherent Jetson R39.2 set through the native LuminaCI fabric
 

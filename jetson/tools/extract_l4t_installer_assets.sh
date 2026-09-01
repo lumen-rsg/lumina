@@ -2,14 +2,14 @@
 
 set -euo pipefail
 
-readonly L4T_VERSION="39.2.0"
-readonly EXPECTED_LAUNCHER_SHA256="c9b54649f7a05fc326d1bf82fc68fa234d6e5a915cb56f8030874fdb21514d32"
+readonly L4T_VERSION="${L4T_VERSION:-39.2.1}"
+readonly EXPECTED_LAUNCHER_SHA256="${EXPECTED_LAUNCHER_SHA256:-a848c03d3990b9d79c17e0d125e2f5eb149e85c1045388b37161baf05a603c7e}"
 readonly ISO="${1:-}"
 readonly REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
-readonly OUTPUT="${OUTPUT:-${REPO_ROOT}/jetson/dist/l4t-r39.2/lumina-jetson-boot-assets-${L4T_VERSION}.tar.gz}"
+readonly OUTPUT="${OUTPUT:-${REPO_ROOT}/jetson/dist/l4t-r${L4T_VERSION}/lumina-jetson-boot-assets-${L4T_VERSION}.tar.gz}"
 
 if [[ -z "${ISO}" || ! -f "${ISO}" ]]; then
-    echo "Usage: ${0##*/} /path/to/jetsoninstaller-r39.2.0-*.iso" >&2
+    echo "Usage: ${0##*/} /path/to/jetsoninstaller-r${L4T_VERSION}-*.iso" >&2
     exit 2
 fi
 
@@ -23,10 +23,13 @@ trap 'rm -rf -- "${work_dir}"' EXIT
 
 deb_path="$(
     7z l -ba "${ISO}" |
-        awk '$NF ~ /pool\/main\/n\/nvidia-l4t-bootloader\/nvidia-l4t-bootloader_39\.2\.0-.*_arm64\.deb$/ { path=$NF } END { print path }'
+        awk -v needle="nvidia-l4t-bootloader_${L4T_VERSION}-" '
+            index($NF, needle) && $NF ~ /_arm64\.deb$/ { path=$NF }
+            END { print path }
+        '
 )"
 [[ -n "${deb_path}" ]] ||
-    { echo "The ISO does not contain the L4T R39.2 bootloader package." >&2; exit 1; }
+    { echo "The ISO does not contain the L4T R${L4T_VERSION} bootloader package." >&2; exit 1; }
 
 7z x -y -o"${work_dir}/iso" "${ISO}" "${deb_path}" >/dev/null
 deb="${work_dir}/iso/${deb_path}"

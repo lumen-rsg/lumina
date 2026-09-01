@@ -25,10 +25,13 @@ The boot filesystem must be readable by NVIDIA UEFI.  The initial port
 therefore uses ext4 for the root filesystem and keeps `/boot` inside it rather
 than using Fedora's default Btrfs layout.
 
-The firmware must report chain A as `Normal` and set `L4T Boot Mode` to
-`ExtLinux`; otherwise it will not dispatch the rootfs-side extlinux entry.
-Because a fresh GPT gives the ESP a new partition identity, the installer must
-also register a new `L4TLauncher` UEFI boot entry for that ESP.
+The firmware must report chain A as `Normal`. The R39.2.1 reference board
+successfully selected the rootfs-side extlinux entry with `L4T Boot Mode` set
+to `Automatic` (`L4TDefaultBootMode=0xffffffff`). Explicit `ExtLinux` remains
+the documented recovery setting for filesystem boot. Because a fresh GPT gives
+the ESP a new partition identity, the installer also registers a new
+`L4TLauncher` UEFI boot entry for that ESP while retaining the standard
+`EFI/BOOT/BOOTAA64.efi` fallback path used by automatic device boot.
 
 ## Observed partitions
 
@@ -56,6 +59,12 @@ At capture time, partition 10 was mounted at `/boot/efi` and contained one
 ```text
 /boot/efi/EFI/BOOT/BOOTAA64.efi
 ```
+
+After the R39.2.1 firmware update, the same path contained the matching
+114,688-byte L4TLauncher with SHA-256
+`a848c03d3990b9d79c17e0d125e2f5eb149e85c1045388b37161baf05a603c7e`.
+UEFI booted it through the auto-created NVMe device entry rather than a named
+L4TLauncher entry.
 
 ## Why NVIDIA uses this layout
 
