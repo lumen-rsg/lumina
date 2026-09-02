@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+failures=0
+
+result()
+{
+    local status="$1"
+    local name="$2"
+    shift 2
+    printf '%-4s %-18s %s\n' "${status}" "${name}" "$*"
+    [[ "${status}" != FAIL ]] || (( failures += 1 ))
+}
+
+module_loaded()
+{
+    [[ -d "/sys/module/$1" ]]
+}
+
+model='unknown'
+if [[ -r /proc/device-tree/model ]]; then
+    model="$(tr -d '\0' </proc/device-tree/model)"
+fi
+if [[ "${model}" == 'Xunlong Orange Pi 5 Ultra' ]]; then
+    result PASS board "${model}"
+else
+    result FAIL board "expected Xunlong Orange Pi 5 Ultra; found ${model}"
+fi
+
+kernel_release="$(uname -r)"
+kernel_version="${kernel_release%%-*}"
+if [[ "${kernel_release}" == *armbian* ]]; then
+    result FAIL kernel "Armbian kernel detected: ${kernel_release}"
+elif [[ "$(printf '%s\n' 6.18 "${kernel_version}" | sort -V | head -n 1)" == 6.18 ]]; then
+    result PASS kernel "${kernel_release}"
+else
+    result FAIL kernel "mainline 6.18 or newer required; found ${kernel_release}"
+fi
+
+if rpm -q kernel-core >/dev/null 2>&1; then
+    result PASS kernel-rpm "$(rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core | tail -n 1)"
+else
+    result FAIL kernel-rpm 'Fedora kernel-core RPM is not installed'
+fi
+
+for module in panthor rocket r8169 brcmfmac; do
+    if module_loaded "${module}"; then
+        result PASS "module:${module}" loaded
+    else
+        result FAIL "module:${module}" 'not loaded'
+    fi
+done
+
+shopt -s nullglob
+render_nodes=(/dev/dri/renderD*)
+accel_nodes=(/dev/accel/accel*)
+wifi_nodes=(/sys/class/net/*/wireless)
+ethernet_nodes=(/sys/class/net/e*)
+hdmi_nodes=(/sys/class/drm/card*-HDMI-A-*/status)
+sound_cards=(/proc/asound/card*)
+
+[[ ${#render_nodes[@]} -gt 0 ]] &&
+    result PASS gpu "${render_nodes[*]}" ||
+    result FAIL gpu 'no DRM render node'
+[[ ${#accel_nodes[@]} -gt 0 ]] &&
+    result PASS npu "${accel_nodes[*]}" ||
+    result FAIL npu 'no accelerator node'
+[[ ${#wifi_nodes[@]} -gt 0 ]] &&
+    result PASS wifi "${wifi_nodes[0]%/wireless}" ||
+    result FAIL wifi 'no wireless network interface'
+[[ ${#ethernet_nodes[@]} -gt 0 ]] &&
+    result PASS ethernet "${ethernet_nodes[*]}" ||
+    result FAIL ethernet 'no Ethernet network interface'
+[[ ${#sound_cards[@]} -gt 0 ]] &&
+    result PASS audio "${#sound_cards[@]} ALSA card(s)" ||
+    result FAIL audio 'no ALSA cards'
+
+connected_hdmi=0
+for status_file in "${hdmi_nodes[@]}"; do
+    if [[ "$(<"${status_file}")" == connected ]]; then
+        (( connected_hdmi += 1 ))
+    fi
+done
+if (( connected_hdmi > 0 )); then
+    result PASS hdmi "${connected_hdmi} connected output(s)"
+elif (( ${#hdmi_nodes[@]} > 0 )); then
+    result SKIP hdmi 'connector exists; no display is connected'
+else
+    result FAIL hdmi 'no HDMI connector exposed by DRM'
+fi
+
+if [[ -d /sys/class/bluetooth/hci0 ]]; then
+    result PASS bluetooth hci0
+else
+    result FAIL bluetooth 'hci0 is absent'
+fi
+
+if [[ -e /dev/nvme0n1 ]]; then
+    result PASS nvme /dev/nvme0n1
+else
+    result SKIP nvme 'no NVMe device installed'
+fi
+
+failed_units="$(systemctl --failed --no-legend 2>/dev/null || :)"
+if [[ -z "${failed_units}" ]]; then
+    result PASS systemd 'no failed units'
+else
+    result FAIL systemd "$(printf '%s' "${failed_units}" | tr '\n' ';')"
+fi
+
+taint="$(< /proc/sys/kernel/tainted)"
+if [[ "${taint}" == 0 ]]; then
+    result PASS taint 0
+else
+    result FAIL taint "kernel taint value ${taint}"
+fi
+
+if (( EUID == 0 )); then
+    fatal_log="$(journalctl -k -b --no-pager 2>/dev/null |
+        grep -Ei 'kernel panic|oops:|BUG:|rcu.*stall|I/O error|watchdog.*lockup' || :)"
+    if [[ -z "${fatal_log}" ]]; then
+        result PASS kernel-log 'no fatal signatures'
+    else
+        result FAIL kernel-log "$(printf '%s' "${fatal_log}" | tail -n 3 | tr '\n' ';')"
+    fi
+else
+    result SKIP kernel-log 'run as root to inspect the complete kernel journal'
+fi
+
+printf '\nQualification failures: %d\n' "${failures}"
+(( failures == 0 ))

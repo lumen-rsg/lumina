@@ -21,4 +21,5 @@ Board-specific packages live under `orangepi/` and `jetson/`.
 ## Supported devices
 
 - NVIDIA Jetson Orin family
+- Orange Pi 5 Ultra (mainline image candidate; hardware acceptance pending)
 - Orange Pi Zero 3 (Allwinner H618; directly bootable SD-card image)

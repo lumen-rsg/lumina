@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+die()
+{
+    printf 'lumina-orangepi5-ultra-dtb-setup: %s\n' "$*" >&2
+    exit 1
+}
+
+kernel_version="${1:-}"
+if [[ -z "${kernel_version}" ]]; then
+    kernel_version="$({
+        find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null || :
+    } | sort -V | tail -n 1)"
+fi
+[[ -n "${kernel_version}" ]] || die 'no installed kernel was found'
+
+readonly base_dtb="/usr/lib/modules/${kernel_version}/dtb/rockchip/rk3588-orangepi-5-ultra.dtb"
+readonly output_dtb="/boot/lumina/rk3588-orangepi-5-ultra-${kernel_version}.dtb"
+[[ -r "${base_dtb}" ]] || die "missing mainline DTB: ${base_dtb}"
+
+install -d -m 0755 /boot/lumina
+temporary_dtb="$(mktemp "${output_dtb}.XXXXXX")"
+trap 'rm -f -- "${temporary_dtb}"' EXIT
+install -m 0644 "${base_dtb}" "${temporary_dtb}"
+
+if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" != okay ]] ||
+   ! fdtget -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 compatible 2>/dev/null |
+       grep -Fqw brcm,bcm43752-fmac; then
+    readonly pwrseq_phandle=4c550001
+    readonly enable_phandle=4c550002
+    readonly wake_phandle=4c550003
+
+    if dtc -I dtb -O dts "${temporary_dtb}" 2>/dev/null |
+        grep -Eq 'phandle = <0x4c55000[123]>;'; then
+        die 'reserved Lumina AP6611 phandle collides with the kernel DTB'
+    fi
+
+    rtc_phandle="$(fdtget -tx "${temporary_dtb}" /i2c@fec80000/rtc@51 phandle)"
+    gpio0_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fd8a0000 phandle)"
+    gpio2_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fec30000 phandle)"
+    pull_none_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-none phandle)"
+    pull_down_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-down phandle)"
+    sdio_pins_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/sdio/sdiom1-pins phandle)"
+
+    fdtput -cp "${temporary_dtb}" \
+        /lumina-ap6611-pwrseq \
+        /pinctrl/lumina-wireless-wlan/wifi-enable-h \
+        /pinctrl/lumina-wireless-wlan/wifi-host-wake-irq \
+        /mmc@fe2d0000/wifi@1
+
+    fdtput -ts "${temporary_dtb}" /lumina-ap6611-pwrseq compatible mmc-pwrseq-simple
+    fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq phandle "${pwrseq_phandle}"
+    fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq clocks "${rtc_phandle}"
+    fdtput -ts "${temporary_dtb}" /lumina-ap6611-pwrseq clock-names ext_clock
+    fdtput -ts "${temporary_dtb}" /lumina-ap6611-pwrseq pinctrl-names default
+    fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq pinctrl-0 "${enable_phandle}"
+    fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq post-power-on-delay-ms c8
+    fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq reset-gpios \
+        "${gpio2_phandle}" 15 1
+
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-wireless-wlan/wifi-enable-h phandle "${enable_phandle}"
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-wireless-wlan/wifi-enable-h rockchip,pins \
+        2 15 0 "${pull_none_phandle}"
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-wireless-wlan/wifi-host-wake-irq phandle "${wake_phandle}"
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-wireless-wlan/wifi-host-wake-irq rockchip,pins \
+        0 8 0 "${pull_down_phandle}"
+
+    fdtput -ts "${temporary_dtb}" /mmc@fe2d0000 status okay
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 bus-width 4
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 cap-sd-highspeed
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 cap-sdio-irq
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 keep-power-in-suspend
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 non-removable
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 sd-uhs-sdr104
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 mmc-pwrseq "${pwrseq_phandle}"
+    fdtput -ts "${temporary_dtb}" /mmc@fe2d0000 pinctrl-names default
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 pinctrl-0 \
+        "${sdio_pins_phandle}" "${wake_phandle}"
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 '#address-cells' 1
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 '#size-cells' 0
+
+    fdtput -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 compatible \
+        brcm,bcm43752-fmac brcm,bcm4329-fmac
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000/wifi@1 reg 1
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000/wifi@1 interrupt-parent \
+        "${gpio0_phandle}"
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000/wifi@1 interrupts 8 4
+    fdtput -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 interrupt-names host-wake
+    fdtput -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 pinctrl-names default
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000/wifi@1 pinctrl-0 "${wake_phandle}"
+fi
+
+[[ "$(fdtget -ts "${temporary_dtb}" / model)" == 'Xunlong Orange Pi 5 Ultra' ]] ||
+    die 'board model changed while generating the merged DTB'
+[[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status)" == okay ]] ||
+    die 'SDIO controller is not enabled in the merged DTB'
+fdtget -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 compatible |
+    grep -Fqw brcm,bcm43752-fmac || die 'AP6611 brcmfmac binding is missing'
+
+mv -f -- "${temporary_dtb}" "${output_dtb}"
+trap - EXIT
+printf 'Generated %s from Fedora kernel %s\n' "${output_dtb}" "${kernel_version}"

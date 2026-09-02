@@ -1,0 +1,11 @@
+[Unit]
+Description=Grow the Lumina root filesystem to fill its installation device
+After=local-fs.target
+ConditionPathExists=!/var/lib/lumina/orangepi5-ultra-rootfs-grown
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/lumina-orangepi5-ultra-grow-rootfs
+
+[Install]
+WantedBy=multi-user.target

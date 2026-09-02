@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly marker_file=/var/lib/lumina/orangepi5-ultra-rootfs-grown
+root_device="$(findmnt -n -o SOURCE /)"
+root_partition="$(readlink -f "${root_device}")"
+parent_name="$(lsblk -dnro PKNAME "${root_partition}")"
+partition_number="$(lsblk -dnro PARTN "${root_partition}")"
+
+[[ -n "${parent_name}" && "${partition_number}" =~ ^[0-9]+$ ]] || exit 0
+parent_device="/dev/${parent_name}"
+case "${parent_device}" in
+    /dev/mmcblk*|/dev/nvme*) ;;
+    *) exit 0 ;;
+esac
+
+parent_sectors="$(blockdev --getsz "${parent_device}")"
+partition_start="$(lsblk -dnro START "${root_partition}")"
+partition_sectors="$(blockdev --getsz "${root_partition}")"
+
+if (( partition_start + partition_sectors + 2048 < parent_sectors )); then
+    /usr/bin/growpart "${parent_device}" "${partition_number}"
+fi
+/usr/sbin/resize2fs "${root_partition}"
+/usr/bin/install -Dpm 0644 /dev/null "${marker_file}"

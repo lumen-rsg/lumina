@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly template=/usr/lib/lumina-orangepi5-ultra/extlinux.conf.in
+readonly bootloader=/usr/lib/lumina-orangepi5-ultra/u-boot-rockchip.bin
+kernel_version=''
+root_argument=''
+output_file=/boot/extlinux/extlinux.conf
+install_device=''
+
+die()
+{
+    printf 'lumina-orangepi5-ultra-boot-setup: %s\n' "$*" >&2
+    exit 1
+}
+
+usage()
+{
+    cat <<'EOF'
+Usage: lumina-orangepi5-ultra-boot-setup [OPTIONS]
+
+Regenerate the Orange Pi 5 Ultra extlinux configuration. Writing U-Boot is
+never implicit; --install-device must name the whole SD/eMMC device.
+
+  --kernel VERSION          select an installed kernel
+  --root ROOT               kernel root= value (default: UUID or filesystem label)
+  --output PATH             extlinux output (default: /boot/extlinux/extlinux.conf)
+  --install-device DEVICE   write upstream U-Boot at the RK3588 32 KiB offset
+  -h, --help                show this help
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --kernel)
+            [[ $# -ge 2 ]] || die '--kernel needs a value'
+            kernel_version="$2"
+            shift 2
+            ;;
+        --root)
+            [[ $# -ge 2 ]] || die '--root needs a value'
+            root_argument="$2"
+            shift 2
+            ;;
+        --output)
+            [[ $# -ge 2 ]] || die '--output needs a value'
+            output_file="$2"
+            shift 2
+            ;;
+        --install-device)
+            [[ $# -ge 2 ]] || die '--install-device needs a value'
+            install_device="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            die "unknown option: $1"
+            ;;
+    esac
+done
+
+[[ -r "${template}" ]] || die "missing template: ${template}"
+
+if [[ -z "${kernel_version}" ]]; then
+    kernel_version="$({
+        find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null || :
+    } | sort -V | tail -n 1)"
+fi
+[[ -n "${kernel_version}" ]] || die 'no installed kernel was found'
+
+for path in \
+    "/boot/vmlinuz-${kernel_version}" \
+    "/boot/initramfs-${kernel_version}.img" \
+    "/usr/lib/modules/${kernel_version}/dtb/rockchip/rk3588-orangepi-5-ultra.dtb"; do
+    [[ -r "${path}" ]] || die "missing boot asset: ${path}"
+done
+/usr/libexec/lumina-orangepi5-ultra-dtb-setup "${kernel_version}"
+
+if [[ -z "${root_argument}" ]]; then
+    root_uuid="$(findmnt -n -o UUID / 2>/dev/null || :)"
+    root_label="$(findmnt -n -o LABEL / 2>/dev/null || :)"
+    if [[ -n "${root_uuid}" ]]; then
+        root_argument="UUID=${root_uuid}"
+    elif [[ -n "${root_label}" ]]; then
+        root_argument="LABEL=${root_label}"
+    else
+        die 'could not determine the root filesystem UUID or label; pass --root'
+    fi
+fi
+
+install -d -m 0755 "$(dirname -- "${output_file}")"
+temporary_file="$(mktemp "${output_file}.XXXXXX")"
+trap 'rm -f -- "${temporary_file}"' EXIT
+sed \
+    -e "s|@KERNEL@|${kernel_version}|g" \
+    -e "s|@ROOT@|${root_argument}|g" \
+    "${template}" >"${temporary_file}"
+chmod 0644 "${temporary_file}"
+mv -f -- "${temporary_file}" "${output_file}"
+trap - EXIT
+
+if [[ -n "${install_device}" ]]; then
+    [[ -b "${install_device}" ]] || die "not a block device: ${install_device}"
+    [[ "$(lsblk -dnro TYPE "${install_device}")" == disk ]] ||
+        die "--install-device must name a whole disk: ${install_device}"
+    [[ -r "${bootloader}" ]] || die "missing bootloader: ${bootloader}"
+    if findmnt -rn -S "${install_device}" -o TARGET | grep -q .; then
+        die "device is mounted: ${install_device}"
+    fi
+    dd if="${bootloader}" of="${install_device}" bs=512 seek=64 \
+        conv=fsync,notrunc status=progress
+fi
+
+printf 'Configured %s for kernel %s and root %s\n' \
+    "${output_file}" "${kernel_version}" "${root_argument}"
