@@ -1,32 +1,34 @@
 # Orange Pi 5 Ultra qualification
 
-Hardware status: **partial; exact-image and full acceptance pending**. Live
-development on the target board completed a normal mainline boot and passed 17
-of the 18 automated checks after loading the AP6611 driver patch. Onboard Wi-Fi
-enumerated as `wlan0` and scanned a real 5 GHz access point. The remaining
-failure was the sticky kernel taint from the unsigned development module and a
-warning produced by an earlier revision. The packaged candidate below has
-passed offline artifact validation but has not yet been cold-booted on the
-board. This file is an acceptance checklist, not proof of full acceptance.
+Hardware status: **mainline boot and automated discovery pass; full acceptance
+pending**. The exact packaged predecessor cold-booted on the target board and
+passed all 18 hardware checks, including onboard Wi-Fi association through the
+packaged AP6611 DKMS driver. Installing the two workstation runtime packages
+missing from that image then produced a stable GDM Wayland session and GNOME
+Shell; the updated 19-check qualifier passed in full. The rebuilt candidate
+below contains that package fix and has passed offline artifact validation, but
+has not yet been cold-booted. Functional and stress items in this file remain
+open, so this is not proof of full acceptance.
 
 ## Candidate identity
 
-Offline candidate built on 2026-09-03:
+Replacement candidate built on 2026-09-03:
 
 - Image filename:
   `Lumina-26.08-OrangePi-5-Ultra-mainline-dkms-aarch64.raw.zst`
 - Image SHA-256:
-  `dd3128bb9933dece8bb2d552e4c1a787159cd5e8ce15905b636e29ba5c06b0cd`
-- Image sizes: 1,200,558,206 bytes compressed; 4,647,305,728 bytes raw
+  `529356c84000136f2dcc1c504056e666b438394fed64b4c98d335c9513a119d8`
+- Image sizes: 1,201,356,993 bytes compressed; 4,647,305,728 bytes raw
 - RPM `SHA256SUMS` SHA-256:
-  `4d46bb1def40c68a1be38d7bb62a6b617a9dd35fb302b59113ad7f9170d7470b`
+  `0d19952fa674c258ec987ec46426e53b8b3a16ddc2663ca8a8f85cfa6f04b0a7`
 - Fedora `kernel-core` NEVRA: `kernel-core-7.1.12-200.fc44.aarch64`
 - U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-4.lu26.aarch64`
 - Wi-Fi driver RPM NEVRA:
   `orangepi5-ultra-brcmfmac-dkms-7.1.12-1.lu26.noarch`
 - Firmware RPM NEVRA: `orangepi5-ultra-firmware-20250319-2.lu26.noarch`
-- Support RPM NEVRA: `orangepi5-ultra-support-1.0-3.lu26.noarch`
-- Build source revision: `32a474616361676a7fa14dd79dbe6512a66ab2dc`
+- Support RPM NEVRA: `orangepi5-ultra-support-1.0-4.lu26.noarch`
+- Image-content source revision:
+  `40bd641af427132b84df0dfb13f1e1ddcee0fa0b`
 
 The package build, pinned source checksum, static board contracts, RPM build,
 GPT validation, U-Boot byte comparison, merged-DTB validation, SELinux-label
@@ -39,17 +41,30 @@ GPIO2_A6/A7/B0/B1, active-low reset GPIO2_C5, and child-owned host wake. It
 disables the conflicting legacy `rfkill` node. These are offline results and
 do not change hardware status.
 
-The 2026-09-03 UART development run used Linux
-`7.1.12-200.fc44.aarch64` and the same BCM43711 driver changes now carried by
-the DKMS RPM. It confirmed Panthor and `/dev/dri/renderD128`, Rocket and
+The exact predecessor with SHA-256
+`dd3128bb9933dece8bb2d552e4c1a787159cd5e8ce15905b636e29ba5c06b0cd`
+cold-booted on 2026-09-03. It ran Linux `7.1.12-200.fc44.aarch64`, resolved the
+kernel image to Fedora's `kernel-core` RPM, loaded the packaged `brcmfmac` from
+`/lib/modules/7.1.12-200.fc44.aarch64/extra/brcmfmac.ko.xz`, matched the exact
+`sdio:c*v06CBdAABF*` alias, associated `wlan0`, and obtained `192.168.1.31`.
+The original 18 checks all passed: Panthor and `/dev/dri/renderD128`, Rocket and
 `/dev/accel/accel0`, `r8169` Ethernet, three ALSA cards, connected HDMI,
-Bluetooth `hci0`, NVMe, `brcmfmac`, and `wlan0`, with no failed systemd units
-or fatal kernel-log signatures. A scan found a 5 GHz network on channel 40.
+Bluetooth `hci0`, NVMe, systemd, the expected DKMS taint value `0x3000`, and no
+fatal kernel-log signatures. The corrected image did not create a spurious
+`hci1` or reproduce the superseded `rfkill_gpio` failure.
+
+That cold boot found a separate workstation composition defect: GDM could not
+start a user session because `/usr/bin/dbus-run-session`, `dbus-daemon`,
+`systemd-pam`, and `pam_systemd.so` were absent. Installing `dbus-daemon` and
+`systemd-pam` on the running board and restarting GDM produced an active local
+Wayland session on `seat0`, with GDM and GNOME Shell stable and no failed units.
+The updated qualifier then passed all 19 checks, including `desktop`. The
+replacement candidate explicitly installs both packages and carries that gate;
+its exact cold-boot result remains to be recorded.
+
 The firmware advertises 6 GHz using a D11AX chanspec encoding that mainline
 `brcmfmac` does not yet decode, so the package intentionally filters those
-entries and makes no 6 GHz support claim. A clean boot of the packaged module
-must confirm that the only taint bits are the expected out-of-tree and unsigned
-module flags (`0x3000`).
+entries and makes no 6 GHz support claim.
 
 The image with SHA-256
 `0f4e6544d04b28aaa36c7951685efeb2dfae433434444357f5ff116d58da21b1`

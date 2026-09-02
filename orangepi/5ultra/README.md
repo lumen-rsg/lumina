@@ -5,12 +5,15 @@ upstream U-Boot, and board-specific RPMs. No kernel or module is copied from an
 Armbian installation.
 
 The current deliverable is a flashable hardware-qualification candidate.
-Hardware testing on the target board confirms a normal mainline Fedora boot,
-GPU, NPU, Ethernet, audio, HDMI, Bluetooth, NVMe, and onboard Wi-Fi discovery
-and scanning. That Wi-Fi proof used the same driver patch as the packaged
-candidate, loaded manually for development. A cold boot of the exact packaged
-image and the functional and stress acceptance matrix are still pending. Keep
-that boundary intact when updating `docs/qualification.md`.
+Hardware testing of its immediate packaged predecessor confirms a normal
+mainline Fedora boot, Fedora kernel RPM ownership, GPU, NPU, Ethernet, audio,
+HDMI, Bluetooth, NVMe, and onboard Wi-Fi association. All automated hardware
+checks passed. That run also exposed two missing workstation runtime packages;
+installing `dbus-daemon` and `systemd-pam` restored a stable GDM Wayland session
+and GNOME Shell. The rebuilt candidate includes those packages and a desktop
+qualification gate, but still needs its own cold boot. Functional and stress
+acceptance also remain pending. Keep those boundaries intact when updating
+`docs/qualification.md`.
 
 ## Mainline support model
 
