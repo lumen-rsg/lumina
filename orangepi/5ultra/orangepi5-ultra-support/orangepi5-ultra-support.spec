@@ -2,7 +2,7 @@
 
 Name:           orangepi5-ultra-support
 Version:        1.0
-Release:        1.lu26
+Release:        2.lu26
 Summary:        Runtime support and qualification tools for Orange Pi 5 Ultra
 License:        MIT
 URL:            https://linux.1t.ru/
@@ -49,5 +49,8 @@ install -Dpm 0755 %{SOURCE3} \
 /usr/lib/systemd/system/lumina-orangepi5-ultra-grow-rootfs.service
 
 %changelog
+* Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-2.lu26
+- Qualify the RPM owning the running kernel and preserve query errors
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-1.lu26
 - Add idempotent SD/eMMC/NVMe growth and mainline hardware qualification

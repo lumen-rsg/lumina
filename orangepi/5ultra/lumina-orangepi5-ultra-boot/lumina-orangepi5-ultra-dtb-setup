@@ -25,6 +25,10 @@ temporary_dtb="$(mktemp "${output_dtb}.XXXXXX")"
 trap 'rm -f -- "${temporary_dtb}"' EXIT
 install -m 0644 "${base_dtb}" "${temporary_dtb}"
 
+gpio2_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fec30000 phandle)"
+pull_none_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-none phandle)"
+pull_up_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-up phandle)"
+
 if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" != okay ]] ||
    ! fdtget -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 compatible 2>/dev/null |
        grep -Fqw brcm,bcm43752-fmac; then
@@ -40,10 +44,7 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
 
     rtc_phandle="$(fdtget -tx "${temporary_dtb}" /i2c@fec80000/rtc@51 phandle)"
     gpio0_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fd8a0000 phandle)"
-    gpio2_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fec30000 phandle)"
-    pull_none_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-none phandle)"
     pull_down_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-down phandle)"
-    pull_up_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-up phandle)"
 
     fdtput -cp "${temporary_dtb}" \
         /lumina-ap6611-pwrseq \
@@ -59,6 +60,7 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
     fdtput -ts "${temporary_dtb}" /lumina-ap6611-pwrseq pinctrl-names default
     fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq pinctrl-0 "${enable_phandle}"
     fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq post-power-on-delay-ms c8
+    # With -tx, numeric cells are hexadecimal: GPIO2_C5 is pin 0x15.
     fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq reset-gpios \
         "${gpio2_phandle}" 15 1
 
@@ -69,8 +71,8 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
         /pinctrl/lumina-sdio/sdiom0-pins phandle "${sdio_pins_phandle}"
     fdtput -tx "${temporary_dtb}" \
         /pinctrl/lumina-sdio/sdiom0-pins rockchip,pins \
-        2 11 2 "${pull_none_phandle}" \
-        2 10 2 "${pull_up_phandle}" \
+        2 b 2 "${pull_none_phandle}" \
+        2 a 2 "${pull_up_phandle}" \
         2 6 2 "${pull_up_phandle}" \
         2 7 2 "${pull_up_phandle}" \
         2 8 2 "${pull_up_phandle}" \
@@ -88,7 +90,11 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
         0 8 0 "${pull_down_phandle}"
 
     fdtput -ts "${temporary_dtb}" /mmc@fe2d0000 status okay
+    fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 max-frequency 8f0d180
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 no-sd
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 no-mmc
     fdtput -tx "${temporary_dtb}" /mmc@fe2d0000 bus-width 4
+    fdtput "${temporary_dtb}" /mmc@fe2d0000 disable-wp
     fdtput "${temporary_dtb}" /mmc@fe2d0000 cap-sd-highspeed
     fdtput "${temporary_dtb}" /mmc@fe2d0000 cap-sdio-irq
     fdtput "${temporary_dtb}" /mmc@fe2d0000 keep-power-in-suspend
@@ -126,6 +132,21 @@ active_sdio_pins="$(fdtget -tx "${temporary_dtb}" /mmc@fe2d0000 pinctrl-0)"
 active_sdio_pins_phandle="${active_sdio_pins%% *}"
 [[ "${active_sdio_pins_phandle}" == "${expected_sdio_pins_phandle}" ]] ||
     die 'AP6611 is not routed through the board SDIO mux 0 pins'
+sdio_pin_cells="$(
+    fdtget -tx "${temporary_dtb}" /pinctrl/lumina-sdio/sdiom0-pins rockchip,pins 2>/dev/null ||
+        fdtget -tx "${temporary_dtb}" /pinctrl/sdio/sdiom0-pins rockchip,pins
+)"
+[[ "${sdio_pin_cells}" == \
+    "2 b 2 ${pull_none_phandle} 2 a 2 ${pull_up_phandle} 2 6 2 ${pull_up_phandle} 2 7 2 ${pull_up_phandle} 2 8 2 ${pull_up_phandle} 2 9 2 ${pull_up_phandle}" ]] ||
+    die 'AP6611 SDIO mux 0 pin cells do not match the Orange Pi 5 Ultra'
+reset_gpio_cells="$(fdtget -tx "${temporary_dtb}" /lumina-ap6611-pwrseq reset-gpios)"
+[[ "${reset_gpio_cells}" == "${gpio2_phandle} 15 1" ]] ||
+    die 'AP6611 reset is not routed to GPIO2_C5 active-low'
+enable_pin_cells="$(
+    fdtget -tx "${temporary_dtb}" /pinctrl/lumina-wireless-wlan/wifi-enable-h rockchip,pins
+)"
+[[ "${enable_pin_cells}" == "2 15 0 ${pull_none_phandle}" ]] ||
+    die 'AP6611 enable pinctrl is not routed to GPIO2_C5'
 
 mv -f -- "${temporary_dtb}" "${output_dtb}"
 trap - EXIT

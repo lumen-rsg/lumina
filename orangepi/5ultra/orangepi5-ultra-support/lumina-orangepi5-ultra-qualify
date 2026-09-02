@@ -38,10 +38,12 @@ else
     result FAIL kernel "mainline 6.18 or newer required; found ${kernel_release}"
 fi
 
-if rpm -q kernel-core >/dev/null 2>&1; then
-    result PASS kernel-rpm "$(rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core | tail -n 1)"
+kernel_image="/usr/lib/modules/${kernel_release}/vmlinuz"
+if kernel_rpm="$(rpm -qf --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' \
+    "${kernel_image}" 2>&1)"; then
+    result PASS kernel-rpm "${kernel_rpm}"
 else
-    result FAIL kernel-rpm 'Fedora kernel-core RPM is not installed'
+    result FAIL kernel-rpm "$(printf '%s' "${kernel_rpm}" | tr '\n' ';')"
 fi
 
 for module in panthor rocket r8169 brcmfmac; do

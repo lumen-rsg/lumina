@@ -64,6 +64,18 @@ grep -Fq '/mmc@fe2d0000/wifi@1 compatible' \
 grep -Fq '/pinctrl/lumina-sdio/sdiom0-pins rockchip,pins' \
     "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
     fail 'AP6611 SDIO mux 0 pin definition is missing'
+grep -Fq '"${gpio2_phandle}" 15 1' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'AP6611 reset is not routed to GPIO2_C5'
+grep -Fq '2 15 0 "${pull_none_phandle}"' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'AP6611 enable pinctrl is not routed to GPIO2_C5'
+grep -Fq '2 b 2 "${pull_none_phandle}"' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'AP6611 SDIO clock is not routed to GPIO2_B3'
+grep -Fq '2 a 2 "${pull_up_phandle}"' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'AP6611 SDIO command is not routed to GPIO2_B2'
 if grep -Fq '/pinctrl/sdio/sdiom1-pins phandle' \
     "${boot_dir}/lumina-orangepi5-ultra-dtb-setup"; then
     fail 'AP6611 uses the SPI2-conflicting SDIO mux 1 pins'
@@ -117,6 +129,8 @@ for runtime_gate in panthor rocket r8169 brcmfmac; do
     grep -Fq "${runtime_gate}" "${support_dir}/lumina-orangepi5-ultra-qualify" ||
         fail "runtime qualification misses ${runtime_gate}"
 done
+grep -Fq 'rpm -qf' "${support_dir}/lumina-orangepi5-ultra-qualify" ||
+    fail 'qualification does not identify the RPM owning the running kernel'
 
 while read -r expected_hash expected_size filename; do
     [[ "${expected_hash}" =~ ^[0-9a-f]{64}$ ]] || fail "invalid source hash: ${filename}"
