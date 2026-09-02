@@ -72,7 +72,7 @@ mkdir -p "${rootfs}"
 
 shopt -s nullglob
 rpms=("${rpm_dir}"/*.rpm)
-[[ ${#rpms[@]} -eq 5 ]] || die 'Orange Pi 5 Ultra RPM set must contain exactly five packages'
+[[ ${#rpms[@]} -eq 6 ]] || die 'Orange Pi 5 Ultra RPM set must contain exactly six packages'
 
 base_packages=(
     alsa-utils
@@ -84,6 +84,7 @@ base_packages=(
     dnf5
     dracut
     dracut-network
+    dkms
     dtc
     e2fsprogs
     ethtool
@@ -99,6 +100,7 @@ base_packages=(
     iw
     kbd
     kernel
+    kernel-devel
     kernel-modules
     kernel-modules-extra
     kmod
@@ -216,6 +218,13 @@ for config in \
     CONFIG_R8169=m; do
     grep -Fqx "${config}" "${kernel_config}" || die "kernel config is missing ${config}"
 done
+chroot "${rootfs}" /usr/sbin/dkms autoinstall -k "${kver}"
+chroot "${rootfs}" /usr/sbin/depmod -a "${kver}"
+dkms_module="$(chroot "${rootfs}" /usr/sbin/modinfo -k "${kver}" -n brcmfmac)"
+[[ "${dkms_module}" == /lib/modules/${kver}/extra/brcmfmac.ko* ]] ||
+    die "AP6611 DKMS module is not preferred: ${dkms_module}"
+chroot "${rootfs}" /usr/sbin/modinfo -k "${kver}" -F alias brcmfmac |
+    grep -Fqx 'sdio:c*v06CBdAABF*' || die 'AP6611 SDIO alias is missing from the DKMS module'
 fdtget "${module_board_dtb}" / model | grep -Fqx 'Xunlong Orange Pi 5 Ultra' ||
     die 'Orange Pi 5 Ultra DTB model mismatch'
 chroot "${rootfs}" /usr/libexec/lumina-orangepi5-ultra-dtb-setup "${kver}"

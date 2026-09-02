@@ -114,8 +114,12 @@ fi
 taint="$(< /proc/sys/kernel/tainted)"
 if [[ "${taint}" == 0 ]]; then
     result PASS taint 0
+elif (( (taint & ~0x3000) == 0 )) &&
+     [[ "$(modinfo -F filename brcmfmac 2>/dev/null || :)" =~ /(extra|updates/dkms)/ ]] &&
+     dkms status -m brcmfmac-ap6611 2>/dev/null | grep -Fq installed; then
+    result PASS taint "${taint} (expected out-of-tree DKMS/signature flags)"
 else
-    result FAIL taint "kernel taint value ${taint}"
+    result FAIL taint "unexpected kernel taint value ${taint}"
 fi
 
 if (( EUID == 0 )); then

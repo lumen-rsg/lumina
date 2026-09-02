@@ -1,0 +1,157 @@
+From: Lumina Linux <packages@linux.1t.ru>
+Subject: brcmfmac: add Synaptics BCM43711 SDIO support
+
+The AP6611S module fitted to the Orange Pi 5 Ultra enumerates as SDIO
+06cb:aabf and reports chip id 0xaabf (BCM43711).  Teach brcmfmac the
+device's RAM layout, firmware name and SDIO setup.  BCM43711 needs the
+same no-command-decode card capability used by BCM43751/43752; without
+it, firmware download completes but the data function never attaches.
+
+The firmware also advertises 6 GHz chanspecs using the newer D11AX
+encoding.  Mainline brcmfmac does not yet expose a 6 GHz band, so skip
+those entries before passing them to the D11AC decoder.  This leaves the
+qualified 2.4 and 5 GHz bands enabled and avoids a kernel WARN.
+
+---
+ brcmfmac/bcmsdh.c       | 6 ++++++
+ brcmfmac/cfg80211.c     | 9 +++++++++
+ brcmfmac/chip.c         | 2 ++
+ brcmfmac/sdio.c         | 7 +++++--
+ include/brcm_hw_ids.h   | 3 +++
+ 5 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/include/brcm_hw_ids.h b/include/brcm_hw_ids.h
+--- a/include/brcm_hw_ids.h
++++ b/include/brcm_hw_ids.h
+@@ -13,6 +13,8 @@
+ #define CY_USB_VENDOR_ID_CYPRESS	0x04b4
+ #define BRCM_PCIE_VENDOR_ID_BROADCOM	PCI_VENDOR_ID_BROADCOM
+ 
++#define SYNAPTICS_SDIO_VENDOR_ID	0x06cb
++#define SYNAPTICS_SDIO_43711_DEVICE_ID	0xaabf
+ /* Chipcommon Core Chip IDs */
+ #define BRCM_CC_43143_CHIP_ID		43143
+ #define BRCM_CC_43235_CHIP_ID		43235
+@@ -54,6 +56,7 @@
+ #define BRCM_CC_4371_CHIP_ID		0x4371
+ #define BRCM_CC_43751_CHIP_ID		43751
+ #define BRCM_CC_43752_CHIP_ID		43752
++#define BRCM_CC_43711_CHIP_ID		0xaabf
+ #define BRCM_CC_4377_CHIP_ID		0x4377
+ #define BRCM_CC_4378_CHIP_ID		0x4378
+ #define BRCM_CC_4387_CHIP_ID		0x4387
+diff --git a/brcmfmac/chip.c b/brcmfmac/chip.c
+--- a/brcmfmac/chip.c
++++ b/brcmfmac/chip.c
+@@ -740,6 +740,7 @@ static u32 brcmf_chip_tcm_rambase(struct brcmf_chip_priv *ci)
+ 		return 0x160000;
+ 	case BRCM_CC_43751_CHIP_ID:
+ 	case BRCM_CC_43752_CHIP_ID:
++	case BRCM_CC_43711_CHIP_ID:
+ 	case BRCM_CC_4377_CHIP_ID:
+ 		return 0x170000;
+ 	case BRCM_CC_4378_CHIP_ID:
+@@ -1468,6 +1469,7 @@ bool brcmf_chip_sr_capable(struct brcmf_chip *pub)
+ 	case BRCM_CC_4359_CHIP_ID:
+ 	case BRCM_CC_43751_CHIP_ID:
+ 	case BRCM_CC_43752_CHIP_ID:
++	case BRCM_CC_43711_CHIP_ID:
+ 	case CY_CC_43012_CHIP_ID:
+ 		addr = CORE_CC_REG(pmu->base, retention_ctl);
+ 		reg = chip->ops->read32(chip->ctx, addr);
+diff --git a/brcmfmac/bcmsdh.c b/brcmfmac/bcmsdh.c
+--- a/brcmfmac/bcmsdh.c
++++ b/brcmfmac/bcmsdh.c
+@@ -911,6 +911,7 @@ static int brcmf_sdiod_probe(struct brcmf_sdio_dev *sdiodev)
+ 		return ret;
+ 	}
+ 	switch (sdiodev->func2->device) {
++	case SYNAPTICS_SDIO_43711_DEVICE_ID:
+ 	case SDIO_DEVICE_ID_BROADCOM_43752:
+ 	case SDIO_DEVICE_ID_BROADCOM_CYPRESS_4373:
+ 		f2_blksz = SDIO_4373_FUNC2_BLOCKSIZE;
+@@ -978,6 +979,11 @@ static const struct dev_pm_ops brcmf_sdio_pm_ops = {
+ 
+ /* devices we support, null terminated */
+ static const struct sdio_device_id brcmf_sdmmc_ids[] = {
++	{
++		SDIO_DEVICE(SYNAPTICS_SDIO_VENDOR_ID,
++			    SYNAPTICS_SDIO_43711_DEVICE_ID),
++		.driver_data = BRCMF_FWVENDOR_WCC
++	},
+ 	BRCMF_SDIO_DEVICE(SDIO_DEVICE_ID_BROADCOM_43143, WCC),
+ 	BRCMF_SDIO_DEVICE(SDIO_DEVICE_ID_BROADCOM_43241, WCC),
+ 	BRCMF_SDIO_DEVICE(SDIO_DEVICE_ID_BROADCOM_4329, WCC),
+diff --git a/brcmfmac/sdio.c b/brcmfmac/sdio.c
+--- a/brcmfmac/sdio.c
++++ b/brcmfmac/sdio.c
+@@ -625,6 +625,7 @@ BRCMF_FW_CLM_DEF(4356, "brcmfmac4356-sdio");
+ BRCMF_FW_CLM_DEF(4373, "brcmfmac4373-sdio");
+ BRCMF_FW_CLM_DEF(43012, "brcmfmac43012-sdio");
+ BRCMF_FW_CLM_DEF(43752, "brcmfmac43752-sdio");
++BRCMF_FW_CLM_DEF(43711, "brcmfmac43711-sdio");
+ 
+ /* firmware config files */
+ MODULE_FIRMWARE(BRCMF_FW_DEFAULT_PATH "brcmfmac*-sdio.*.txt");
+@@ -656,6 +657,7 @@ static const struct brcmf_firmware_mapping brcmf_sdio_fwnames[] = {
+ 	BRCMF_FW_ENTRY(BRCM_CC_4359_CHIP_ID, 0xFFFFFFFF, 4359),
+ 	BRCMF_FW_ENTRY(BRCM_CC_43751_CHIP_ID, 0xFFFFFFFF, 43752),
+ 	BRCMF_FW_ENTRY(BRCM_CC_43752_CHIP_ID, 0xFFFFFFFF, 43752),
++	BRCMF_FW_ENTRY(BRCM_CC_43711_CHIP_ID, 0xFFFFFFFF, 43711),
+ 	BRCMF_FW_ENTRY(CY_CC_4373_CHIP_ID, 0xFFFFFFFF, 4373),
+ 	BRCMF_FW_ENTRY(CY_CC_43012_CHIP_ID, 0xFFFFFFFF, 43012),
+ 	BRCMF_FW_ENTRY(CY_CC_43439_CHIP_ID, 0xFFFFFFFF, 43439),
+@@ -1469,7 +1471,8 @@ static u8 brcmf_sdio_rxglom(struct brcmf_sdio *bus, u8 rxseq)
+ 		bus->flowcontrol = fc;
+ 	}
+ 	tx_seq_max = (swheader & SDPCM_WINDOW_MASK) >> SDPCM_WINDOW_SHIFT;
+-	if ((u8)(tx_seq_max - bus->tx_seq) > 0x40) {
++	if ((u8)(tx_seq_max - bus->tx_seq) >
++	    (bus->ci->chip == BRCM_CC_43711_CHIP_ID ? 0x70 : 0x40)) {
+ 		brcmf_err("seq %d: max tx seq number error\n", rx_seq);
+ 		tx_seq_max = bus->tx_seq + 2;
+ 	}
+@@ -3428,6 +3430,7 @@ static bool brcmf_sdio_aos_no_decode(struct brcmf_sdio *bus)
+ {
+ 	if (bus->ci->chip == BRCM_CC_43751_CHIP_ID ||
+ 	    bus->ci->chip == BRCM_CC_43752_CHIP_ID ||
++	    bus->ci->chip == BRCM_CC_43711_CHIP_ID ||
+ 	    bus->ci->chip == CY_CC_43012_CHIP_ID)
+ 		return true;
+ 	else
+@@ -4280,6 +4283,7 @@ static void brcmf_sdio_firmware_callback(struct device *dev, int err,
+ 		switch (sdiod->func1->device) {
+ 		case SDIO_DEVICE_ID_BROADCOM_43751:
+ 		case SDIO_DEVICE_ID_BROADCOM_43752:
++		case SYNAPTICS_SDIO_43711_DEVICE_ID:
+ 		case SDIO_DEVICE_ID_BROADCOM_CYPRESS_4373:
+ 			brcmf_dbg(INFO, "set F2 watermark to 0x%x*4 bytes\n",
+ 				  CY_4373_F2_WATERMARK);
+diff --git a/brcmfmac/cfg80211.c b/brcmfmac/cfg80211.c
+--- a/brcmfmac/cfg80211.c
++++ b/brcmfmac/cfg80211.c
+@@ -6992,6 +6992,9 @@ static void brcmf_update_bw40_channel_flag(struct ieee80211_channel *channel,
+ 	}
+ }
+ 
++#define BRCMF_D11AX_BAND_MASK	0xc000
++#define BRCMF_D11AX_BAND_6G	0x4000
++
+ static int brcmf_construct_chaninfo(struct brcmf_cfg80211_info *cfg,
+ 				    u32 bw_cap[])
+ {
+@@ -7041,6 +7044,12 @@ static int brcmf_construct_chaninfo(struct brcmf_cfg80211_info *cfg,
+ 
+ 	for (i = 0; i < total; i++) {
+ 		ch.chspec = (u16)le32_to_cpu(list->element[i]);
++		/* The mainline D11AC decoder does not support 6 GHz yet. */
++		if (drvr->bus_if->chip == BRCM_CC_43711_CHIP_ID &&
++		    (ch.chspec & BRCMF_D11AX_BAND_MASK) ==
++			    BRCMF_D11AX_BAND_6G)
++			continue;
++
+ 		cfg->d11inf.decchspec(&ch);
+ 
+ 		if (ch.band == BRCMU_CHAN_BAND_2G) {
+-- 
+2.51.0

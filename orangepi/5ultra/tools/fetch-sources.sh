@@ -22,6 +22,9 @@ source_url()
         u-boot-2026.07.tar.bz2)
             printf '%s\n' 'https://ftp.denx.de/pub/u-boot/u-boot-2026.07.tar.bz2'
             ;;
+        linux-7.1.12.tar.xz)
+            printf '%s\n' 'https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.1.12.tar.xz'
+            ;;
         rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.24.bin)
             printf 'https://raw.githubusercontent.com/rockchip-linux/rkbin/%s/bin/rk35/%s\n' \
                 "${rkbin_commit}" "$1"

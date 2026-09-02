@@ -186,6 +186,20 @@ packages:
       - file: SYN43711A0.hcd
         size: 9048
         sha256: e9bfbf89f671771cde86525fcffa920cddce4cdc656815ba9b0c5f3750d0fac1
+  orangepi5-ultra-brcmfmac-dkms:
+    spec: orangepi/5ultra/orangepi5-ultra-brcmfmac-dkms/orangepi5-ultra-brcmfmac-dkms.spec
+    paths:
+      - orangepi/5ultra/orangepi5-ultra-brcmfmac-dkms/**
+      - orangepi/5ultra/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - orangepi5-ultra-firmware
+    promotion_group: orangepi5-ultra-mainline-2026.07
+    lookaside_sources:
+      - file: linux-7.1.12.tar.xz
+        size: 158461644
+        sha256: 389716b3ed27e4cd520b903eea04acc33b9804c4282cb7a918f05ff14e9b5ae1
   lumina-orangepi5-ultra-boot:
     spec: orangepi/5ultra/lumina-orangepi5-ultra-boot/lumina-orangepi5-ultra-boot.spec
     paths:
@@ -213,4 +227,5 @@ packages:
     depends_on:
       - lumina-orangepi5-ultra-boot
       - orangepi5-ultra-firmware
+      - orangepi5-ultra-brcmfmac-dkms
     promotion_group: orangepi5-ultra-mainline-2026.07

@@ -61,11 +61,16 @@ cp -a "${board_dir}/lumina-orangepi5-ultra-boot/"{extlinux.conf.in,lumina-orange
     "${topdir}/SOURCES/"
 cp -a "${board_dir}/orangepi5-ultra-support/"{lumina-orangepi5-ultra-grow-rootfs,lumina-orangepi5-ultra-grow-rootfs.service,80-orangepi5-ultra.preset,lumina-orangepi5-ultra-qualify} \
     "${topdir}/SOURCES/"
+cp -a "${board_dir}/orangepi5-ultra-support/orangepi5-ultra-btsdio.conf" \
+    "${topdir}/SOURCES/"
+cp -a "${board_dir}/orangepi5-ultra-brcmfmac-dkms/"{brcmfmac-ap6611.patch,Makefile,dkms.conf} \
+    "${topdir}/SOURCES/"
 
 for spec in \
     "${repo_root}/common/lumina-release/lumina-release.spec" \
     "${repo_root}/common/lumina-artwork/lumina-artwork.spec" \
     "${board_dir}/orangepi5-ultra-firmware/orangepi5-ultra-firmware.spec" \
+    "${board_dir}/orangepi5-ultra-brcmfmac-dkms/orangepi5-ultra-brcmfmac-dkms.spec" \
     "${board_dir}/orangepi5-ultra-support/orangepi5-ultra-support.spec" \
     "${board_dir}/lumina-orangepi5-ultra-boot/lumina-orangepi5-ultra-boot.spec"; do
     rpmbuild --define "_topdir ${topdir}" -bb "${spec}"

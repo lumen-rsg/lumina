@@ -7,6 +7,7 @@ readonly board_dir="$(cd -- "${test_dir}/../.." && pwd)"
 readonly repo_root="$(cd -- "${board_dir}/../.." && pwd)"
 readonly boot_dir="${board_dir}/lumina-orangepi5-ultra-boot"
 readonly firmware_spec="${board_dir}/orangepi5-ultra-firmware/orangepi5-ultra-firmware.spec"
+readonly driver_dir="${board_dir}/orangepi5-ultra-brcmfmac-dkms"
 readonly support_dir="${board_dir}/orangepi5-ultra-support"
 readonly image_builder="${board_dir}/image/build-rootfs-in-container.sh"
 readonly outer_builder="${board_dir}/image/build-image.sh"
@@ -82,20 +83,43 @@ if grep -Fq '/pinctrl/sdio/sdiom1-pins phandle' \
 fi
 grep -Fq 'reset-gpios' "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
     fail 'AP6611 reset wiring is missing'
+grep -Fq '/rfkill status disabled' "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'conflicting legacy rfkill node is not disabled'
+if grep -Fq '"${sdio_pins_phandle}" "${wake_phandle}"' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup"; then
+    fail 'SDIO controller incorrectly claims the child host-wake pin'
+fi
 grep -Fq '7a696d67' "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" ||
     fail 'Fedora EFI-zboot kernel detection is missing'
 grep -Fq '41524d64' "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" ||
     fail 'converted ARM64 Image validation is missing'
 
 for firmware in \
-    brcmfmac43752-sdio.bin \
-    brcmfmac43752-sdio.clm_blob \
-    'brcmfmac43752-sdio.xunlong,orangepi-5-ultra.txt' \
-    SYN43711A0.hcd; do
+    brcmfmac43711-sdio.bin \
+    brcmfmac43711-sdio.clm_blob \
+    'brcmfmac43711-sdio.xunlong,orangepi-5-ultra.txt' \
+    SYN43711A0.hcd \
+    'BCM.xunlong,orangepi-5-ultra.hcd'; do
     grep -Fq "${firmware}" "${firmware_spec}" || fail "firmware mapping is missing: ${firmware}"
 done
 
-for package in kernel kernel-modules kernel-modules-extra; do
+for contract in \
+    'SYNAPTICS_SDIO_43711_DEVICE_ID' \
+    'BRCM_CC_43711_CHIP_ID' \
+    'brcmfmac43711-sdio' \
+    'brcmf_sdio_aos_no_decode' \
+    'BRCMF_D11AX_BAND_6G'; do
+    grep -Fq "${contract}" "${driver_dir}/brcmfmac-ap6611.patch" ||
+        fail "AP6611 driver patch is missing: ${contract}"
+done
+grep -Fq 'BUILD_EXCLUSIVE_KERNEL="^7\\.1\\."' "${driver_dir}/dkms.conf" ||
+    fail 'DKMS compatibility range is not bounded'
+grep -Fqx 'BUILD_EXCLUSIVE_CONFIG="CONFIG_BRCMFMAC"' "${driver_dir}/dkms.conf" ||
+    fail 'DKMS kernel-config compatibility check is malformed'
+grep -Fq 'linux-%{kernel_version}.tar.xz' "${driver_dir}/orangepi5-ultra-brcmfmac-dkms.spec" ||
+    fail 'DKMS RPM is not derived from the matching upstream kernel source'
+
+for package in dkms kernel kernel-devel kernel-modules kernel-modules-extra; do
     grep -Eq "^[[:space:]]+${package}$" "${image_builder}" ||
         fail "Fedora mainline kernel package is missing: ${package}"
 done
@@ -111,6 +135,10 @@ grep -Fq 'lumina-orangepi5-ultra-dtb-setup' "${image_builder}" ||
     fail 'image build does not generate the AP6611-enabled DTB'
 grep -Fq 'extlinux kernel does not have the ARM64 Image magic' "${image_builder}" ||
     fail 'image build does not validate the extlinux ARM64 Image'
+grep -Fq 'extra/brcmfmac.ko' "${image_builder}" ||
+    fail 'image build does not verify the installed AP6611 DKMS module'
+grep -Fq 'sdio:c*v06CBdAABF*' "${image_builder}" ||
+    fail 'image build does not verify the AP6611 SDIO alias'
 grep -Fq -- '--omit selinux' "${image_builder}" ||
     fail 'obsolete pre-pivot SELinux loader is not excluded from initramfs'
 if grep -Fq -- '--add selinux' "${image_builder}"; then
@@ -131,6 +159,10 @@ for runtime_gate in panthor rocket r8169 brcmfmac; do
 done
 grep -Fq 'rpm -qf' "${support_dir}/lumina-orangepi5-ultra-qualify" ||
     fail 'qualification does not identify the RPM owning the running kernel'
+grep -Fq 'brcmfmac-ap6611' "${support_dir}/lumina-orangepi5-ultra-qualify" ||
+    fail 'qualification does not validate the expected DKMS taint source'
+grep -Fq 'blacklist btsdio' "${support_dir}/orangepi5-ultra-btsdio.conf" ||
+    fail 'spurious SDIO Bluetooth transport is not blacklisted'
 
 while read -r expected_hash expected_size filename; do
     [[ "${expected_hash}" =~ ^[0-9a-f]{64}$ ]] || fail "invalid source hash: ${filename}"
@@ -141,6 +173,8 @@ grep -Fq 'lumina-orangepi5-ultra-boot:' "${repo_root}/.lumina/packages.yaml" ||
     fail 'boot RPM is absent from the package pipeline'
 grep -Fq 'orangepi5-ultra-firmware:' "${repo_root}/.lumina/packages.yaml" ||
     fail 'firmware RPM is absent from the package pipeline'
+grep -Fq 'orangepi5-ultra-brcmfmac-dkms:' "${repo_root}/.lumina/packages.yaml" ||
+    fail 'AP6611 DKMS RPM is absent from the package pipeline'
 grep -Fq 'orangepi5-ultra-support:' "${repo_root}/.lumina/packages.yaml" ||
     fail 'support RPM is absent from the package pipeline'
 
