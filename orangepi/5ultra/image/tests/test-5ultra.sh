@@ -61,6 +61,13 @@ grep -Fq 'lsm=lockdown,yama,integrity,selinux' "${boot_dir}/extlinux.conf.in" ||
 grep -Fq '/mmc@fe2d0000/wifi@1 compatible' \
     "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
     fail 'mainline brcmfmac DTB generation is missing'
+grep -Fq '/pinctrl/lumina-sdio/sdiom0-pins rockchip,pins' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
+    fail 'AP6611 SDIO mux 0 pin definition is missing'
+if grep -Fq '/pinctrl/sdio/sdiom1-pins phandle' \
+    "${boot_dir}/lumina-orangepi5-ultra-dtb-setup"; then
+    fail 'AP6611 uses the SPI2-conflicting SDIO mux 1 pins'
+fi
 grep -Fq 'reset-gpios' "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
     fail 'AP6611 reset wiring is missing'
 grep -Fq '7a696d67' "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" ||
@@ -92,7 +99,13 @@ grep -Fq 'lumina-orangepi5-ultra-dtb-setup' "${image_builder}" ||
     fail 'image build does not generate the AP6611-enabled DTB'
 grep -Fq 'extlinux kernel does not have the ARM64 Image magic' "${image_builder}" ||
     fail 'image build does not validate the extlinux ARM64 Image'
-grep -Fq -- '--add selinux' "${image_builder}" || fail 'SELinux is missing from initramfs'
+grep -Fq -- '--omit selinux' "${image_builder}" ||
+    fail 'obsolete pre-pivot SELinux loader is not excluded from initramfs'
+if grep -Fq -- '--add selinux' "${image_builder}"; then
+    fail 'obsolete pre-pivot SELinux loader is forced into initramfs'
+fi
+grep -Fq '+SELINUX' "${image_builder}" ||
+    fail 'target systemd SELinux capability is not validated'
 grep -Fq 'SELINUX=enforcing' "${image_builder}" || fail 'mainline image is not enforcing'
 grep -Fq '@gnome-desktop' "${image_builder}" || fail 'workstation profile does not install GNOME'
 grep -Fq 'default_target=graphical.target' "${image_builder}" ||

@@ -5,7 +5,7 @@
 
 Name:           lumina-orangepi5-ultra-boot
 Version:        %{uboot_version}
-Release:        2.lu26
+Release:        3.lu26
 Summary:        Upstream U-Boot and boot configuration for Orange Pi 5 Ultra
 License:        GPL-2.0-or-later AND MIT AND LicenseRef-Rockchip-Binary-Only
 URL:            https://www.u-boot.org/
@@ -92,6 +92,9 @@ fi
 %{_libexecdir}/lumina-orangepi5-ultra-kernel-setup
 
 %changelog
+* Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2026.07-3.lu26
+- Route the onboard AP6611 through the Orange Pi 5 Ultra SDIO mux 0 pins
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2026.07-2.lu26
 - Extract Fedora EFI-zboot kernels into ARM64 Images for U-Boot extlinux
 

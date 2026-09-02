@@ -31,9 +31,10 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
     readonly pwrseq_phandle=4c550001
     readonly enable_phandle=4c550002
     readonly wake_phandle=4c550003
+    readonly sdio_pins_phandle=4c550004
 
     if dtc -I dtb -O dts "${temporary_dtb}" 2>/dev/null |
-        grep -Eq 'phandle = <0x4c55000[123]>;'; then
+        grep -Eq 'phandle = <0x4c55000[1-4]>;'; then
         die 'reserved Lumina AP6611 phandle collides with the kernel DTB'
     fi
 
@@ -42,10 +43,11 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
     gpio2_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/gpio@fec30000 phandle)"
     pull_none_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-none phandle)"
     pull_down_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-down phandle)"
-    sdio_pins_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/sdio/sdiom1-pins phandle)"
+    pull_up_phandle="$(fdtget -tx "${temporary_dtb}" /pinctrl/pcfg-pull-up phandle)"
 
     fdtput -cp "${temporary_dtb}" \
         /lumina-ap6611-pwrseq \
+        /pinctrl/lumina-sdio/sdiom0-pins \
         /pinctrl/lumina-wireless-wlan/wifi-enable-h \
         /pinctrl/lumina-wireless-wlan/wifi-host-wake-irq \
         /mmc@fe2d0000/wifi@1
@@ -59,6 +61,20 @@ if [[ "$(fdtget -ts "${temporary_dtb}" /mmc@fe2d0000 status 2>/dev/null || :)" !
     fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq post-power-on-delay-ms c8
     fdtput -tx "${temporary_dtb}" /lumina-ap6611-pwrseq reset-gpios \
         "${gpio2_phandle}" 15 1
+
+    # Orange Pi's board DTS routes the soldered AP6611 through SDIO mux 0
+    # on GPIO2. Mainline currently only describes mux 1 on GPIO3, whose
+    # GPIO3_A5 clock pin is already owned by the Ultra's enabled SPI2 PMIC.
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-sdio/sdiom0-pins phandle "${sdio_pins_phandle}"
+    fdtput -tx "${temporary_dtb}" \
+        /pinctrl/lumina-sdio/sdiom0-pins rockchip,pins \
+        2 11 2 "${pull_none_phandle}" \
+        2 10 2 "${pull_up_phandle}" \
+        2 6 2 "${pull_up_phandle}" \
+        2 7 2 "${pull_up_phandle}" \
+        2 8 2 "${pull_up_phandle}" \
+        2 9 2 "${pull_up_phandle}"
 
     fdtput -tx "${temporary_dtb}" \
         /pinctrl/lumina-wireless-wlan/wifi-enable-h phandle "${enable_phandle}"
@@ -102,6 +118,14 @@ fi
     die 'SDIO controller is not enabled in the merged DTB'
 fdtget -ts "${temporary_dtb}" /mmc@fe2d0000/wifi@1 compatible |
     grep -Fqw brcm,bcm43752-fmac || die 'AP6611 brcmfmac binding is missing'
+expected_sdio_pins_phandle="$(
+    fdtget -tx "${temporary_dtb}" /pinctrl/lumina-sdio/sdiom0-pins phandle 2>/dev/null ||
+        fdtget -tx "${temporary_dtb}" /pinctrl/sdio/sdiom0-pins phandle
+)"
+active_sdio_pins="$(fdtget -tx "${temporary_dtb}" /mmc@fe2d0000 pinctrl-0)"
+active_sdio_pins_phandle="${active_sdio_pins%% *}"
+[[ "${active_sdio_pins_phandle}" == "${expected_sdio_pins_phandle}" ]] ||
+    die 'AP6611 is not routed through the board SDIO mux 0 pins'
 
 mv -f -- "${temporary_dtb}" "${output_dtb}"
 trap - EXIT

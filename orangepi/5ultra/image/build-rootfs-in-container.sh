@@ -57,7 +57,7 @@ size_to_bytes()
     die 'profile must be workstation or server'
 [[ ! -e "${output_file}" ]] || die "output already exists: ${output_file}"
 
-dnf -y -q install dracut e2fsprogs fakeroot uboot-tools util-linux zstd >/dev/null
+dnf -y -q install dracut e2fsprogs uboot-tools util-linux zstd >/dev/null
 
 readonly work_dir="$(mktemp -d /output/.lumina-orangepi5-ultra.XXXXXX)"
 cleanup()
@@ -223,8 +223,15 @@ fdtget "${board_dtb}" /mmc@fe2d0000/wifi@1 compatible |
     grep -Fqw brcm,bcm43752-fmac || die 'merged DTB does not enable the AP6611 radio'
 
 rm -f "${rootfs}/boot/initramfs-${kver}.img"
-fakeroot -- dracut --force --no-hostonly --add selinux --sysroot "${rootfs}" \
+dracut --force --no-hostonly --omit selinux --sysroot "${rootfs}" \
     "${rootfs}/boot/initramfs-${kver}.img" "${kver}"
+if lsinitrd -m "${rootfs}/boot/initramfs-${kver}.img" |
+    grep -Fxq selinux; then
+    die 'initramfs contains the obsolete pre-pivot SELinux policy loader'
+fi
+chroot "${rootfs}" /usr/lib/systemd/systemd --version |
+    grep -Eq '(^|[[:space:]])\+SELINUX([[:space:]]|$)' ||
+    die 'target systemd lacks SELinux policy-load support'
 chroot "${rootfs}" /usr/bin/lumina-orangepi5-ultra-boot-setup \
     --kernel "${kver}" --root LABEL=lumina_root
 [[ "$(od -An -j 56 -N 4 -tx1 "${boot_kernel}" | tr -d '[:space:]')" == 41524d64 ]] ||
