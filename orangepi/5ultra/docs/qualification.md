@@ -1,38 +1,61 @@
 # Orange Pi 5 Ultra qualification
 
-Hardware status: **partial; full acceptance pending**. A superseded candidate
-completed a normal mainline boot and passed 15 of the 18 automated checks.
-The remaining real device failure was onboard Wi-Fi. The corrected candidate
-below has passed offline artifact validation but has not yet been run on the
-board. This file is an acceptance checklist, not proof of full board
-acceptance.
+Hardware status: **partial; exact-image and full acceptance pending**. Live
+development on the target board completed a normal mainline boot and passed 17
+of the 18 automated checks after loading the AP6611 driver patch. Onboard Wi-Fi
+enumerated as `wlan0` and scanned a real 5 GHz access point. The remaining
+failure was the sticky kernel taint from the unsigned development module and a
+warning produced by an earlier revision. The packaged candidate below has
+passed offline artifact validation but has not yet been cold-booted on the
+board. This file is an acceptance checklist, not proof of full acceptance.
 
 ## Candidate identity
 
-Offline candidate built on 2026-09-02:
+Offline candidate built on 2026-09-03:
 
-- Image filename: `Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst`
+- Image filename:
+  `Lumina-26.08-OrangePi-5-Ultra-mainline-dkms-aarch64.raw.zst`
 - Image SHA-256:
-  `0f4e6544d04b28aaa36c7951685efeb2dfae433434444357f5ff116d58da21b1`
-- Image sizes: 1,080,689,455 bytes compressed; 4,177,543,680 bytes raw
+  `dd3128bb9933dece8bb2d552e4c1a787159cd5e8ce15905b636e29ba5c06b0cd`
+- Image sizes: 1,200,558,206 bytes compressed; 4,647,305,728 bytes raw
 - RPM `SHA256SUMS` SHA-256:
-  `fe4b4175511c74dcbf221beb7725faeee4ac46e5c53aac817a814633e8ed8fe7`
+  `4d46bb1def40c68a1be38d7bb62a6b617a9dd35fb302b59113ad7f9170d7470b`
 - Fedora `kernel-core` NEVRA: `kernel-core-7.1.12-200.fc44.aarch64`
 - U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-4.lu26.aarch64`
-- Support RPM NEVRA: `orangepi5-ultra-support-1.0-2.lu26.noarch`
-- Build source revision: `734c590c3db73d12b6830f8d9f6427dd8428469a`
+- Wi-Fi driver RPM NEVRA:
+  `orangepi5-ultra-brcmfmac-dkms-7.1.12-1.lu26.noarch`
+- Firmware RPM NEVRA: `orangepi5-ultra-firmware-20250319-2.lu26.noarch`
+- Support RPM NEVRA: `orangepi5-ultra-support-1.0-3.lu26.noarch`
+- Build source revision: `32a474616361676a7fa14dd79dbe6512a66ab2dc`
 
-The package build, source checksum manifest, static board contracts, RPM spec
-preprocessing, GPT validation, U-Boot byte comparison, merged-DTB validation,
-SELinux-label validation, initramfs module inspection, compressed-image
-checksum, and Zstandard integrity check passed. An independent artifact
-read-back also confirmed that the SDIO controller selects the GPIO2 mux 0
-pinctrl group with clock GPIO2_B3, command GPIO2_B2, data GPIO2_A6/A7/B0/B1,
-and active-low reset GPIO2_C5. It also confirmed the AP6611 binding and 150 MHz
-limit, that the installed RPM database owns the running-kernel image through
-`kernel-core`, that the legacy dracut SELinux loader is absent, and that
-SELinux remains configured as enforcing. These are offline results and do not
-change hardware status.
+The package build, pinned source checksum, static board contracts, RPM build,
+GPT validation, U-Boot byte comparison, merged-DTB validation, SELinux-label
+validation, initramfs inspection, compressed-image checksum, and Zstandard
+integrity check passed. Image construction also built the DKMS module against
+the sole installed Fedora kernel, confirmed that `modinfo` prefers it over the
+in-tree module, and matched the exact `sdio:c*v06CBdAABF*` alias. The generated
+DTB selects GPIO2 mux 0 with clock GPIO2_B3, command GPIO2_B2, data
+GPIO2_A6/A7/B0/B1, active-low reset GPIO2_C5, and child-owned host wake. It
+disables the conflicting legacy `rfkill` node. These are offline results and
+do not change hardware status.
+
+The 2026-09-03 UART development run used Linux
+`7.1.12-200.fc44.aarch64` and the same BCM43711 driver changes now carried by
+the DKMS RPM. It confirmed Panthor and `/dev/dri/renderD128`, Rocket and
+`/dev/accel/accel0`, `r8169` Ethernet, three ALSA cards, connected HDMI,
+Bluetooth `hci0`, NVMe, `brcmfmac`, and `wlan0`, with no failed systemd units
+or fatal kernel-log signatures. A scan found a 5 GHz network on channel 40.
+The firmware advertises 6 GHz using a D11AX chanspec encoding that mainline
+`brcmfmac` does not yet decode, so the package intentionally filters those
+entries and makes no 6 GHz support claim. A clean boot of the packaged module
+must confirm that the only taint bits are the expected out-of-tree and unsigned
+module flags (`0x3000`).
+
+The image with SHA-256
+`0f4e6544d04b28aaa36c7951685efeb2dfae433434444357f5ff116d58da21b1`
+is superseded. It supplied the base for AP6611 development but did not contain
+the final DKMS, BCM43711 firmware naming, Bluetooth alias/blacklist, or corrected
+host-wake ownership shipped by the current candidate.
 
 The image with SHA-256
 `773eaa2ec1c5851cfee823abf71cb4ea83be5c71277e4b242679197ca11d339b`
@@ -103,9 +126,10 @@ every `FAIL`; document every intentional `SKIP`.
   and an EGL/Vulkan smoke test completes without GPU faults.
 - NPU: `rocket` binds all three RK3588 NPU cores, `/dev/accel/accel0` exists,
   and a mainline Rocket userspace inference smoke test completes.
-- Wi-Fi: `brcmfmac` loads the BCM43752/AP6611 firmware and board calibration,
-  scans 2.4/5/6 GHz as permitted by the regulatory domain, associates, and
-  survives a sustained bidirectional transfer and reboot.
+- Wi-Fi: the DKMS `brcmfmac` loads the BCM43711/AP6611 firmware and board
+  calibration, scans 2.4/5 GHz as permitted by the regulatory domain,
+  associates, and survives a sustained bidirectional transfer and reboot.
+  Record 6 GHz as unsupported rather than treating its absence as a failure.
 - Bluetooth: `hci0` initializes from the Synaptics firmware, scans LE and
   classic devices, pairs with a device, and coexists with sustained Wi-Fi.
 - Ethernet: `r8169` binds RTL8125BG, negotiates 2.5 Gb/s with a capable peer,
@@ -135,7 +159,8 @@ combined workload, retain:
 - temperatures, fan state, CPU frequencies, `cat /proc/sys/kernel/tainted`
 - network and storage throughput plus error counters
 
-Acceptance requires zero unexpected kernel taint, oops, panic, RCU stall,
+Acceptance requires no kernel taint other than the DKMS module's expected
+out-of-tree and unsigned flags (`0x3000`), and no oops, panic, RCU stall,
 watchdog lockup, I/O error, GPU/NPU fault, firmware-load error, or failed
 systemd unit. Add measured results and the final verdict below this checklist;
 only then change the hardware status from pending.

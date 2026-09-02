@@ -4,29 +4,39 @@ Lumina supports the Orange Pi 5 Ultra with Fedora's maintained arm64 kernel,
 upstream U-Boot, and board-specific RPMs. No kernel or module is copied from an
 Armbian installation.
 
-The current deliverable is a flashable hardware-qualification candidate. The
-software build and offline image checks pass. Hardware testing of a superseded
-candidate confirmed a normal mainline Fedora boot plus basic GPU, NPU,
-Ethernet, audio, HDMI, Bluetooth, and NVMe discovery. The current candidate
-corrects the SDIO cell encoding that prevented onboard Wi-Fi enumeration.
-Wi-Fi retesting and the functional and stress acceptance matrix are still
-pending. Keep that boundary intact when updating `docs/qualification.md`.
+The current deliverable is a flashable hardware-qualification candidate.
+Hardware testing on the target board confirms a normal mainline Fedora boot,
+GPU, NPU, Ethernet, audio, HDMI, Bluetooth, NVMe, and onboard Wi-Fi discovery
+and scanning. That Wi-Fi proof used the same driver patch as the packaged
+candidate, loaded manually for development. A cold boot of the exact packaged
+image and the functional and stress acceptance matrix are still pending. Keep
+that boundary intact when updating `docs/qualification.md`.
 
 ## Mainline support model
 
 Linux 6.18 and newer contains the Orange Pi 5 Ultra device tree and the RK3588
-Rocket NPU driver. Fedora 44's current arm64 kernel also enables the in-tree
-Panthor GPU, Rocket NPU, `r8169` Ethernet, and `brcmfmac` Wi-Fi drivers as
-modules. These are kernel-supported devices and deliberately are not DKMS
-packages.
+Rocket NPU driver. Fedora 44's current arm64 kernel enables Panthor GPU, Rocket
+NPU, `r8169` Ethernet, and `brcmfmac` as modules. The image uses those Fedora
+modules unchanged except for `brcmfmac`: the AP6611's Synaptics BCM43711 SDIO
+identity and initialization are not supported by mainline yet, so a narrowly
+scoped DKMS override is built from the matching upstream Linux source.
 
-The board's AP6611 radio still needs two board-specific pieces:
+The board's AP6611 radio needs three board-specific pieces:
 
+- `orangepi5-ultra-brcmfmac-dkms`, which adds the observed `06cb:aabf` SDIO
+  identity, BCM43711 chip parameters, firmware mapping, and initialization.
+  Its build is restricted to the audited Linux 7.1 kernel series.
 - Synaptics firmware and the Orange Pi 5 Ultra calibration data, packaged as
   `orangepi5-ultra-firmware` under the filenames expected by `brcmfmac`.
 - A deterministic, versioned DTB generator that enables the RK3588 SDIO
   controller and describes its power/reset and host-wake wiring. It does not
   depend on distribution DTBs retaining overlay symbols.
+
+The radio has been verified scanning 2.4 and 5 GHz networks. The firmware also
+reports 6 GHz chanspecs using a newer D11AX encoding that mainline `brcmfmac`
+does not implement; the override ignores those entries instead of exposing an
+incorrect band. Six-gigahertz support therefore remains explicitly out of
+scope until it has a proper upstream implementation.
 
 The upstream Rocket NPU interface is not ABI-compatible with Rockchip's RKNN
 runtime. A future `rknpu` DKMS package may be useful for applications that must
@@ -57,12 +67,14 @@ orangepi/5ultra/image/build-image.sh \
   auto server
 ```
 
-The image build fails unless it finds exactly one Fedora kernel, the upstream
-Ultra DTB, all four required in-tree driver options, an AP6611-enabled merged
-DTB, correct SELinux labels, and byte-identical U-Boot data at the raw-image
-offset. Fedora's arm64 `vmlinuz` is an EFI-zboot executable; the boot RPM
-extracts its compressed payload into the raw ARM64 `Image` required by U-Boot's
-extlinux path and repeats that conversion after kernel updates.
+The image build fails unless it finds exactly one Fedora kernel, its matching
+development package, the upstream Ultra DTB, all four required kernel options,
+a successfully installed and preferred AP6611 DKMS module with the exact SDIO
+alias, an AP6611-enabled merged DTB, correct SELinux labels, and byte-identical
+U-Boot data at the raw-image offset. Fedora's arm64 `vmlinuz` is an EFI-zboot
+executable; the boot RPM extracts its compressed payload into the raw ARM64
+`Image` required by U-Boot's extlinux path and repeats that conversion after
+kernel updates.
 It creates a GPT image with the root partition at 16 MiB and upstream U-Boot at
 32 KiB. The first boot grows the root filesystem to fill SD, eMMC, or NVMe.
 
@@ -73,8 +85,8 @@ and double-check it before writing:
 
 ```sh
 (cd orangepi/dist/5ultra && \
-  sha256sum -c Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst.sha256)
-zstdcat orangepi/dist/5ultra/Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst | \
+  sha256sum -c Lumina-26.08-OrangePi-5-Ultra-mainline-dkms-aarch64.raw.zst.sha256)
+zstdcat orangepi/dist/5ultra/Lumina-26.08-OrangePi-5-Ultra-mainline-dkms-aarch64.raw.zst | \
   sudo dd of=/dev/SDX bs=4M oflag=direct status=progress conv=fsync
 ```
 
