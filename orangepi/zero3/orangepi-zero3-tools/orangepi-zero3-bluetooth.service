@@ -1,0 +1,18 @@
+[Unit]
+Description=Attach Orange Pi Zero 3 UWE5622 Bluetooth controller
+BindsTo=dev-ttyBT0.device
+Requires=orangepi-zero3-wifi.service
+Wants=NetworkManager.service bluetooth.service
+After=orangepi-zero3-wifi.service dev-ttyBT0.device NetworkManager.service
+Before=bluetooth.service
+ConditionPathExists=/dev/ttyBT0
+
+[Service]
+Type=simple
+ExecStartPre=/usr/libexec/orangepi-zero3-wait-wifi
+ExecStartPre=/usr/sbin/rfkill unblock all
+ExecStart=/usr/bin/hciattach_opi -n -s 1500000 /dev/ttyBT0 sprd
+ExecStartPost=/usr/libexec/orangepi-zero3-wait-bluetooth
+
+[Install]
+WantedBy=multi-user.target

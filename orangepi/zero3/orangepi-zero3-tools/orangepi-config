@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly env_file="/boot/orangepiEnv.txt"
+readonly overlay_dir="/boot/dtb/allwinner/overlay"
+
+die()
+{
+    printf 'orangepi-config: %s\n' "$*" >&2
+    exit 1
+}
+
+require_root()
+{
+    [[ "${EUID}" -eq 0 ]] || die "run as root"
+}
+
+board_model()
+{
+    if [[ -r /proc/device-tree/model ]]; then
+        tr -d '\0' </proc/device-tree/model
+    else
+        printf '%s' 'Orange Pi Zero 3'
+    fi
+}
+
+show_info()
+{
+    local temperature="unavailable"
+    local address="unavailable"
+    if [[ -r /sys/class/thermal/thermal_zone0/temp ]]; then
+        temperature="$(awk '{ printf "%.1f C", $1 / 1000 }' /sys/class/thermal/thermal_zone0/temp)"
+    fi
+    address="$(ip -brief -4 address show scope global 2>/dev/null | awk 'NR == 1 { print $1 " " $3 }')"
+    printf 'Board:       %s\n' "$(board_model)"
+    printf 'Kernel:      %s\n' "$(uname -r)"
+    printf 'Temperature: %s\n' "${temperature}"
+    printf 'Network:     %s\n' "${address:-unavailable}"
+    printf 'Boot env:    %s\n' "${env_file}"
+}
+
+update_env()
+{
+    local key="$1"
+    local value="$2"
+    local temporary
+    [[ -f "${env_file}" ]] || die "missing ${env_file}"
+    temporary="$(mktemp "${env_file}.XXXXXX")"
+    awk -F= -v key="${key}" -v value="${value}" '
+        BEGIN { found=0 }
+        $1 == key { print key "=" value; found=1; next }
+        { print }
+        END { if (!found) print key "=" value }
+    ' "${env_file}" >"${temporary}"
+    install -m 0644 "${temporary}" "${env_file}"
+    rm -f -- "${temporary}"
+}
+
+edit_boot_environment()
+{
+    local temporary
+    require_root
+    [[ -f "${env_file}" ]] || die "missing ${env_file}"
+    temporary="$(mktemp)"
+    if dialog --title "Orange Pi boot environment" --editbox "${env_file}" 28 88 2>"${temporary}"; then
+        if grep -Ev '^[[:space:]]*($|#|[A-Za-z_][A-Za-z0-9_]*=.*)$' "${temporary}" | grep -q .; then
+            rm -f -- "${temporary}"
+            die "boot environment contains an invalid line"
+        fi
+        install -m 0644 "${temporary}" "${env_file}"
+    fi
+    rm -f -- "${temporary}"
+}
+
+configure_overlays()
+{
+    local prefix="sun50i-h616"
+    local current=""
+    local selection=""
+    local overlay path name status
+    local -a choices=()
+    require_root
+    [[ -d "${overlay_dir}" ]] || die "missing ${overlay_dir}"
+    if [[ -f "${env_file}" ]]; then
+        prefix="$(sed -n 's/^overlay_prefix=//p' "${env_file}" | tail -n 1)"
+        current="$(sed -n 's/^overlays=//p' "${env_file}" | tail -n 1)"
+    fi
+    prefix="${prefix:-sun50i-h616}"
+    while IFS= read -r path; do
+        name="${path##*/${prefix}-}"
+        name="${name%.dtbo}"
+        status=off
+        [[ " ${current} " == *" ${name} "* ]] && status=on
+        choices+=("${name}" "${path##*/}" "${status}")
+    done < <(find "${overlay_dir}" -maxdepth 1 -type f -name "${prefix}-*.dtbo" -print | sort)
+    [[ ${#choices[@]} -gt 0 ]] || die "no ${prefix} overlays found"
+    selection="$(dialog --stdout --separate-output --title "Zero 3 hardware overlays" \
+        --checklist "Select overlays to enable after reboot" 24 86 16 "${choices[@]}" || true)"
+    selection="$(tr '\n' ' ' <<<"${selection}" | xargs)"
+    update_env overlays "${selection}"
+}
+
+set_timezone()
+{
+    local timezone
+    local -a choices=()
+    require_root
+    while IFS= read -r timezone; do
+        choices+=("${timezone}" "")
+    done < <(timedatectl list-timezones)
+    timezone="$(dialog --stdout --title "Timezone" --menu "Select timezone" 24 72 16 "${choices[@]}" || true)"
+    [[ -n "${timezone}" ]] && timedatectl set-timezone "${timezone}"
+}
+
+set_hostname()
+{
+    local hostname
+    require_root
+    hostname="$(dialog --stdout --title "Hostname" --inputbox "New hostname" 8 60 "$(hostnamectl hostname)" || true)"
+    [[ -z "${hostname}" ]] && return 0
+    [[ "${hostname}" =~ ^[A-Za-z0-9][A-Za-z0-9.-]{0,62}$ ]] || die "invalid hostname"
+    hostnamectl set-hostname "${hostname}"
+}
+
+manage_bluetooth()
+{
+    require_root
+    systemctl restart orangepi-zero3-bluetooth.service
+    systemctl --no-pager --full status orangepi-zero3-bluetooth.service || true
+}
+
+print_commands()
+{
+    printf '%s\n' info bootenv hardware network timezone hostname bluetooth
+}
+
+run_command()
+{
+    case "$1" in
+        info) show_info ;;
+        bootenv) edit_boot_environment ;;
+        hardware) configure_overlays ;;
+        network) require_root; exec nmtui ;;
+        timezone) set_timezone ;;
+        hostname) set_hostname ;;
+        bluetooth) manage_bluetooth ;;
+        --list) print_commands ;;
+        -h|--help)
+            echo "usage: orangepi-config [info|bootenv|hardware|network|timezone|hostname|bluetooth]"
+            ;;
+        *) die "unknown command: $1" ;;
+    esac
+}
+
+if [[ $# -gt 0 ]]; then
+    [[ $# -eq 1 ]] || die "expected one command"
+    run_command "$1"
+    exit 0
+fi
+
+require_root
+while true; do
+    choice="$(dialog --stdout --title "Lumina on Orange Pi Zero 3" --menu \
+        "$(board_model)" 19 72 10 \
+        info "Board and network information" \
+        bootenv "Edit U-Boot environment" \
+        hardware "Enable device-tree overlays" \
+        network "Configure NetworkManager" \
+        timezone "Set system timezone" \
+        hostname "Set system hostname" \
+        bluetooth "Restart Bluetooth attachment" \
+        exit "Exit" || true)"
+    [[ -z "${choice}" || "${choice}" == exit ]] && break
+    run_command "${choice}"
+done

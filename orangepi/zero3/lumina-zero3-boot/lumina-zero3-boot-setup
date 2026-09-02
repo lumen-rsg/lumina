@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly kver="6.1.31-sun50iw9"
+readonly env_file="/boot/orangepiEnv.txt"
+readonly uboot="/usr/lib/lumina-zero3/u-boot-sunxi-with-spl.bin"
+non_interactive=false
+root_arg=""
+target_device=""
+
+die()
+{
+    printf 'lumina-zero3-boot-setup: %s\n' "$*" >&2
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --non-interactive)
+            non_interactive=true
+            ;;
+        --root)
+            shift
+            [[ $# -gt 0 ]] || die "--root needs a value"
+            root_arg="$1"
+            ;;
+        --target-device)
+            shift
+            [[ $# -gt 0 ]] || die "--target-device needs a value"
+            target_device="$1"
+            ;;
+        -h|--help)
+            echo "usage: lumina-zero3-boot-setup [--non-interactive] [--root ROOT] [--target-device DISK]"
+            exit 0
+            ;;
+        *)
+            die "unknown argument: $1"
+            ;;
+    esac
+    shift
+done
+
+[[ "${EUID}" -eq 0 ]] || die "run as root"
+
+if [[ -r /proc/device-tree/compatible ]] &&
+   ! tr '\0' '\n' </proc/device-tree/compatible | grep -qx 'xunlong,orangepi-zero3'; then
+    "${non_interactive}" && exit 0
+    die "the running system is not an Orange Pi Zero 3"
+fi
+
+for required in "/boot/vmlinuz-${kver}" "/boot/dtb-${kver}/allwinner/sun50i-h618-orangepi-zero3.dtb"; do
+    if [[ ! -f "${required}" ]]; then
+        "${non_interactive}" && exit 0
+        die "missing ${required}; install kernel-sun50iw9 first"
+    fi
+done
+
+ln -sfn "vmlinuz-${kver}" /boot/Image
+ln -sfn "dtb-${kver}" /boot/dtb
+
+initramfs="/boot/initramfs-${kver}.img"
+if [[ ! -f "${initramfs}" && -x /usr/bin/dracut ]]; then
+    /usr/bin/dracut --force --no-hostonly --add selinux "${initramfs}" "${kver}"
+fi
+if [[ -f "${initramfs}" ]]; then
+    /usr/bin/mkimage -A arm64 -O linux -T ramdisk -C none -n uInitrd \
+        -d "${initramfs}" "/boot/uInitrd-${kver}" >/dev/null
+    ln -sfn "uInitrd-${kver}" /boot/uInitrd
+elif ! "${non_interactive}"; then
+    die "no initramfs for ${kver}"
+fi
+
+if [[ -f /boot/boot.cmd ]]; then
+    /usr/bin/mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr >/dev/null
+fi
+
+if [[ -z "${root_arg}" ]]; then
+    root_uuid="$(findmnt -n -o UUID / 2>/dev/null || true)"
+    if [[ -n "${root_uuid}" ]]; then
+        root_arg="UUID=${root_uuid}"
+    else
+        root_arg="LABEL=lumina_root"
+    fi
+fi
+
+update_env()
+{
+    local key="$1"
+    local value="$2"
+    local temporary
+    temporary="$(mktemp "${env_file}.XXXXXX")"
+    awk -F= -v key="${key}" -v value="${value}" '
+        BEGIN { found=0 }
+        $1 == key { print key "=" value; found=1; next }
+        { print }
+        END { if (!found) print key "=" value }
+    ' "${env_file}" >"${temporary}"
+    install -m 0644 "${temporary}" "${env_file}"
+    rm -f -- "${temporary}"
+}
+
+if [[ -f "${env_file}" ]]; then
+    update_env rootdev "${root_arg}"
+    update_env rootfstype ext4
+    update_env fdtfile allwinner/sun50i-h618-orangepi-zero3.dtb
+fi
+
+if [[ -n "${target_device}" ]]; then
+    [[ -b "${target_device}" ]] || die "not a block device: ${target_device}"
+    [[ "$(lsblk -dn -o TYPE "${target_device}")" == "disk" ]] ||
+        die "target must be a whole disk: ${target_device}"
+    [[ -f "${uboot}" ]] || die "missing ${uboot}"
+    first_start="$(lsblk -nr -o START "${target_device}" | awk 'NR == 2 { print; exit }')"
+    [[ "${first_start}" =~ ^[0-9]+$ && "${first_start}" -ge 8192 ]] ||
+        die "the first partition must start at or after sector 8192"
+    dd if="${uboot}" of="${target_device}" bs=1K seek=8 conv=fsync,notrunc status=none
+    printf 'Installed Zero 3 SPL/U-Boot on %s.\n' "${target_device}"
+fi
+
+if ! "${non_interactive}"; then
+    printf 'Configured Orange Pi Zero 3 boot files for %s.\n' "${root_arg}"
+fi

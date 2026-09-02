@@ -1,0 +1,2 @@
+enable orangepi-zero3-wifi.service
+enable orangepi-zero3-bluetooth.service

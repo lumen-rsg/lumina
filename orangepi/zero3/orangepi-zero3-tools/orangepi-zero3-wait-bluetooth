@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+for _ in {1..100}; do
+    [[ -d /sys/class/bluetooth/hci0 ]] && exit 0
+    sleep 0.1
+done
+
+printf 'orangepi-zero3-wait-bluetooth: hci0 did not appear\n' >&2
+exit 1

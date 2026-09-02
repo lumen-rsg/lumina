@@ -105,3 +105,56 @@ packages:
     depends_on:
       - nvidia-l4t-driver
     promotion_group: jetson-r39.2.1
+  orangepi-zero3-firmware:
+    spec: orangepi/zero3/orangepi-zero3-firmware/orangepi-zero3-firmware.spec
+    paths:
+      - orangepi/zero3/orangepi-zero3-firmware/**
+      - orangepi/zero3/tools/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: orangepi-zero3-1.0.6
+    lookaside_sources:
+      - file: orangepi-zero3-firmware-1.0.6.tar.gz
+        size: 428646
+        sha256: b0ec5f7fac910deefda0165fba9c0d8f597aaba79094cb64d9564919946dd626
+  lumina-zero3-boot:
+    spec: orangepi/zero3/lumina-zero3-boot/lumina-zero3-boot.spec
+    paths:
+      - orangepi/zero3/lumina-zero3-boot/**
+      - orangepi/zero3/tools/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: orangepi-zero3-1.0.6
+    lookaside_sources:
+      - file: lumina-zero3-boot-assets-1.0.6.tar.gz
+        size: 423596
+        sha256: af83a1e17007b4e7682ff23e24e8c54fae8f3db47c9a0a5bfca69f8e5916c7b2
+  orangepi-zero3-tools:
+    spec: orangepi/zero3/orangepi-zero3-tools/orangepi-zero3-tools.spec
+    paths:
+      - orangepi/zero3/orangepi-zero3-tools/**
+      - orangepi/zero3/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - orangepi-zero3-firmware
+    promotion_group: orangepi-zero3-1.0.6
+    lookaside_sources:
+      - file: orangepi-zero3-tools-1.0.6.tar.gz
+        size: 157174
+        sha256: b4840e4c5def00ea41211919e0db586961966b936b7d30cdf913d088c7207985
+  kernel-sun50iw9:
+    spec: orangepi/zero3/kernel-sun50iw9/kernel-sun50iw9.spec
+    paths:
+      - orangepi/zero3/kernel-sun50iw9/**
+      - orangepi/zero3/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - orangepi-zero3-firmware
+      - lumina-zero3-boot
+    promotion_group: orangepi-zero3-1.0.6
+    lookaside_sources:
+      - file: kernel-sun50iw9-1.0.6.tar.gz
+        size: 48696230
+        sha256: 5692ac5af5bd961586bc4fcbb5010d14f11eb15958dda259ddef65fb00604268

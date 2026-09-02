@@ -1,0 +1,11 @@
+[Unit]
+Description=Grow the Lumina root filesystem to fill the SD card
+After=local-fs.target
+ConditionPathExists=!/var/lib/lumina/zero3-rootfs-grown
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/lumina-zero3-grow-rootfs
+
+[Install]
+WantedBy=multi-user.target

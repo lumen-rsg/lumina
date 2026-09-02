@@ -1,0 +1,16 @@
+# Orange Pi board support metadata for Lumina Linux
+BOARD=orangepizero3
+BOARD_NAME="OPI Zero3"
+BOARDFAMILY=sun50iw9
+BUILD_REPOSITORY_URL=https://github.com/orangepi-xunlong/orangepi-build.git
+BUILD_REPOSITORY_COMMIT=c8894b6
+DISTRIBUTION_CODENAME=lumina
+DISTRIBUTION_STATUS=supported
+VERSION=1.0.6
+LINUXFAMILY=sun50iw9
+ARCH=arm64
+IMAGE_TYPE=lumina
+BOARD_TYPE=conf
+INITRD_ARCH=arm64
+KERNEL_IMAGE_TYPE=Image
+BRANCH=next

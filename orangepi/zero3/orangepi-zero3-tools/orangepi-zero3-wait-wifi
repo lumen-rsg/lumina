@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+for (( attempt = 0; attempt < 30; attempt++ )); do
+    [[ -e /sys/class/net/wlan0 ]] && exit 0
+    sleep 1
+done
+
+printf 'orangepi-zero3-wait-wifi: wlan0 did not appear; leaving Bluetooth disabled\n' >&2
+exit 1

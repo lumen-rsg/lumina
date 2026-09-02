@@ -17,3 +17,8 @@ single-board computers.
 - `aurora` is Lumina's package manager.
 
 Board-specific packages live under `orangepi/` and `jetson/`.
+
+## Supported devices
+
+- NVIDIA Jetson Orin family
+- Orange Pi Zero 3 (Allwinner H618; directly bootable SD-card image)

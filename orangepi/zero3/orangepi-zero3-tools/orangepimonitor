@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly default_interval=2
+
+usage()
+{
+    cat <<'EOF'
+Usage: orangepimonitor [--once|-m|-M|-n|-N] [--interval SECONDS]
+
+  --once              print one board status snapshot (default)
+  -m                  print board status continuously
+  -M                  update board status on one terminal line
+  -n                  print network counters continuously
+  -N                  update network counters on one terminal line
+  --interval SECONDS  sampling interval (default: 2)
+  -h, --help          show this help
+
+The legacy upload, package-install, and destructive disk-test actions are not
+provided by Lumina's read-only monitor.
+EOF
+}
+
+board_model()
+{
+    if [[ -r /proc/device-tree/model ]]; then
+        tr -d '\0' </proc/device-tree/model
+    else
+        printf '%s' 'Orange Pi Zero 3'
+    fi
+}
+
+temperature()
+{
+    local value
+    value="$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || true)"
+    if [[ "${value}" =~ ^[0-9]+$ ]]; then
+        awk -v value="${value}" 'BEGIN { printf "%.1fC", value / 1000 }'
+    else
+        printf '%s' 'n/a'
+    fi
+}
+
+cpu_frequency()
+{
+    local value=0
+    local path current
+
+    for path in /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq; do
+        [[ -r "${path}" ]] || continue
+        read -r current <"${path}"
+        [[ "${current}" =~ ^[0-9]+$ ]] || continue
+        (( current > value )) && value="${current}"
+    done
+    if (( value > 0 )); then
+        awk -v value="${value}" 'BEGIN { printf "%.0fMHz", value / 1000 }'
+    else
+        printf '%s' 'n/a'
+    fi
+}
+
+memory_usage()
+{
+    awk '
+        /^MemTotal:/ { total=$2 }
+        /^MemAvailable:/ { available=$2 }
+        END {
+            if (total > 0)
+                printf "%.0f/%.0fMiB", (total - available) / 1024, total / 1024
+            else
+                printf "n/a"
+        }
+    ' /proc/meminfo
+}
+
+root_usage()
+{
+    df -hP / | awk 'NR == 2 { printf "%s/%s", $3, $2 }'
+}
+
+network_address()
+{
+    local address
+    address="$(ip -brief -4 address show scope global 2>/dev/null |
+        awk 'NR == 1 { print $1 "=" $3 }')"
+    printf '%s' "${address:-offline}"
+}
+
+status_line()
+{
+    local load
+    read -r load _ </proc/loadavg
+    printf '%s load=%s cpu=%s temp=%s mem=%s root=%s net=%s' \
+        "$(date +%H:%M:%S)" "${load}" "$(cpu_frequency)" \
+        "$(temperature)" "$(memory_usage)" "$(root_usage)" \
+        "$(network_address)"
+}
+
+print_snapshot()
+{
+    printf 'Board:       %s\n' "$(board_model)"
+    printf 'Kernel:      %s\n' "$(uname -r)"
+    printf 'Uptime:      %s\n' "$(uptime -p)"
+    printf 'CPU:         %s\n' "$(cpu_frequency)"
+    printf 'Temperature: %s\n' "$(temperature)"
+    printf 'Memory:      %s\n' "$(memory_usage)"
+    printf 'Root:        %s\n' "$(root_usage)"
+    printf 'Network:     %s\n' "$(network_address)"
+}
+
+network_line()
+{
+    local interface
+    local state
+    local rx
+    local tx
+    local output=()
+
+    while IFS= read -r interface; do
+        [[ "${interface}" == lo ]] && continue
+        state="$(cat "/sys/class/net/${interface}/operstate" 2>/dev/null || true)"
+        read -r rx <"/sys/class/net/${interface}/statistics/rx_bytes"
+        read -r tx <"/sys/class/net/${interface}/statistics/tx_bytes"
+        output+=("${interface}:${state} rx=${rx} tx=${tx}")
+    done < <(find /sys/class/net -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)
+    printf '%s %s' "$(date +%H:%M:%S)" "${output[*]:-no-interfaces}"
+}
+
+mode=once
+interval="${default_interval}"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --once) mode=once ;;
+        -m) mode=status ;;
+        -M) mode=status_fixed ;;
+        -n) mode=network ;;
+        -N) mode=network_fixed ;;
+        --interval)
+            shift
+            [[ $# -gt 0 ]] || { usage >&2; exit 2; }
+            interval="$1"
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            printf 'orangepimonitor: unsupported option: %s\n' "$1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+    shift
+done
+
+[[ "${interval}" =~ ^[1-9][0-9]*$ ]] || {
+    printf 'orangepimonitor: interval must be a positive integer\n' >&2
+    exit 2
+}
+
+case "${mode}" in
+    once)
+        print_snapshot
+        ;;
+    status|network)
+        while true; do
+            [[ "${mode}" == status ]] && status_line || network_line
+            printf '\n'
+            sleep "${interval}"
+        done
+        ;;
+    status_fixed|network_fixed)
+        trap 'printf "\n"; exit 0' INT TERM
+        while true; do
+            printf '\r\033[K'
+            [[ "${mode}" == status_fixed ]] && status_line || network_line
+            sleep "${interval}"
+        done
+        ;;
+esac
