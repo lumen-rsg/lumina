@@ -1,7 +1,8 @@
 # Orange Pi 5 Ultra qualification
 
-Hardware status: **pending**. This file is an acceptance checklist, not proof
-that the current image has booted on the board.
+Hardware status: **pending**. Mainline kernel entry has been confirmed over
+UART, but the corrected candidate below has not yet completed a hardware boot.
+This file is an acceptance checklist, not proof of full board acceptance.
 
 ## Candidate identity
 
@@ -9,22 +10,36 @@ Offline candidate built on 2026-09-02:
 
 - Image filename: `Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst`
 - Image SHA-256:
-  `1ea8777bad425868c4b3c3f172c361a8d3ddcd2136698b54d94299d51845cbae`
-- Image sizes: 1,080,658,274 bytes compressed; 4,177,543,680 bytes raw
+  `773eaa2ec1c5851cfee823abf71cb4ea83be5c71277e4b242679197ca11d339b`
+- Image sizes: 1,080,688,715 bytes compressed; 4,177,543,680 bytes raw
 - RPM `SHA256SUMS` SHA-256:
-  `cc61a33d27798556ca0281fc89f79fffbe4bd3d0a7edfe6f51dae8c68773ab63`
+  `cbdff5c5cb2a87f4c8d6da22ffc74647b378c1b1771487c0539dbae34de61aa3`
 - Fedora `kernel-core` NEVRA: `kernel-core-7.1.12-200.fc44.aarch64`
-- U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-2.lu26.aarch64`
-- Build source revision: `b460c433b4aec92b31cc72e72c391812f0fe1b82`
+- U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-3.lu26.aarch64`
+- Build source revision: `52155f17af716bd5f96d0f5c862b44ac9c2659a2`
 
 The package build, source checksum manifest, static board contracts, RPM spec
 preprocessing, GPT validation, U-Boot byte comparison, merged-DTB validation,
-SELinux-label validation, compressed-image checksum, and Zstandard integrity
-check passed. These are offline build results and do not change hardware status.
+SELinux-label validation, initramfs module inspection, compressed-image
+checksum, and Zstandard integrity check passed. An independent artifact
+read-back also confirmed that the SDIO controller selects the GPIO2 mux 0
+pinctrl group, SPI2 retains its separate pinctrl group, the legacy dracut
+SELinux loader is absent, and SELinux remains configured as enforcing. These
+are offline results and do not change hardware status.
+
+The image with SHA-256
+`1ea8777bad425868c4b3c3f172c361a8d3ddcd2136698b54d94299d51845cbae`
+is superseded. On hardware it entered Linux 7.1.12, proving the corrected raw
+ARM64 kernel path, but did not finish booting. Its generated DTB selected SDIO
+mux 1 on GPIO3, causing `gpio3-5` to conflict with the enabled SPI2 PMIC, and
+its initramfs forced dracut's legacy pre-pivot SELinux loader, which failed to
+execute `/usr/bin/umount` after loading policy. The current candidate selects
+the board's GPIO2 SDIO mux 0 and leaves policy loading to SELinux-capable
+systemd without weakening enforcement.
 
 The earlier image with SHA-256
 `222f8a5cf0c5b2406299d073d9d9b3de1daeeb9bca3d5169c0df22c3a74b1f2e`
-is superseded. On hardware it reached the extlinux entry but failed with
+is also superseded. On hardware it reached the extlinux entry but failed with
 `Bad Linux ARM64 Image magic!` because Fedora's EFI-zboot `vmlinuz` was passed
 directly to U-Boot. The current candidate extracts and validates the raw ARM64
 `Image` both during image construction and after kernel updates.

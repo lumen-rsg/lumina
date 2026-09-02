@@ -5,9 +5,10 @@ upstream U-Boot, and board-specific RPMs. No kernel or module is copied from an
 Armbian installation.
 
 The current deliverable is a flashable hardware-qualification candidate. The
-software build and offline image checks pass; physical board acceptance is
-still pending because the available board has not yet been flashed. Keep that
-boundary intact when updating `docs/qualification.md`.
+software build and offline image checks pass. Hardware testing has confirmed
+entry into the mainline Fedora kernel, but full boot and device acceptance are
+still pending for the corrected candidate. Keep that boundary intact when
+updating `docs/qualification.md`.
 
 ## Mainline support model
 
@@ -69,7 +70,8 @@ Verify the output checksum, replace `/dev/SDX` with the whole SD-card device,
 and double-check it before writing:
 
 ```sh
-sha256sum -c orangepi/dist/5ultra/Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst.sha256
+(cd orangepi/dist/5ultra && \
+  sha256sum -c Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst.sha256)
 zstdcat orangepi/dist/5ultra/Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst | \
   sudo dd of=/dev/SDX bs=4M oflag=direct status=progress conv=fsync
 ```
