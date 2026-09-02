@@ -2,7 +2,7 @@
 
 Name:           orangepi5-ultra-support
 Version:        1.0
-Release:        3.lu26
+Release:        4.lu26
 Summary:        Runtime support and qualification tools for Orange Pi 5 Ultra
 License:        MIT
 URL:            https://linux.1t.ru/
@@ -53,6 +53,9 @@ install -Dpm 0644 %{SOURCE4} \
 /usr/lib/systemd/system/lumina-orangepi5-ultra-grow-rootfs.service
 
 %changelog
+* Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-4.lu26
+- Qualify that workstation images have a running GDM and GNOME Shell session
+
 * Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 1.0-3.lu26
 - Blacklist the spurious SDIO Bluetooth transport on the UART-wired AP6611
 - Accept only the expected DKMS module taint flags during qualification

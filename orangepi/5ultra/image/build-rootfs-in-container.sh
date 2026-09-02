@@ -81,6 +81,7 @@ base_packages=(
     bluez
     btop
     coreutils
+    dbus-daemon
     dnf5
     dracut
     dracut-network
@@ -119,6 +120,7 @@ base_packages=(
     shadow-utils
     sudo
     systemd
+    systemd-pam
     systemd-udev
     usbutils
     util-linux

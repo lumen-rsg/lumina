@@ -123,6 +123,10 @@ for package in dkms kernel kernel-devel kernel-modules kernel-modules-extra; do
     grep -Eq "^[[:space:]]+${package}$" "${image_builder}" ||
         fail "Fedora mainline kernel package is missing: ${package}"
 done
+for package in dbus-daemon systemd-pam; do
+    grep -Eq "^[[:space:]]+${package}$" "${image_builder}" ||
+        fail "graphical session runtime package is missing: ${package}"
+done
 for config in CONFIG_BRCMFMAC=m CONFIG_DRM_ACCEL_ROCKET=m CONFIG_DRM_PANTHOR=m CONFIG_R8169=m; do
     grep -Fq "${config}" "${image_builder}" || fail "image gate is missing: ${config}"
 done
@@ -150,6 +154,8 @@ grep -Fq 'SELINUX=enforcing' "${image_builder}" || fail 'mainline image is not e
 grep -Fq '@gnome-desktop' "${image_builder}" || fail 'workstation profile does not install GNOME'
 grep -Fq 'default_target=graphical.target' "${image_builder}" ||
     fail 'workstation profile does not boot graphically'
+grep -Fq 'result PASS desktop' "${support_dir}/lumina-orangepi5-ultra-qualify" ||
+    fail 'runtime qualification does not verify the workstation session'
 
 grep -Fq '/dev/mmcblk*|/dev/nvme*' "${support_dir}/lumina-orangepi5-ultra-grow-rootfs" ||
     fail 'root growth does not cover SD/eMMC and NVMe installs'

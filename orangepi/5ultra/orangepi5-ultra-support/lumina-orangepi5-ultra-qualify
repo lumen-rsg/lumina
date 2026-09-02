@@ -104,6 +104,16 @@ else
     result SKIP nvme 'no NVMe device installed'
 fi
 
+if rpm -q gdm >/dev/null 2>&1; then
+    if systemctl is-active --quiet gdm.service && pgrep -x gnome-shell >/dev/null; then
+        result PASS desktop 'GDM and GNOME Shell active'
+    else
+        result FAIL desktop 'GDM or GNOME Shell is not active'
+    fi
+else
+    result SKIP desktop 'server profile'
+fi
+
 failed_units="$(systemctl --failed --no-legend 2>/dev/null || :)"
 if [[ -z "${failed_units}" ]]; then
     result PASS systemd 'no failed units'
