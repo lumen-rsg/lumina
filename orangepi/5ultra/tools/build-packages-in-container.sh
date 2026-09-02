@@ -57,7 +57,7 @@ mkdir -p "${topdir}"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 cp -a "${source_dir}"/* "${topdir}/SOURCES/"
 cp -a "${repo_root}/common/lumina-release/files/"* "${topdir}/SOURCES/"
 cp -a "${repo_root}/common/lumina-artwork/files/"* "${topdir}/SOURCES/"
-cp -a "${board_dir}/lumina-orangepi5-ultra-boot/"{extlinux.conf.in,lumina-orangepi5-ultra-boot-setup,lumina-orangepi5-ultra-dtb-setup,95-lumina-orangepi5-ultra.install} \
+cp -a "${board_dir}/lumina-orangepi5-ultra-boot/"{extlinux.conf.in,lumina-orangepi5-ultra-boot-setup,lumina-orangepi5-ultra-dtb-setup,lumina-orangepi5-ultra-kernel-setup,95-lumina-orangepi5-ultra.install} \
     "${topdir}/SOURCES/"
 cp -a "${board_dir}/orangepi5-ultra-support/"{lumina-orangepi5-ultra-grow-rootfs,lumina-orangepi5-ultra-grow-rootfs.service,80-orangepi5-ultra.preset,lumina-orangepi5-ultra-qualify} \
     "${topdir}/SOURCES/"

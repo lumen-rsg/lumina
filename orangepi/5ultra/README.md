@@ -57,7 +57,9 @@ orangepi/5ultra/image/build-image.sh \
 The image build fails unless it finds exactly one Fedora kernel, the upstream
 Ultra DTB, all four required in-tree driver options, an AP6611-enabled merged
 DTB, correct SELinux labels, and byte-identical U-Boot data at the raw-image
-offset.
+offset. Fedora's arm64 `vmlinuz` is an EFI-zboot executable; the boot RPM
+extracts its compressed payload into the raw ARM64 `Image` required by U-Boot's
+extlinux path and repeats that conversion after kernel updates.
 It creates a GPT image with the root partition at 16 MiB and upstream U-Boot at
 32 KiB. The first boot grows the root filesystem to fill SD, eMMC, or NVMe.
 

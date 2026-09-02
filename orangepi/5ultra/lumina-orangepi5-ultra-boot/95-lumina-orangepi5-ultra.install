@@ -7,7 +7,8 @@ kernel_version="${2:-}"
 
 case "${command_name}" in
     add)
-        if [[ -r "/boot/vmlinuz-${kernel_version}" &&
+        if [[ ( -r "/usr/lib/modules/${kernel_version}/vmlinuz" ||
+                -r "/boot/vmlinuz-${kernel_version}" ) &&
               -r "/boot/initramfs-${kernel_version}.img" &&
               -r "/usr/lib/modules/${kernel_version}/dtb/rockchip/rk3588-orangepi-5-ultra.dtb" ]]; then
             /usr/bin/lumina-orangepi5-ultra-boot-setup --kernel "${kernel_version}"
@@ -15,7 +16,7 @@ case "${command_name}" in
         ;;
     remove)
         if [[ -f "/boot/extlinux/extlinux.conf" ]] &&
-           grep -Fq -- "vmlinuz-${kernel_version}" /boot/extlinux/extlinux.conf; then
+           grep -Fq -- "Image-${kernel_version}" /boot/extlinux/extlinux.conf; then
             /usr/bin/lumina-orangepi5-ultra-boot-setup
         fi
         ;;

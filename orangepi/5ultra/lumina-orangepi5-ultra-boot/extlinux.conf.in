@@ -4,7 +4,7 @@ DEFAULT lumina
 
 LABEL lumina
     MENU LABEL 1T Lumina (@KERNEL@)
-    LINUX /boot/vmlinuz-@KERNEL@
+    LINUX /boot/Image-@KERNEL@
     INITRD /boot/initramfs-@KERNEL@.img
     FDT /boot/lumina/rk3588-orangepi-5-ultra-@KERNEL@.dtb
     APPEND root=@ROOT@ rw rootwait console=ttyS2,1500000n8 console=tty1 consoleblank=0 loglevel=4 lsm=lockdown,yama,integrity,selinux

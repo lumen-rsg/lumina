@@ -203,6 +203,7 @@ readonly kver="${kernel_versions[0]}"
 readonly kernel_config="${rootfs}/usr/lib/modules/${kver}/config"
 readonly module_board_dtb="${rootfs}/usr/lib/modules/${kver}/dtb/rockchip/rk3588-orangepi-5-ultra.dtb"
 readonly board_dtb="${rootfs}/boot/lumina/rk3588-orangepi-5-ultra-${kver}.dtb"
+readonly boot_kernel="${rootfs}/boot/Image-${kver}"
 
 [[ "${kver}" != *armbian* ]] || die "Armbian kernel leaked into image: ${kver}"
 install -Dpm 0644 "${rootfs}/usr/lib/modules/${kver}/vmlinuz" \
@@ -226,6 +227,8 @@ fakeroot -- dracut --force --no-hostonly --add selinux --sysroot "${rootfs}" \
     "${rootfs}/boot/initramfs-${kver}.img" "${kver}"
 chroot "${rootfs}" /usr/bin/lumina-orangepi5-ultra-boot-setup \
     --kernel "${kver}" --root LABEL=lumina_root
+[[ "$(od -An -j 56 -N 4 -tx1 "${boot_kernel}" | tr -d '[:space:]')" == 41524d64 ]] ||
+    die 'extlinux kernel does not have the ARM64 Image magic'
 
 chroot "${rootfs}" /usr/sbin/setfiles -F \
     /etc/selinux/targeted/contexts/files/file_contexts / >/dev/null

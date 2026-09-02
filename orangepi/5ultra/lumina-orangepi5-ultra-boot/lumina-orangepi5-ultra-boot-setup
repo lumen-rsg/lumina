@@ -73,11 +73,11 @@ fi
 [[ -n "${kernel_version}" ]] || die 'no installed kernel was found'
 
 for path in \
-    "/boot/vmlinuz-${kernel_version}" \
     "/boot/initramfs-${kernel_version}.img" \
     "/usr/lib/modules/${kernel_version}/dtb/rockchip/rk3588-orangepi-5-ultra.dtb"; do
     [[ -r "${path}" ]] || die "missing boot asset: ${path}"
 done
+/usr/libexec/lumina-orangepi5-ultra-kernel-setup "${kernel_version}"
 /usr/libexec/lumina-orangepi5-ultra-dtb-setup "${kernel_version}"
 
 if [[ -z "${root_argument}" ]]; then

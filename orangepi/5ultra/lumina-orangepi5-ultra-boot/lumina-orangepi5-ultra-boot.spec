@@ -5,7 +5,7 @@
 
 Name:           lumina-orangepi5-ultra-boot
 Version:        %{uboot_version}
-Release:        1.lu26
+Release:        2.lu26
 Summary:        Upstream U-Boot and boot configuration for Orange Pi 5 Ultra
 License:        GPL-2.0-or-later AND MIT AND LicenseRef-Rockchip-Binary-Only
 URL:            https://www.u-boot.org/
@@ -17,6 +17,7 @@ Source2:        extlinux.conf.in
 Source3:        lumina-orangepi5-ultra-boot-setup
 Source4:        lumina-orangepi5-ultra-dtb-setup
 Source5:        95-lumina-orangepi5-ultra.install
+Source6:        lumina-orangepi5-ultra-kernel-setup
 
 BuildRequires:  arm-trusted-firmware-armv8
 BuildRequires:  bc
@@ -39,6 +40,7 @@ Requires:       dtc
 Requires:       sed
 Requires:       util-linux
 Requires:       kernel-core >= 6.18
+Requires:       zstd
 Recommends:     orangepi5-ultra-firmware
 Provides:       bundled(rockchip-rkbin) = %{rkbin_commit}
 
@@ -73,6 +75,8 @@ install -Dpm 0755 %{SOURCE4} \
     %{buildroot}%{_libexecdir}/lumina-orangepi5-ultra-dtb-setup
 install -Dpm 0755 %{SOURCE5} \
     %{buildroot}%{_prefix}/lib/kernel/install.d/95-lumina-orangepi5-ultra.install
+install -Dpm 0755 %{SOURCE6} \
+    %{buildroot}%{_libexecdir}/lumina-orangepi5-ultra-kernel-setup
 
 %post
 if [ -x %{_sbindir}/lumina-orangepi5-ultra-boot-setup ]; then
@@ -85,8 +89,12 @@ fi
 %{_prefix}/lib/kernel/install.d/95-lumina-orangepi5-ultra.install
 %{_sbindir}/lumina-orangepi5-ultra-boot-setup
 %{_libexecdir}/lumina-orangepi5-ultra-dtb-setup
+%{_libexecdir}/lumina-orangepi5-ultra-kernel-setup
 
 %changelog
+* Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2026.07-2.lu26
+- Extract Fedora EFI-zboot kernels into ARM64 Images for U-Boot extlinux
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2026.07-1.lu26
 - Build the Orange Pi 5 Ultra bootloader from upstream U-Boot
 - Use Fedora Trusted Firmware-A and a pinned Rockchip DDR training payload

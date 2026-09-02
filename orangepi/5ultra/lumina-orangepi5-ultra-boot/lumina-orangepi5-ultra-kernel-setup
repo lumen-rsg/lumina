@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+die()
+{
+    printf 'lumina-orangepi5-ultra-kernel-setup: %s\n' "$*" >&2
+    exit 1
+}
+
+hex_at()
+{
+    local path="$1"
+    local offset="$2"
+    local length="$3"
+
+    od -An -j "${offset}" -N "${length}" -tx1 "${path}" |
+        tr -d '[:space:]'
+}
+
+kernel_version="${1:-}"
+if [[ -z "${kernel_version}" ]]; then
+    kernel_version="$({
+        find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null || :
+    } | sort -V | tail -n 1)"
+fi
+[[ -n "${kernel_version}" ]] || die 'no installed kernel was found'
+
+source_kernel="/usr/lib/modules/${kernel_version}/vmlinuz"
+if [[ ! -r "${source_kernel}" ]]; then
+    source_kernel="/boot/vmlinuz-${kernel_version}"
+fi
+readonly source_kernel
+readonly output_kernel="/boot/Image-${kernel_version}"
+[[ -r "${source_kernel}" ]] || die "missing Fedora kernel: ${source_kernel}"
+
+install -d -m 0755 /boot
+temporary_image="$(mktemp "${output_kernel}.XXXXXX")"
+readonly temporary_image
+trap 'rm -f -- "${temporary_image}"' EXIT
+
+if [[ "$(hex_at "${source_kernel}" 56 4)" == 41524d64 ]]; then
+    install -m 0644 "${source_kernel}" "${temporary_image}"
+else
+    [[ "$(hex_at "${source_kernel}" 0 2)" == 4d5a &&
+       "$(hex_at "${source_kernel}" 4 4)" == 7a696d67 &&
+       "$(hex_at "${source_kernel}" 56 4)" == cd238281 ]] ||
+        die 'kernel is neither an ARM64 Image nor a Linux EFI zboot image'
+
+    payload_offset="$(od -An -j 8 -N 4 -tu4 "${source_kernel}" | tr -d '[:space:]')"
+    payload_size="$(od -An -j 12 -N 4 -tu4 "${source_kernel}" | tr -d '[:space:]')"
+    compression="$({
+        dd if="${source_kernel}" bs=1 skip=24 count=32 status=none || :
+    } | tr -d '\0')"
+    readonly payload_offset payload_size compression
+    readonly source_size="$(stat -c %s "${source_kernel}")"
+
+    [[ "${payload_offset}" =~ ^[1-9][0-9]*$ &&
+       "${payload_size}" =~ ^[1-9][0-9]*$ ]] ||
+        die 'invalid EFI zboot payload bounds'
+    (( payload_offset + payload_size <= source_size )) ||
+        die 'EFI zboot payload extends beyond the kernel file'
+    [[ "${compression}" == zstd ]] ||
+        die "unsupported Fedora EFI zboot compression: ${compression:-unknown}"
+
+    dd if="${source_kernel}" bs=1 skip="${payload_offset}" \
+        count="${payload_size}" status=none |
+        zstd -q -d -c >"${temporary_image}"
+fi
+
+[[ "$(hex_at "${temporary_image}" 56 4)" == 41524d64 ]] ||
+    die 'converted kernel does not have the ARM64 Image magic'
+chmod 0644 "${temporary_image}"
+mv -f -- "${temporary_image}" "${output_kernel}"
+trap - EXIT
+printf 'Generated %s from %s\n' "${output_kernel}" "${source_kernel}"

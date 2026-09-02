@@ -25,6 +25,7 @@ for script in \
     "${boot_dir}/95-lumina-orangepi5-ultra.install" \
     "${boot_dir}/lumina-orangepi5-ultra-boot-setup" \
     "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" \
+    "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" \
     "${support_dir}/lumina-orangepi5-ultra-grow-rootfs" \
     "${support_dir}/lumina-orangepi5-ultra-qualify" \
     "${image_builder}" \
@@ -51,6 +52,8 @@ if rg -i '^(Source|BuildRequires|Requires|Recommends):.*armbian' \
     fail 'an Armbian dependency leaked into the mainline boot or image build'
 fi
 
+grep -Fqx '    LINUX /boot/Image-@KERNEL@' "${boot_dir}/extlinux.conf.in" ||
+    fail 'extlinux does not select the booti-compatible ARM64 Image'
 grep -Fqx '    FDT /boot/lumina/rk3588-orangepi-5-ultra-@KERNEL@.dtb' \
     "${boot_dir}/extlinux.conf.in" || fail 'mainline Orange Pi 5 Ultra DTB is not selected'
 grep -Fq 'lsm=lockdown,yama,integrity,selinux' "${boot_dir}/extlinux.conf.in" ||
@@ -60,6 +63,10 @@ grep -Fq '/mmc@fe2d0000/wifi@1 compatible' \
     fail 'mainline brcmfmac DTB generation is missing'
 grep -Fq 'reset-gpios' "${boot_dir}/lumina-orangepi5-ultra-dtb-setup" ||
     fail 'AP6611 reset wiring is missing'
+grep -Fq '7a696d67' "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" ||
+    fail 'Fedora EFI-zboot kernel detection is missing'
+grep -Fq '41524d64' "${boot_dir}/lumina-orangepi5-ultra-kernel-setup" ||
+    fail 'converted ARM64 Image validation is missing'
 
 for firmware in \
     brcmfmac43752-sdio.bin \
@@ -83,6 +90,8 @@ grep -Fq 'bs=512 seek=64' "${image_builder}" ||
 grep -Fq "printf 'label: gpt" "${image_builder}" || fail 'Orange Pi image is not GPT'
 grep -Fq 'lumina-orangepi5-ultra-dtb-setup' "${image_builder}" ||
     fail 'image build does not generate the AP6611-enabled DTB'
+grep -Fq 'extlinux kernel does not have the ARM64 Image magic' "${image_builder}" ||
+    fail 'image build does not validate the extlinux ARM64 Image'
 grep -Fq -- '--add selinux' "${image_builder}" || fail 'SELinux is missing from initramfs'
 grep -Fq 'SELINUX=enforcing' "${image_builder}" || fail 'mainline image is not enforcing'
 grep -Fq '@gnome-desktop' "${image_builder}" || fail 'workstation profile does not install GNOME'
