@@ -1,8 +1,11 @@
 # Orange Pi 5 Ultra qualification
 
-Hardware status: **pending**. Mainline kernel entry has been confirmed over
-UART, but the corrected candidate below has not yet completed a hardware boot.
-This file is an acceptance checklist, not proof of full board acceptance.
+Hardware status: **partial; full acceptance pending**. A superseded candidate
+completed a normal mainline boot and passed 15 of the 18 automated checks.
+The remaining real device failure was onboard Wi-Fi. The corrected candidate
+below has passed offline artifact validation but has not yet been run on the
+board. This file is an acceptance checklist, not proof of full board
+acceptance.
 
 ## Candidate identity
 
@@ -10,22 +13,45 @@ Offline candidate built on 2026-09-02:
 
 - Image filename: `Lumina-26.08-OrangePi-5-Ultra-aarch64.raw.zst`
 - Image SHA-256:
-  `773eaa2ec1c5851cfee823abf71cb4ea83be5c71277e4b242679197ca11d339b`
-- Image sizes: 1,080,688,715 bytes compressed; 4,177,543,680 bytes raw
+  `0f4e6544d04b28aaa36c7951685efeb2dfae433434444357f5ff116d58da21b1`
+- Image sizes: 1,080,689,455 bytes compressed; 4,177,543,680 bytes raw
 - RPM `SHA256SUMS` SHA-256:
-  `cbdff5c5cb2a87f4c8d6da22ffc74647b378c1b1771487c0539dbae34de61aa3`
+  `fe4b4175511c74dcbf221beb7725faeee4ac46e5c53aac817a814633e8ed8fe7`
 - Fedora `kernel-core` NEVRA: `kernel-core-7.1.12-200.fc44.aarch64`
-- U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-3.lu26.aarch64`
-- Build source revision: `52155f17af716bd5f96d0f5c862b44ac9c2659a2`
+- U-Boot RPM NEVRA: `lumina-orangepi5-ultra-boot-2026.07-4.lu26.aarch64`
+- Support RPM NEVRA: `orangepi5-ultra-support-1.0-2.lu26.noarch`
+- Build source revision: `734c590c3db73d12b6830f8d9f6427dd8428469a`
 
 The package build, source checksum manifest, static board contracts, RPM spec
 preprocessing, GPT validation, U-Boot byte comparison, merged-DTB validation,
 SELinux-label validation, initramfs module inspection, compressed-image
 checksum, and Zstandard integrity check passed. An independent artifact
 read-back also confirmed that the SDIO controller selects the GPIO2 mux 0
-pinctrl group, SPI2 retains its separate pinctrl group, the legacy dracut
-SELinux loader is absent, and SELinux remains configured as enforcing. These
-are offline results and do not change hardware status.
+pinctrl group with clock GPIO2_B3, command GPIO2_B2, data GPIO2_A6/A7/B0/B1,
+and active-low reset GPIO2_C5. It also confirmed the AP6611 binding and 150 MHz
+limit, that the installed RPM database owns the running-kernel image through
+`kernel-core`, that the legacy dracut SELinux loader is absent, and that
+SELinux remains configured as enforcing. These are offline results and do not
+change hardware status.
+
+The image with SHA-256
+`773eaa2ec1c5851cfee823abf71cb4ea83be5c71277e4b242679197ca11d339b`
+is superseded. Its 2026-09-02 hardware run completed a normal boot on Linux
+7.1.12 and reported no failed systemd units, kernel taint, or fatal kernel-log
+signatures. The automated checks found the expected board, Panthor GPU and
+render node, Rocket NPU and accelerator node, `r8169` Ethernet, three ALSA
+cards, a connected HDMI output, Bluetooth `hci0`, and NVMe. These results prove
+basic discovery only; the functional and stress checks below remain open.
+
+That run did not enumerate onboard Wi-Fi or load `brcmfmac`. The DTB generator
+passed decimal-looking `11` and `10` to `fdtput -tx`; that option parses cells
+as hexadecimal, so it encoded GPIO2_C1/C0 instead of the board's GPIO2_B3/B2
+SDIO clock/command pins. The current candidate uses hexadecimal `b` and `a`
+and validates every relevant cell after generation. The same run reported the
+old generic `kernel-rpm` check as failed, although artifact read-back resolves
+`/usr/lib/modules/7.1.12-200.fc44.aarch64/vmlinuz` to
+`kernel-core-7.1.12-200.fc44.aarch64`. The replacement check queries that exact
+file owner and preserves the RPM diagnostic if the board still disagrees.
 
 The image with SHA-256
 `1ea8777bad425868c4b3c3f172c361a8d3ddcd2136698b54d94299d51845cbae`
@@ -58,8 +84,8 @@ Record on the hardware run:
 - Capture the complete 1,500,000-baud serial log from power-on through the
   graphical or multi-user target.
 - Confirm the reported device-tree model is `Xunlong Orange Pi 5 Ultra`.
-- Confirm `uname -r` and `rpm -q kernel-core` identify the Fedora kernel and
-  contain no Armbian release suffix.
+- Confirm `uname -r` and `rpm -qf /usr/lib/modules/$(uname -r)/vmlinuz`
+  identify the Fedora kernel and contain no Armbian release suffix.
 - Confirm the first-boot service expands the partition and ext4 filesystem,
   writes `/var/lib/lumina/orangepi5-ultra-rootfs-grown`, and stays inactive on
   the next boot.

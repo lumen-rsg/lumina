@@ -5,10 +5,12 @@ upstream U-Boot, and board-specific RPMs. No kernel or module is copied from an
 Armbian installation.
 
 The current deliverable is a flashable hardware-qualification candidate. The
-software build and offline image checks pass. Hardware testing has confirmed
-entry into the mainline Fedora kernel, but full boot and device acceptance are
-still pending for the corrected candidate. Keep that boundary intact when
-updating `docs/qualification.md`.
+software build and offline image checks pass. Hardware testing of a superseded
+candidate confirmed a normal mainline Fedora boot plus basic GPU, NPU,
+Ethernet, audio, HDMI, Bluetooth, and NVMe discovery. The current candidate
+corrects the SDIO cell encoding that prevented onboard Wi-Fi enumeration.
+Wi-Fi retesting and the functional and stress acceptance matrix are still
+pending. Keep that boundary intact when updating `docs/qualification.md`.
 
 ## Mainline support model
 
