@@ -2,7 +2,7 @@
 
 Name:           btop
 Version:        1.4.7
-Release:        2.lu26
+Release:        3.lu26
 Summary:        Modern resource monitor with NVIDIA Jetson GPU support
 License:        Apache-2.0 AND ISC AND MIT AND LicenseRef-Fedora-Public-Domain
 URL:            https://github.com/aristocratos/btop
@@ -30,7 +30,7 @@ utilization.
 
 %build
 export CXXFLAGS="${CXXFLAGS} -g"
-%make_build GPU_SUPPORT=true INTEL_GPU_SUPPORT=true
+%{__make} -j2 GPU_SUPPORT=true INTEL_GPU_SUPPORT=true
 
 %install
 %make_install PREFIX=%{_prefix} GPU_SUPPORT=true INTEL_GPU_SUPPORT=true
@@ -47,5 +47,8 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/btop.desktop
 %{_mandir}/man1/btop.1.*
 
 %changelog
+* Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 1.4.7-3.lu26
+- Limit compile parallelism for memory-constrained aarch64 builders
+
 * Thu Jul 30 2026 Lumina Linux <packages@linux.1t.ru> - 1.4.7-2.lu26
 - Enable aarch64 GPU monitoring and Tegra nvgpu utilization
