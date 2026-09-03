@@ -12,6 +12,28 @@ packages:
       - common/lumina-artwork/**
     targets:
       - fedora-44-aarch64
+  python-nvidia-ml-py:
+    spec: common/python-nvidia-ml-py/python-nvidia-ml-py.spec
+    paths:
+      - common/python-nvidia-ml-py/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: nvidia_ml_py-13.595.45.tar.gz
+        size: 50780
+        sha256: c9f34897fe0441ff35bc8f35baf80f830a20b0f4e6ce71e0a325bc0e66acf079
+  python-smbus2:
+    spec: common/python-smbus2/python-smbus2.spec
+    paths:
+      - common/python-smbus2/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: smbus2-0.6.1.tar.gz
+        size: 17274
+        sha256: 2b043372abf8f6029a632c3aab36b641c5d5872b1cbad599fc68e17ac4fd90a5
   lumina-jetson-bootconf:
     spec: jetson/orin/lumina-jetson-bootconf/lumina-jetson-bootconf.spec
     paths:
@@ -111,6 +133,87 @@ packages:
     depends_on:
       - nvidia-l4t-driver
     promotion_group: jetson-r39.2.1
+  btop:
+    spec: jetson/orin/btop/btop.spec
+    paths:
+      - jetson/orin/btop/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: btop-1.4.7.tar.gz
+        size: 1280005
+        sha256: 933de2e4d1b2211a638be463eb6e8616891bfba73aef5d38060bd8319baeefc6
+  gnome-control-center:
+    spec: jetson/orin/gnome-control-center/gnome-control-center.spec
+    paths:
+      - jetson/orin/gnome-control-center/**
+    targets:
+      - fedora-44-aarch64
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: gnome-control-center-50.3.tar.xz
+        size: 7106028
+        sha256: 06eebb0fd3056c4d8d78bbd3754c96108f381d70b760da423c5024946944287c
+  nvidia-cuda-runtime:
+    spec: jetson/orin/nvidia-cuda-runtime/nvidia-cuda-runtime.spec
+    paths:
+      - jetson/orin/nvidia-cuda-runtime/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: nvidia-cuda-runtime-13.2.2.tar.gz
+        size: 1452899068
+        sha256: 59ad00015ee23eb8887d441657cd57dcfb8c43ff1a1cd2b884b370c51c72691c
+  nvidia-cuda-toolkit:
+    spec: jetson/orin/nvidia-cuda-toolkit/nvidia-cuda-toolkit.spec
+    paths:
+      - jetson/orin/nvidia-cuda-toolkit/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-cuda-runtime
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: nvidia-cuda-toolkit-13.2.2.tar.gz
+        size: 1709448019
+        sha256: a2931582d64d9c223f6c92126460486d715d81bc554891daa291d41f504b2aad
+  nvidia-l4t-power-gui:
+    spec: jetson/orin/nvidia-l4t-power-gui/nvidia-l4t-power-gui.spec
+    paths:
+      - jetson/orin/nvidia-l4t-power-gui/**
+      - jetson/tools/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+      - nvidia-l4t-tools
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: nvidia-l4t-power-gui-39.2.1.tar.gz
+        size: 67499
+        sha256: 67f959647bd7548a2904a272eba8e012cb2240b707b53d34c7ec9c54b61bfec4
+  jetson-stats:
+    spec: jetson/orin/jetson-stats/jetson-stats.spec
+    paths:
+      - jetson/orin/jetson-stats/**
+    targets:
+      - fedora-44-aarch64
+    depends_on:
+      - nvidia-l4t-driver
+      - nvidia-l4t-tools
+      - python-nvidia-ml-py
+      - python-smbus2
+    promotion_group: jetson-r39.2.1
+    lookaside_sources:
+      - file: jetson-stats-7.2.0.tar.gz
+        size: 2586504
+        sha256: ed114549bf5a2542dc5af6e0a818dfef01365527832b0be34b71fd2d2037b3cf
   orangepi-zero3-firmware:
     spec: orangepi/zero3/orangepi-zero3-firmware/orangepi-zero3-firmware.spec
     paths:
