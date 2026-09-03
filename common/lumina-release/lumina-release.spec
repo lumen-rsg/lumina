@@ -3,7 +3,7 @@
 Name:           lumina-release
 Epoch:          2
 Version:        26.08
-Release:        4.lu26
+Release:        5.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -27,6 +27,7 @@ Source14:       99-default-disable.preset
 Source15:       80-workstation.preset
 Source16:       81-desktop.preset
 Source17:       90-lumina-repositories.repo
+Source18:       RPM-GPG-KEY-lumina-2026
 
 Requires:       fedora-repos(%{fedora_version})
 Requires:       bash
@@ -105,6 +106,7 @@ install -Dpm0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/user-preset/99-d
 install -Dpm0644 %{SOURCE15} %{buildroot}%{_prefix}/lib/systemd/system-preset/80-workstation.preset
 install -Dpm0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/systemd/system-preset/81-desktop.preset
 install -Dpm0644 %{SOURCE17} %{buildroot}%{_datadir}/dnf5/repos.override.d/90-lumina-repositories.repo
+install -Dpm0644 %{SOURCE18} %{buildroot}%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-lumina-2026
 
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 ln -s ../usr/lib/lumina-release %{buildroot}%{_sysconfdir}/lumina-release
@@ -129,6 +131,7 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_sysconfdir}/issue.net
 %{_sysconfdir}/lumina-release
 %{_sysconfdir}/os-release
+%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-lumina-2026
 %{_sysconfdir}/redhat-release
 %{_sysconfdir}/system-release
 %{_sysconfdir}/system-release-cpe
@@ -155,6 +158,9 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-5.lu26
+- Install the Lumina 2026 RPM repository signing key
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-4.lu26
 - Disable the geographically unreliable Cisco OpenH264 repository by default
 
