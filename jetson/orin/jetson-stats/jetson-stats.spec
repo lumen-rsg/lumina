@@ -1,6 +1,6 @@
 Name:           jetson-stats
 Version:        7.2.0
-Release:        1.lu26
+Release:        2.lu26
 Summary:        Interactive NVIDIA Jetson monitoring and control utility
 License:        AGPL-3.0-or-later
 URL:            https://github.com/rbonghi/jetson_stats
@@ -33,7 +33,9 @@ service. Lumina grants access to administrator accounts in the wheel group.
 %autosetup -n jetson_stats-%{version} -p1
 
 %generate_buildrequires
-%pyproject_buildrequires
+# Runtime dependencies are declared explicitly above and are not needed to
+# construct the wheel. Keep staged Lumina runtime packages out of BuildRequires.
+%pyproject_buildrequires -R
 
 %build
 %pyproject_wheel
@@ -72,5 +74,8 @@ install -Dpm0644 scripts/jtop_env.sh \
 %{_datadir}/jetson_stats/
 
 %changelog
+* Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 7.2.0-2.lu26
+- Keep explicitly declared runtime dependencies out of wheel BuildRequires
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 7.2.0-1.lu26
 - Package jtop with L4T 39.2.1 detection and wheel-group administration
