@@ -16,7 +16,8 @@ spec = importlib.util.spec_from_loader(loader.name, loader)
 a = importlib.util.module_from_spec(spec)
 loader.exec_module(a)
 
-class AssistantTests(unittest.TestCase):
+class AssistantFixture:
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.env = patch.dict(os.environ, {"XDG_CONFIG_HOME": self.tmp.name})
@@ -25,6 +26,8 @@ class AssistantTests(unittest.TestCase):
         self.env.stop(); self.tmp.cleanup()
     def config(self, **changes):
         return {"provider":"openai-compatible", "model":"test-model", "endpoint":"https://example.com/v1", "key":"private-test-key"} | changes
+
+class AssistantTests(AssistantFixture, unittest.TestCase):
     def test_unconfigured_never_selects_provider(self):
         self.assertFalse(a.public_status(a.read_config())["configured"])
     def test_private_file_and_redacted_status(self):
@@ -63,7 +66,7 @@ class AssistantTests(unittest.TestCase):
         request = a.build_request(self.config(), [{"role":"user","content":"hello"}])
         self.assertIsNone(a.NoRedirect().redirect_request(request,None,302,"redirect",{},"https://other.example"))
 
-class WireTests(AssistantTests):
+class WireTests(AssistantFixture, unittest.TestCase):
     def test_local_http_request_and_response(self):
         captured = {}
         class Handler(http.server.BaseHTTPRequestHandler):

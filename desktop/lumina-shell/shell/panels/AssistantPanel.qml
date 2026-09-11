@@ -20,29 +20,37 @@ ColumnLayout {
         opacity: 0.65
         wrapMode: Text.Wrap
     }
-    ColumnLayout {
+    ScrollView {
+        id: providerScroll
         visible: root.editing
         Layout.fillWidth: true
-        ComboBox {
-            id: provider
-            palette.button: Appearance.colors.colLayer2
-            palette.buttonText: Appearance.m3colors.m3onSurface
-            palette.base: Appearance.colors.colLayer1
-            palette.text: Appearance.m3colors.m3onSurface
-            palette.highlight: Appearance.m3colors.m3primary
-            palette.highlightedText: Appearance.m3colors.m3onPrimary
-            background: Rectangle { radius: 12; color: Appearance.colors.colLayer2 }
-            Layout.fillWidth: true
-            model: ["Choose provider", "OpenAI-compatible", "Anthropic", "Gemini", "Ollama"]
-            currentIndex: Math.max(0, ["", "openai-compatible", "anthropic", "gemini", "ollama"].indexOf(Assistant.provider))
-        }
-        InputField { id: modelName; Layout.fillWidth: true; placeholderText: "Model ID from your provider"; text: Assistant.model; Accessible.name: "Model ID" }
-        InputField { id: endpoint; Layout.fillWidth: true; visible: provider.currentIndex === 1 || provider.currentIndex === 4; placeholderText: provider.currentIndex === 4 ? "http://localhost:11434" : "https://your-provider.example/v1"; text: Assistant.endpoint; Accessible.name: "API base URL" }
-        InputField { id: apiKey; Layout.fillWidth: true; placeholderText: "API key (leave blank to keep the saved key)"; echoMode: TextInput.Password; Accessible.name: "API key" }
-        StyledText { Layout.fillWidth: true; text: "Only messages you send here go to the selected provider. Desktop context is never attached automatically."; wrapMode: Text.Wrap; font.pixelSize: 13; opacity: 0.7 }
-        ActionButton {
-            label: "Save provider"; symbol: "check"; enabled: !Assistant.working && provider.currentIndex > 0 && modelName.text.trim() !== ""
-            onClicked: { Assistant.configure(["", "openai-compatible", "anthropic", "gemini", "ollama"][provider.currentIndex], modelName.text.trim(), endpoint.text.trim(), apiKey.text); apiKey.clear(); root.editing = false; }
+        Layout.preferredHeight: Math.min(providerSettings.implicitHeight, root.height * 0.58)
+        contentWidth: availableWidth
+        clip: true
+        ColumnLayout {
+            id: providerSettings
+            width: providerScroll.availableWidth
+            ComboBox {
+                id: provider
+                palette.button: Appearance.colors.colLayer2
+                palette.buttonText: Appearance.m3colors.m3onSurface
+                palette.base: Appearance.colors.colLayer1
+                palette.text: Appearance.m3colors.m3onSurface
+                palette.highlight: Appearance.m3colors.m3primary
+                palette.highlightedText: Appearance.m3colors.m3onPrimary
+                background: Rectangle { radius: 12; color: Appearance.colors.colLayer2 }
+                Layout.fillWidth: true
+                model: ["Choose provider", "OpenAI-compatible", "Anthropic", "Gemini", "Ollama"]
+                currentIndex: Math.max(0, ["", "openai-compatible", "anthropic", "gemini", "ollama"].indexOf(Assistant.provider))
+            }
+            InputField { id: modelName; Layout.fillWidth: true; placeholderText: "Model ID from your provider"; text: Assistant.model; Accessible.name: "Model ID" }
+            InputField { id: endpoint; Layout.fillWidth: true; visible: provider.currentIndex === 1 || provider.currentIndex === 4; placeholderText: provider.currentIndex === 4 ? "http://localhost:11434" : "https://your-provider.example/v1"; text: Assistant.endpoint; Accessible.name: "API base URL" }
+            InputField { id: apiKey; Layout.fillWidth: true; placeholderText: "API key (leave blank to keep the saved key)"; echoMode: TextInput.Password; Accessible.name: "API key" }
+            StyledText { Layout.fillWidth: true; text: "Only messages you send here go to the selected provider. Desktop context is never attached automatically."; wrapMode: Text.Wrap; font.pixelSize: 13; opacity: 0.7 }
+            ActionButton {
+                label: "Save provider"; symbol: "check"; enabled: !Assistant.working && provider.currentIndex > 0 && modelName.text.trim() !== ""
+                onClicked: { Assistant.configure(["", "openai-compatible", "anthropic", "gemini", "ollama"][provider.currentIndex], modelName.text.trim(), endpoint.text.trim(), apiKey.text); apiKey.clear(); root.editing = false; }
+            }
         }
     }
     ListView {

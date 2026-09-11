@@ -38,7 +38,7 @@ Singleton {
         id: worker
         command: [Quickshell.env("LUMINA_ASSISTANT_HELPER") || "/usr/libexec/lumina-assistant"]
         stdinEnabled: true
-        onStarted: { write(root.pending + "\n"); stdinEnabled = false; }
+        onStarted: { write(root.pending + "\n"); root.pending = ""; stdinEnabled = false; }
         onRunningChanged: if (!running) stdinEnabled = true
         stdout: StdioCollector {
             onStreamFinished: {

@@ -21,7 +21,7 @@ Path(sys.argv[2]).write_text(json.dumps({'background':{'wallpaperPath':sys.argv[
 PY
 unset WAYLAND_DISPLAY
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
-export WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
+export WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=${LUMINA_QA_OUTPUTS:-1} WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
 export QT_QUICK_BACKEND=software QT_QPA_PLATFORM=wayland
 export LUMINA_ASSISTANT_HELPER="$repo/desktop/lumina-shell/files/lumina-assistant"
 compositor_pid= shell_pid= app_pid= audio_pid=
@@ -44,7 +44,9 @@ for _ in {1..100}; do
 done
 : "${WAYLAND_DISPLAY:?Compositor failed to start}"
 export CHROMA_CONTROL_SOCKET="$XDG_RUNTIME_DIR/chroma/$WAYLAND_DISPLAY/control.sock"
-wlr-randr --output HEADLESS-1 --custom-mode 1280x800@60Hz
+for ((output=1; output<=WLR_HEADLESS_OUTPUTS; output++)); do
+    wlr-randr --output "HEADLESS-$output" --custom-mode "${LUMINA_QA_MODE:-1280x800}@60Hz" --scale "${LUMINA_QA_SCALE:-1}"
+done
 quickshell -p "$repo/desktop/lumina-shell/shell" >"$artifacts/shell.log" 2>&1 &
 shell_pid=$!
 ready=0
@@ -57,6 +59,8 @@ done
 weston-terminal >"$artifacts/terminal.log" 2>&1 &
 app_pid=$!
 sleep 1
+notify-send --app-name='Lumina QA' 'Cassiopeia notification' 'Notification delivery through the Lumina shell'
+sleep 0.2
 quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell status >"$artifacts/status.json"
 grim "$artifacts/desktop.png"
 for panel in assistant overview launcher settings notifications clock; do
@@ -65,6 +69,11 @@ for panel in assistant overview launcher settings notifications clock; do
     grim "$artifacts/$panel.png"
     quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell close
 done
+mkdir -p "$artifacts/action-fixture/services"
+cp "$repo/desktop/tests/ChromaFixture.qml" "$artifacts/action-fixture/shell.qml"
+cp "$repo/desktop/lumina-shell/shell/services/Chroma.qml" "$artifacts/action-fixture/services/Chroma.qml"
+timeout 20 quickshell -p "$artifacts/action-fixture" >"$artifacts/actions.log" 2>&1
+grep -q CHROMA_ACTION_FIXTURE_PASS "$artifacts/actions.log"
 python3 - "$artifacts/status.json" <<'PY'
 import json,sys
 state=json.load(open(sys.argv[1]))

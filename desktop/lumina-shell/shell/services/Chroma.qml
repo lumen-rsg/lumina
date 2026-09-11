@@ -11,7 +11,7 @@ Singleton {
     readonly property bool connected: socket.connected
     function action(command) {
         if (!socket.connected || /[\r\n]/.test(command)) return;
-        socket.write(command + "\n");
+        socket.write("action " + command + "\n");
         socket.flush();
     }
     Socket {

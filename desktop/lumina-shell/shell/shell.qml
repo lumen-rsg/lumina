@@ -83,7 +83,7 @@ ShellRoot {
                                 implicitWidth: 34
                                 Accessible.name: modelData.title || modelData.id
                                 contentItem: Image { source: modelData.icon; sourceSize.width: 20; sourceSize.height: 20; fillMode: Image.PreserveAspectFit }
-                                onClicked: modelData.activate(bar, 0, bar.height)
+                                onClicked: modelData.activate()
                                 altAction: () => modelData.display(bar, 0, bar.height)
                             }
                         }
