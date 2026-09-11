@@ -11,7 +11,7 @@ Text {
     verticalAlignment: Text.AlignVCenter
     property bool shouldUseNumberFont: /^\d+$/.test(root.text)
     property var defaultFont: shouldUseNumberFont ? Appearance.font.family.numbers : Appearance.font.family.main
-    
+
     font {
         hintingPreference: Font.PreferDefaultHinting
         family: defaultFont

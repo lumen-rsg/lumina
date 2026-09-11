@@ -87,4 +87,3 @@ class WireTests(AssistantTests):
             server.shutdown(); server.server_close(); thread.join()
 
 if __name__ == '__main__': unittest.main()
-
