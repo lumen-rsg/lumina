@@ -29,6 +29,48 @@ list the outstanding modules and optional dependencies.
 - [ ] Physical graphics, input, audio, networking, locking, suspend, portals,
   multi-monitor behavior and Secure Boot qualification.
 
+## Fresh-install bootstrap correction
+
+The development ISO with SHA-256 `6397b0790ac0c6265b11dc61060751be1fd4809a2cc112fb4619b56978e82adf`
+was subsequently installed into a disposable 32 GiB ARM64 QEMU disk. Anaconda
+downloaded 816 RPMs but failed the crypto-policies pre-install script: `/bin/sh`
+could not execute because glibc had not yet installed its dynamic loader.
+This supersedes the earlier boot-only observation below; that ISO does not
+pass installation acceptance.
+
+Replaying the exact cached RPM headers reproduced the wrong ordering.
+`lumina-release` 2:26.9-2.lu26 marks its four post-transaction branding tools
+as `Requires(meta)`, retaining runtime dependencies without bringing their
+crypto stack into the release/setup/glibc bootstrap cycle. Ten shuffled
+transaction-order checks put glibc before crypto-policies with no unresolved
+dependencies. A fresh Fedora 44 container root then installed the complete
+816-package selection, replacing only lumina-release, with RPM exit status 0.
+All 816 package names were present, plus the imported Fedora public key;
+`chroot ... /bin/sh` executed successfully. Container-only catalog, audit,
+xattr and udev-hwdb warnings remain in the log. This is transaction evidence,
+not installed-desktop boot acceptance.
+
+Logs, the original RPM header archive and installer failure logs are retained
+under `desktop/evidence/installed-aarch64-dev/`. Exact cached RPMs and the
+rebuilt development ISO are retained under `desktop/dist/`.
+
+## LuminaCI artifact correction
+
+The corporate VPN restored SSH and both native workers. ARM64 retry
+`52871873-0872-4e9d-afba-22aeca12c7cd` used source `60aeace2c49103abdb5d1a6c929f7e89fb7825a9`
+but failed artifact ingestion: the service rejected the `^` in Quickshell's
+valid RPM snapshot version. Other packages' publication stages were cancelled;
+the x64 follow-up was not dispatched.
+
+LuminaCI commit `09263b9` on `codex/rpm-snapshot-artifacts` shares the archive
+and manifest filename validator and accepts RPM's `^` and `~` version operators.
+All 241 build-service tests passed, including regression cases for snapshot
+versions and unsafe paths. The service image `lumina-build-service:09263b9`
+is deployed and healthy; public console and repository HTTPS returned 200.
+The previous image and environment backup remain available for rollback.
+Job identity, digest, signature, archive-path and publication checks remain
+enforced. The package matrix must be rebuilt with the corrected release RPM.
+
 ## Source and package evidence
 
 Native local builder: Fedora 44 aarch64, Qt 6.11.2. All ten binary RPMs and

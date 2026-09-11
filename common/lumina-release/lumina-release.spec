@@ -3,7 +3,7 @@
 Name:           lumina-release
 Epoch:          2
 Version:        26.9
-Release:        1.lu26
+Release:        2.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -30,10 +30,13 @@ Source17:       90-lumina-repositories.repo
 Source18:       RPM-GPG-KEY-lumina-2026
 
 Requires:       fedora-repos(%{fedora_version})
-Requires:       bash
-Requires:       coreutils
-Requires:       grep
-Requires:       sed
+# Branding runs after the transaction. These runtime dependencies must not
+# pull coreutils and its crypto stack into the release/setup/glibc bootstrap
+# cycle, where a shell scriptlet could run before the dynamic loader exists.
+Requires(meta): bash
+Requires(meta): coreutils
+Requires(meta): grep
+Requires(meta): sed
 
 Provides:       fedora-release = 1:%{fedora_version}-%{release}
 Provides:       fedora-release-common = 1:%{fedora_version}-%{release}
@@ -158,6 +161,9 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.9-2.lu26
+- Keep post-transaction branding tools out of bootstrap dependency ordering
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.9-1.lu26
 - Introduce Lumina 26.9 Cassiopeia identity and desktop artwork
 
