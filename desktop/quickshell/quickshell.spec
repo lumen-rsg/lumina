@@ -1,7 +1,9 @@
 %global commit 2d3b3e9c70ef380dff751b61d334dc88df016c29
+# Native CI workers have 2 CPUs and 4 GiB; RPM otherwise counts host CPUs.
+%global _smp_ncpus_max 2
 Name:           quickshell
 Version:        0.3.1^20260911git2d3b3e9
-Release:        1.lu26
+Release:        2.lu26
 Summary:        QtQuick desktop shell toolkit for Lumina
 License:        LGPL-3.0-only AND GPL-3.0-only
 URL:            https://github.com/quickshell-mirror/quickshell
@@ -58,7 +60,8 @@ echo '794f7c190ffb3d0b885169be459caf4b787ef07ff9faf3f9e144087fe9cbfffb  %{SOURCE
     -DCRASH_HANDLER=OFF \
     -DHYPRLAND=OFF \
     -DSCREENCOPY_HYPRLAND_TOPLEVEL=OFF \
-    -DBUILD_TESTING=ON
+    -DBUILD_TESTING=ON \
+    -DCMAKE_AUTOGEN_PARALLEL=2
 %cmake_build
 
 %install
@@ -77,5 +80,8 @@ QT_QPA_PLATFORM=xcb xvfb-run -a ctest --test-dir %{__cmake_builddir} --output-on
 %{_libdir}/qt6/qml/Quickshell/
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.3.1^20260911git2d3b3e9-2.lu26
+- Bound compiler and Qt code-generation parallelism for native CI workers
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.3.1^20260911git2d3b3e9-1.lu26
 - Move the dotfiles toolkit build into LuminaCI with native Qt ABI matching

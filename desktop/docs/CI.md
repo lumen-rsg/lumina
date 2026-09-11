@@ -57,6 +57,11 @@ The native runners are pinned to these verified live profile references:
 - `fedora-44-aarch64`: `registry.lumina.1t.ru/lumina-rpm-build@sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568`
 - `fedora-44-x86_64`: `registry.lumina.1t.ru/lumina-rpm-build@sha256:7d1b3de3f30585099fd8d2b89765d8816cf86293ffe11c7c523ddb08d2afc8e9`
 
+Quickshell limits compilation and Qt autogen to two concurrent jobs. The live
+workers provide 2 CPUs and 4 GiB, while RPM initially counted 12 ARM host CPUs;
+the native run reached the memory limit with over 4 GiB of anonymous memory.
+The toolkit release is `2.lu26` for this build-resource correction.
+
 Each pipeline builds, scans, signs with the active Lumina key, and stages for
 `lumen` (`82886b10-0a9f-442a-a3fc-2e95afbaa254`). Native promotion gates must pass
 before publication. Project credentials remain server-side. The initial
