@@ -35,10 +35,10 @@ firewalld
 usermod -L root
 systemctl set-default graphical.target
 mkdir -p /etc/gdm
-# Prefer the Lumina session for new users; GDM retains later user choices.
+# New-account session defaults are provided by lumina-desktop's AccountsService
+# templates. GDM retains users' subsequent session choices.
 cat > /etc/gdm/custom.conf <<'GDM'
 [daemon]
 WaylandEnable=true
-DefaultSession=lumina.desktop
 GDM
 %end

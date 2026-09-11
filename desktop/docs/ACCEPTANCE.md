@@ -69,7 +69,50 @@ versions and unsafe paths. The service image `lumina-build-service:09263b9`
 is deployed and healthy; public console and repository HTTPS returned 200.
 The previous image and environment backup remain available for rollback.
 Job identity, digest, signature, archive-path and publication checks remain
-enforced. The package matrix must be rebuilt with the corrected release RPM.
+enforced.
+
+Retry `c5ee534a-47c4-4d79-a177-67573794c184` built, scanned and signed all ten
+ARM64/noarch packages from source `c4774c1`. All ten downloaded primary RPMs
+passed independent signature and digest verification with the shipped Lumina
+2026 key. Publication failed at native gate `60c92b37-85a6-818b-b123-0fc1c7f9bf6a`:
+its separate Bash filename check also rejected `^`. LuminaCI commit `b665492`
+corrects that check; all 249 BuildService tests pass, including execution of
+the actual Bash condition with valid snapshot versions and unsafe names.
+The deployed `lumina-build-service:b665492` is healthy, and console/repository
+HTTPS returned 200. No publication gate was bypassed. The next candidate must
+pass the native upgrade transaction before publication.
+
+## Installed ARM64 session corrections
+
+Development ISO SHA-256 `412db58c6cccd9ee88104ef0a7351d1b2e08bd46cae3db726073bd1ba81a83bd`
+completed installation and rebooted into kernel `7.2.4-200.fc44.aarch64`,
+but its original installed package selection did not reach the desktop.
+Fedora's unrelated `chroma-1.21` puzzle game satisfied the old compositor
+dependency, and the profile without weak dependencies omitted `dbus-daemon`
+and `systemd-pam`. GDM could neither launch its session bus nor register a
+user systemd manager.
+
+The compositor RPM is now `chroma-compositor`, explicitly required by
+`lumina-desktop` and conflicting with Fedora's game that owns the same binary
+path. Desktop dependencies explicitly include both login components. The
+updated local compositor build passed five tests. A DNF transaction in the
+installed VM removed the game, installed the compositor and its dependencies,
+and upgraded the desktop and Quickshell packages. GDM then worked.
+
+GDM 50 does not use the old `DefaultSession` installer setting. AccountsService
+templates now select Lumina for new standard and administrator accounts,
+following the [documented template mechanism](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/administering_rhel_by_using_the_gnome_desktop_environment/setting-a-default-desktop-session-for-all-users).
+A fresh QA administrator preselected Lumina and logged into Chroma with
+Lumina Shell. The existing account retained its GNOME preference. The greeter
+uses a 64-pixel white Lumina logo; the initial oversized SVG attempt was
+replaced. The installed desktop displayed the Cassiopeia wallpaper and bar.
+`chroma` and `quickshell` ran in a Wayland user session with SELinux enforcing.
+
+This is a **repaired development VM**, not an exact signed-ISO acceptance pass.
+Logs under `desktop/evidence/installed-aarch64-fixed/` retain the dependency
+transactions and installed-session evidence. Portal app-ID registration and
+VM camera/Bluetooth warnings remain unqualified. Fresh signed media, x64 and
+physical-device acceptance are still open.
 
 ## Source and package evidence
 

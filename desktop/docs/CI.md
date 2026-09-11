@@ -13,7 +13,9 @@ Both projects use `https://github.com/lumen-rsg/lumina.git`, initially on
 `codex/cassiopeia-desktop`. Bind every package ID in each manifest to its spec
 and the matching approved native build profile. The ARM64 manifest
 contains ten packages; x64 contains the three native packages (`quickshell`,
-`chroma`, and `wl-clip-persist`). Neither includes board packages. The main repository manifest
+`chroma`, and `wl-clip-persist`). The `chroma` pipeline builds the
+`chroma-compositor` RPM: Fedora's unrelated puzzle game already uses the
+package name `chroma`. Neither includes board packages. The main repository manifest
 retains its existing 26 package definitions and targets, including the x64
 identity binding. Desktop definitions live in `.lumina/desktop-packages.yaml`;
 only the two desktop projects consume the generated desktop manifests. Generate the desktop manifests with

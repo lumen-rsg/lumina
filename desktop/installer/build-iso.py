@@ -67,7 +67,7 @@ def main():
             records.append(f'{digest(rpm)}  {rpm.name}')
             names.add(name)
         required = {'lumina-release', 'lumina-artwork', 'lumina-desktop', 'lumina-shell',
-                    'chroma', 'quickshell', 'wl-clip-persist', 'bibata-cursor-theme',
+                    'chroma-compositor', 'quickshell', 'wl-clip-persist', 'bibata-cursor-theme',
                     'google-sans-flex-vf-fonts', 'google-material-symbols-vf-rounded-fonts'}
         if missing := required - names:
             parser.error('missing Lumina packages: ' + ', '.join(sorted(missing)))

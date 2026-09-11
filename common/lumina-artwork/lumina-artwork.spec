@@ -1,6 +1,6 @@
 Name:           lumina-artwork
 Version:        26.9
-Release:        1.lu26
+Release:        2.lu26
 Summary:        Desktop, installer, and boot artwork for 1T Lumina
 License:        LicenseRef-1T-Lumina-Artwork
 URL:            https://linux.1t.ru/
@@ -30,6 +30,8 @@ defaults, application icon integration, and a Lumina Plymouth boot theme.
 %build
 rsvg-convert --width=256 --height=256 %{SOURCE2} \
     --output lumina-logo.png
+rsvg-convert --width=64 --height=64 %{SOURCE2} \
+    --output lumina-gdm-logo.png
 
 %install
 install -Dpm0644 %{SOURCE0} \
@@ -38,6 +40,8 @@ install -Dpm0644 %{SOURCE1} \
     %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/lumina-logo.svg
 install -Dpm0644 %{SOURCE1} \
     %{buildroot}%{_datadir}/pixmaps/lumina-logo.svg
+install -Dpm0644 lumina-gdm-logo.png \
+    %{buildroot}%{_datadir}/pixmaps/lumina-gdm-logo.png
 install -Dpm0644 %{SOURCE3} \
     %{buildroot}%{_datadir}/gnome-background-properties/lumina.xml
 install -Dpm0644 %{SOURCE4} \
@@ -58,9 +62,13 @@ install -Dpm0644 lumina-logo.png \
 %{_datadir}/gnome-background-properties/lumina.xml
 %{_datadir}/icons/hicolor/scalable/apps/lumina-logo.svg
 %{_datadir}/pixmaps/lumina-logo.svg
+%{_datadir}/pixmaps/lumina-gdm-logo.png
 %{_datadir}/plymouth/themes/lumina/
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-2.lu26
+- Provide a correctly sized white logo for the graphical greeter
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-1.lu26
 - Introduce Lumina 26.9 Cassiopeia identity and desktop artwork
 

@@ -1,5 +1,6 @@
 %global commit c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c
-Name:           chroma
+%global _smp_ncpus_max 2
+Name:           chroma-compositor
 Version:        0.1.0^20260911gitc310258
 Release:        1.lu26
 Summary:        Spatial Wayland compositor for Lumina
@@ -38,7 +39,11 @@ Requires:       brightnessctl
 Requires:       kitty
 Requires:       python3
 Requires:       dbus-tools
+Requires:       /usr/bin/dbus-run-session
 Requires:       systemd
+# Fedora's unrelated puzzle game owns /usr/bin/chroma. Keep the RPM identity
+# distinct so dependency solving cannot select that package as our compositor.
+Conflicts:      chroma
 
 %description
 Chroma's infinite spatial canvas, teleport points, card stacks, Wayland
@@ -76,3 +81,4 @@ install -pm0755 %{SOURCE2} %{buildroot}%{_bindir}/chroma-polkit-agent
 %changelog
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260911gitc310258-1.lu26
 - Package pinned Chroma compositor and session helpers with Lumina Shell
+- Use an unambiguous compositor package name and require the session bus tool
