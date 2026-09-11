@@ -2,13 +2,15 @@
 %global _smp_ncpus_max 2
 Name:           chroma-compositor
 Version:        0.1.0^20260911gitc310258
-Release:        1.lu26
+Release:        2.lu26
 Summary:        Spatial Wayland compositor for Lumina
 License:        MIT
 URL:            https://github.com/lumen-rsg/chroma
 Source0:        https://github.com/lumen-rsg/chroma/archive/%{commit}/chroma-%{commit}.tar.gz
 Source1:        chroma-shell
 Source2:        chroma-polkit-agent
+Source3:        test-clipboard-integration.sh
+Patch0:         0001-handle-clipboard-selection-requests.patch
 ExclusiveArch:  aarch64 x86_64
 BuildRequires:  gcc-c++
 BuildRequires:  meson
@@ -21,6 +23,7 @@ BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(pixman-1)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  python3
+BuildRequires:  wl-clipboard
 Requires:       lumina-shell = 26.9
 Requires:       xorg-x11-server-Xwayland
 Requires:       wl-clip-persist
@@ -52,7 +55,7 @@ excludes the upstream Chroma Quickshell configuration.
 
 %prep
 echo '0f8f6d45bc80748b6e04a84545a552270167938045c1ef7f324e531bb023c60a  %{SOURCE0}' | sha256sum -c -
-%autosetup -n chroma-%{commit}
+%autosetup -p1 -n chroma-%{commit}
 
 %build
 %meson
@@ -69,6 +72,7 @@ install -pm0755 %{SOURCE2} %{buildroot}%{_bindir}/chroma-polkit-agent
 %check
 # Integration requires a nested Wayland session; run it in desktop QA.
 %meson_test --no-suite integration
+bash %{SOURCE3} %{_vpath_builddir}/chroma
 
 %files
 %license LICENSE
@@ -79,6 +83,10 @@ install -pm0755 %{SOURCE2} %{buildroot}%{_bindir}/chroma-polkit-agent
 %{_datadir}/xdg-desktop-portal/chroma-portals.conf
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260911gitc310258-2.lu26
+- Handle regular and primary clipboard selection requests
+- Run both clipboard round trips in an isolated headless compositor at build time
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260911gitc310258-1.lu26
 - Package pinned Chroma compositor and session helpers with Lumina Shell
 - Use an unambiguous compositor package name and require the session bus tool

@@ -1,0 +1,104 @@
+Subject: Accept validated regular and primary selection requests
+Origin: local Chroma clipboard fix based on c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c
+
+diff --git a/src/seat.cpp b/src/seat.cpp
+index 0f0a275..0819f1b 100644
+--- a/src/seat.cpp
++++ b/src/seat.cpp
+@@ -12,6 +12,7 @@
+ #include <xkbcommon/xkbcommon.h>
+ extern "C" {
+ #include <wlr/interfaces/wlr_keyboard.h>
++#include <wlr/types/wlr_primary_selection.h>
+ }
+ 
+ namespace chroma {
+@@ -35,6 +36,8 @@ SeatManager::SeatManager(WlrootsServer* server, Canvas* canvas, FocusTracker* fo
+     wl_list_init(&on_cursor_swipe_begin_.link);
+     wl_list_init(&on_cursor_swipe_update_.link);
+     wl_list_init(&on_cursor_swipe_end_.link);
++    wl_list_init(&on_request_set_selection_.link);
++    wl_list_init(&on_request_set_primary_selection_.link);
+ }
+ 
+ SeatManager::~SeatManager() {
+@@ -51,6 +54,8 @@ SeatManager::~SeatManager() {
+     wl_list_remove(&on_cursor_swipe_begin_.link);
+     wl_list_remove(&on_cursor_swipe_update_.link);
+     wl_list_remove(&on_cursor_swipe_end_.link);
++    wl_list_remove(&on_request_set_selection_.link);
++    wl_list_remove(&on_request_set_primary_selection_.link);
+ 
+     for (auto& [device, state] : pointers_) {
+         (void)device;
+@@ -125,6 +130,17 @@ void SeatManager::connect() {
+     wl_signal_add(&server_->cursor->events.swipe_end,
+                   &on_cursor_swipe_end_);
+ 
++    // Data-device and primary-selection clients cannot update the seat's
++    // selections directly. The compositor must explicitly accept each valid
++    // request after wlroots has checked its serial.
++    on_request_set_selection_.notify = handle_request_set_selection;
++    wl_signal_add(&server_->seat->events.request_set_selection,
++                  &on_request_set_selection_);
++    on_request_set_primary_selection_.notify =
++        handle_request_set_primary_selection;
++    wl_signal_add(&server_->seat->events.request_set_primary_selection,
++                  &on_request_set_primary_selection_);
++
+     wlr_xcursor_manager_load(server_->xcursor_mgr, 1.0f);
+     wlr_cursor_set_xcursor(server_->cursor, server_->xcursor_mgr, "left_ptr");
+ 
+@@ -132,6 +148,27 @@ void SeatManager::connect() {
+     initialize_layout_state();
+ }
+ 
++void SeatManager::handle_request_set_selection(
++    wl_listener* listener, void* data)
++{
++    SeatManager* self = wl_container_of(
++        listener, self, on_request_set_selection_);
++    auto* event = static_cast<wlr_seat_request_set_selection_event*>(data);
++    wlr_seat_set_selection(
++        self->server_->seat, event->source, event->serial);
++}
++
++void SeatManager::handle_request_set_primary_selection(
++    wl_listener* listener, void* data)
++{
++    SeatManager* self = wl_container_of(
++        listener, self, on_request_set_primary_selection_);
++    auto* event = static_cast<
++        wlr_seat_request_set_primary_selection_event*>(data);
++    wlr_seat_set_primary_selection(
++        self->server_->seat, event->source, event->serial);
++}
++
+ xkb_keymap* SeatManager::build_keymap() const {
+     const KeyboardConfig keyboard_config = effective_keyboard_config();
+ 
+diff --git a/src/seat.hpp b/src/seat.hpp
+index b7a3dfd..f288483 100644
+--- a/src/seat.hpp
++++ b/src/seat.hpp
+@@ -194,6 +194,8 @@ private:
+     wl_listener on_cursor_swipe_begin_;
+     wl_listener on_cursor_swipe_update_;
+     wl_listener on_cursor_swipe_end_;
++    wl_listener on_request_set_selection_;
++    wl_listener on_request_set_primary_selection_;
+ 
+     static void handle_new_input(wl_listener* listener, void* data);
+     void attach_input_device(wlr_input_device* device);
+@@ -203,6 +205,11 @@ private:
+     static void handle_keyboard_modifiers(wl_listener* listener, void* data);
+     static void handle_keyboard_destroy(wl_listener* listener, void* data);
+ 
++    // Clipboard handlers
++    static void handle_request_set_selection(wl_listener* listener, void* data);
++    static void handle_request_set_primary_selection(
++        wl_listener* listener, void* data);
++
+     // Pointer handlers
+     static void handle_pointer_motion(wl_listener* listener, void* data);
+     static void handle_pointer_motion_absolute(wl_listener* listener, void* data);

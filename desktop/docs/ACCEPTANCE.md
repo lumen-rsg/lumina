@@ -24,7 +24,7 @@ list the outstanding modules and optional dependencies.
 - [x] ARM64 development network ISO composition, media checksum and UEFI boot to Anaconda.
 - [ ] Native x86-64 RPM builds and empty-root dependency closure.
 - [ ] Signed LuminaCI publication for both architectures.
-- [ ] ARM64 installer completes installation and boots the installed desktop.
+- [x] ARM64 development installer completes installation and boots the installed desktop.
 - [ ] x86-64 installer completes installation and boots the installed desktop.
 - [ ] Physical graphics, input, audio, networking, locking, suspend, portals,
   multi-monitor behavior and Secure Boot qualification.
@@ -113,6 +113,38 @@ Logs under `desktop/evidence/installed-aarch64-fixed/` retain the dependency
 transactions and installed-session evidence. Portal app-ID registration and
 VM camera/Bluetooth warnings remain unqualified. Fresh signed media, x64 and
 physical-device acceptance are still open.
+
+The next fresh development ISO, SHA-256
+`97ddfe85df570369a04c10b5eb3caebfb90aaf7b6ac9174191f16465ca19a2d3`,
+passed its boot-time media check, installed 828 RPMs into an empty 32 GiB ARM64
+disk, rebooted into the branded greeter and logged into Lumina Shell without
+post-install package or configuration repairs. Its package list contains
+the corrected compositor identity and login dependencies. Evidence is under
+`desktop/evidence/installed-aarch64-login/`. This image still predates the
+clipboard correction below and is development media, not the signed release.
+
+## Clipboard correction before publication
+
+Installed-session QA confirmed terminal launch, canvas zoom from 100% to 110%,
+window close, automatic idle lock and password unlock. No SELinux AVC records
+were found in that VM. A regular clipboard probe failed, and the isolated
+regular/primary selection fixture reproduced the failure on the pinned
+compositor. It lacked handlers for wlroots seat selection requests.
+
+The two-file clipboard fix already present in the separate local Chroma
+checkout is carried as a Lumina RPM patch, based on upstream `c310258`, without
+changing or committing that checkout's other work. `chroma-compositor`
+release 2 passes the existing five tests and both clipboard round trips in
+its RPM `%check`. The same test fails against the original installed RPM and
+passes against the upgraded RPM inside the Fedora VM. The desktop release 3
+dependency requires this correction. The patch and test are SRPM inputs;
+neither imports Chroma's default Quickshell.
+
+Delivery `17f14376-af3a-41bf-92b9-081f8e966eea` from `e8fbfc0` was deliberately
+cancelled before publication after finding the clipboard defect. Six packages
+had signed successfully; Quickshell was still compiling. Its status is failed
+(`project-build-failed`) because its build was cancelled. The x64 follow-up
+was not dispatched. A new full matrix must pass with the clipboard patch.
 
 ## Source and package evidence
 

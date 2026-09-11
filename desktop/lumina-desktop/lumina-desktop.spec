@@ -1,6 +1,6 @@
 Name:           lumina-desktop
 Version:        26.9
-Release:        2.lu26
+Release:        3.lu26
 Summary:        Lumina Cassiopeia desktop composition
 License:        MIT
 URL:            https://github.com/lumen-rsg/lumina
@@ -12,7 +12,7 @@ BuildArch:      noarch
 Requires:       lumina-release >= 2:26.9
 Requires:       lumina-artwork >= 26.9-2.lu26
 Requires:       lumina-shell = 26.9
-Requires:       chroma-compositor >= 0.1.0^20260911gitc310258
+Requires:       chroma-compositor >= 0.1.0^20260911gitc310258-2.lu26
 Requires:       gdm
 # GDM's session launcher needs the session bus executable even in a profile
 # that excludes weak dependencies and uses dbus-broker as its system bus.
@@ -72,6 +72,9 @@ install -Dpm0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/dconf/db/gdm.d/10-lumina
 %config(noreplace) %{_sysconfdir}/dconf/db/gdm.d/10-lumina
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-3.lu26
+- Require the compositor clipboard selection fix
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-2.lu26
 - Select the compositor RPM explicitly and include D-Bus and PAM session support
 - Default new accounts to Lumina and brand the graphical greeter
