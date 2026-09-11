@@ -110,7 +110,12 @@ signed the six base packages other than Quickshell. Its Quickshell build
 The six completed packages were downloaded through the artifact API, checked
 against their recorded SHA-256 digests and independently verified using
 `rpmkeys --checksig --verbose` with the shipped Lumina public signing key.
-Publication remains pending the remaining packages and native promotion gate.
+The console subsequently marked this Quickshell job failed after 52m 11s:
+`Kubernetes Pod does not belong to the recorded Job UID.` Scanning and signing
+were skipped, and the other six packages' pending publication stages were
+cancelled. The last captured runner log had reached artifact upload after the
+successful compile and tests. No successful artifact ingestion or publication
+is claimed for this run.
 
 The x64 delivery `d2236f0a-1306-447f-ad97-666e7128b71c` was cancelled because
 its runner selected an outdated private Qt ABI from the release-only Fedora
@@ -118,7 +123,13 @@ repository. Replacement delivery `93f430b5-2992-4b20-9660-361c6f4a235e` uses
 the corrected runner with Fedora updates enabled. Its obsolete ten-package
 plan is superseded by the three-package native manifest: noarch packages
 are published once by ARM64 to avoid duplicate repository identities. x64
-dispatch must wait for shared-package publication. These are interim build
+dispatch must wait for shared-package publication. At 16:52 UTC the local
+ARM64 host had restarted and `k3s-agent` could not reach the cluster at
+`10.77.0.1:6443`; SSH port 22 also timed out, while public console HTTPS and
+the existing browser login remained available. The key was restored to the
+SSH agent through KWallet. Retry the verified project matrix after cluster
+connectivity is restored; do not bypass the Job UID provenance check.
+These are interim build
 observations, not release acceptance. The development ISO and local RPM hash
 list above predate the font and Quickshell `2.lu26` packaging corrections.
 
