@@ -7,7 +7,8 @@ also downloads prebuilt packages from `end-4/ii-package-builds`.
 Cassiopeia never runs that installer. Fedora supplies packages that already
 exist there; required missing/versioned packages are owned by LuminaCI.
 All new recipes target **fedora-44-aarch64 and fedora-44-x86_64** in
-`.lumina/packages.yaml` and form the `cassiopeia-desktop-26.9` promotion group.
+the separate `.lumina/desktop-{aarch64,x86_64}.yaml` project manifests, with
+one Cassiopeia promotion group per architecture. See `../docs/CI.md`.
 
 | Upstream channel | Required disposition for the current shell |
 | --- | --- |
@@ -17,6 +18,10 @@ All new recipes target **fedora-44-aarch64 and fedora-44-x86_64** in
 | alternateved/eza | eza exists in Fedora 44; no COPR migration required |
 | atim/starship | Not used by the initial shell; retain as follow-up if upstream terminal configuration is imported |
 | end-4/ii-package-builds | New native Quickshell recipe; current Fedora Quickshell repositories observed during discovery were older than the required 0.3 APIs |
+
+Chroma also needs `wl-clip-persist`, absent from the checked Fedora 44
+repositories. Its Lumina recipe pins upstream source and builds offline from
+the committed Cargo.lock vendor archive, retaining dependency license notices.
 
 The required font recipes were reconstructed from pinned upstream sources.
 The COPR API enumerated the original package names, but its dist-git HTTP

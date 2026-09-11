@@ -1,0 +1,44 @@
+# Lumina 26.9 Cassiopeia network installer, generic UEFI @ARCH@.
+# Disk selection, partitioning and account creation remain interactive.
+graphical
+lang en_US.UTF-8
+keyboard --xlayouts=us
+timezone Etc/UTC --utc
+network --bootproto=dhcp --device=link --activate --onboot=yes
+url --url=https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Everything/@ARCH@/os/
+repo --name=fedora-updates --baseurl=https://dl.fedoraproject.org/pub/fedora/linux/updates/44/Everything/@ARCH@/
+repo --name=lumina-media --baseurl=file:///run/install/repo/LuminaPackages
+# Leave account setup to Anaconda. A kickstarted rootpw --lock would incorrectly
+# satisfy its administrator-account check even when no user exists.
+selinux --enforcing
+firewall --enabled
+services --enabled=NetworkManager,gdm,bluetooth,firewalld,chronyd
+firstboot --enable
+reboot
+
+%packages --exclude-weakdeps
+@core
+kernel
+kernel-modules
+kernel-modules-extra
+linux-firmware
+dracut-config-generic
+efibootmgr
+@EFI_PACKAGES@
+lumina-desktop
+chrony
+firewalld
+-initial-setup
+%end
+
+%post --erroronfail --log=/var/log/lumina-desktop-install.log
+usermod -L root
+systemctl set-default graphical.target
+mkdir -p /etc/gdm
+# Prefer the Lumina session for new users; GDM retains later user choices.
+cat > /etc/gdm/custom.conf <<'GDM'
+[daemon]
+WaylandEnable=true
+DefaultSession=lumina.desktop
+GDM
+%end

@@ -5,6 +5,7 @@ Summary:        Lumina Cassiopeia desktop composition
 License:        MIT
 URL:            https://github.com/lumen-rsg/lumina
 Source0:        lumina.desktop
+Source1:        lumina.repo
 BuildArch:      noarch
 Requires:       lumina-release >= 2:26.9
 Requires:       lumina-artwork >= 26.9
@@ -41,9 +42,11 @@ uses the Chroma compositor and Lumina's end-4-derived Quickshell configuration.
 %build
 %install
 install -Dpm0644 %{SOURCE0} %{buildroot}%{_datadir}/wayland-sessions/lumina.desktop
+install -Dpm0644 %{SOURCE1} %{buildroot}%{_sysconfdir}/yum.repos.d/lumina.repo
 
 %files
 %{_datadir}/wayland-sessions/lumina.desktop
+%config(noreplace) %{_sysconfdir}/yum.repos.d/lumina.repo
 
 %changelog
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-1.lu26

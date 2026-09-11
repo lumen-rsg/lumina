@@ -1,0 +1,20 @@
+.logo-sidebar {
+    background-image: none;
+    background-color: #161724;
+}
+.logo {
+    background-image: url('/usr/share/anaconda/pixmaps/lumina-logo.svg');
+    background-size: 128px 128px;
+    background-position: 50% 24px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+.product-logo {
+    background-image: none;
+    background-color: transparent;
+}
+AnacondaSpokeWindow #nav-box {
+    background-image: none;
+    background-color: #161724;
+    color: #e7e7f7;
+}

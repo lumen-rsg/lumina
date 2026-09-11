@@ -1,0 +1,13 @@
+[lumina-$basearch]
+name=Lumina Linux - $basearch
+baseurl=https://packages.lumina.1t.ru/lumen/$basearch/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-lumina-2026
+
+[lumina-noarch]
+name=Lumina Linux - noarch
+baseurl=https://packages.lumina.1t.ru/lumen/noarch/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-lumina-2026
