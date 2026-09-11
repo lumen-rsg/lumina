@@ -2,6 +2,7 @@
 """Generate one desktop-only project manifest per native architecture."""
 import argparse
 import copy
+import subprocess
 from graphlib import TopologicalSorter
 from pathlib import Path
 import yaml
@@ -13,6 +14,18 @@ root = Path(__file__).resolve().parents[2]
 desktop = yaml.safe_load((root/'.lumina/desktop-packages.yaml').read_text())['packages']
 for arch in ['aarch64', 'x86_64']:
     packages = copy.deepcopy(desktop)
+    # Publish architecture-independent RPMs once. LuminaCI rejects a second
+    # candidate with the same noarch NEVRA in the shared repository.
+    if arch == 'x86_64':
+        packages = {
+            name: spec for name, spec in packages.items()
+            if subprocess.check_output(
+                ['rpmspec', '--target', arch, '-q', '--qf', '%{ARCH}\n', str(root/spec['spec'])],
+                text=True).splitlines()[0] != 'noarch'
+        }
+        for spec in packages.values():
+            if 'depends_on' in spec:
+                spec['depends_on'] = [dep for dep in spec['depends_on'] if dep in packages]
     path = f'.lumina/desktop-{arch}.yaml'
     for name, spec in packages.items():
         spec['targets'] = [f'fedora-44-{arch}']

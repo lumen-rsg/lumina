@@ -48,10 +48,11 @@ These RPMs are unsigned development artifacts.
   executable ran successfully. A udev hardware-database scriptlet reported
   “Function not implemented” inside the container; this is not boot validation.
 - The actual `ProjectDispatchPlanResolver` from the local LuminaCI checkout
-  accepted the existing 26-package main graph and each 10-package desktop graph.
+  accepted the existing 26-package main graph, the 10-package ARM64 graph
+  and the three-package x64 native graph.
   Desktop definitions are separate so the existing main project retains its
   live pipeline bindings, including the x64 distribution-identity build.
-  Each desktop graph resolved four stages. One target per binding and separate
+  ARM64 resolved four stages and x64 two stages. One target per binding and separate
   per-architecture promotion groups are required; see `CI.md`.
 
 ## Shell and assistant evidence
@@ -100,11 +101,26 @@ in `%post`, so an administrator user must be created.
 The generated Cassiopeia wallpaper is 1672x941 pixels; vector marks remain
 scalable. A native 4K wallpaper is not claimed.
 
-The signed-in CI console rejected build
-`cf9caeb7-4e44-4d53-8794-60b420d3918c` before execution because a verified
-repository-project snapshot was missing. Project API/administration access
-is still needed; the console's standalone trigger cannot supply that snapshot.
-No remote desktop build, signing or publication succeeded in this run.
+Remote execution now uses the verified project snapshot route over the
+normal authenticated administration API. Both native projects are registered;
+see `CI.md`. The current source is `cd10d253517180880d1749d2920a7915de99b900`.
+ARM64 delivery `549b68ef-db4d-442e-bc97-d3cbc60750d9` has built, scanned and
+signed the six base packages other than Quickshell. Its Quickshell build
+`5b546f3c-41fa-4c5b-abfc-512d5ab10bea` generated RPMs with two compiler jobs; all nine CTest suites passed.
+The six completed packages were downloaded through the artifact API, checked
+against their recorded SHA-256 digests and independently verified using
+`rpmkeys --checksig --verbose` with the shipped Lumina public signing key.
+Publication remains pending the remaining packages and native promotion gate.
+
+The x64 delivery `d2236f0a-1306-447f-ad97-666e7128b71c` was cancelled because
+its runner selected an outdated private Qt ABI from the release-only Fedora
+repository. Replacement delivery `93f430b5-2992-4b20-9660-361c6f4a235e` uses
+the corrected runner with Fedora updates enabled. Its obsolete ten-package
+plan is superseded by the three-package native manifest: noarch packages
+are published once by ARM64 to avoid duplicate repository identities. x64
+dispatch must wait for shared-package publication. These are interim build
+observations, not release acceptance. The development ISO and local RPM hash
+list above predate the font and Quickshell `2.lu26` packaging corrections.
 
 ## Final ARM64 boot evidence
 

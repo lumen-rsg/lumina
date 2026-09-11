@@ -6,9 +6,10 @@ also downloads prebuilt packages from `end-4/ii-package-builds`.
 
 Cassiopeia never runs that installer. Fedora supplies packages that already
 exist there; required missing/versioned packages are owned by LuminaCI.
-All new recipes target **fedora-44-aarch64 and fedora-44-x86_64** in
+Native recipes target **fedora-44-aarch64 and fedora-44-x86_64** in
 the separate `.lumina/desktop-{aarch64,x86_64}.yaml` project manifests, with
-one Cassiopeia promotion group per architecture. See `../docs/CI.md`.
+one Cassiopeia promotion group per architecture. The seven noarch packages
+are built and published once by the ARM64 project and shared with x64. See `../docs/CI.md`.
 
 | Upstream channel | Required disposition for the current shell |
 | --- | --- |
