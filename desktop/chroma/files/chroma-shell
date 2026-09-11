@@ -1,0 +1,3 @@
+#!/bin/sh
+# Chroma's stable helper name launches the Lumina end-4-derived shell.
+exec lumina-shell "$@"

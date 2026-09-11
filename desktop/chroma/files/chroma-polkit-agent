@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/libexec/kf6/polkit-kde-authentication-agent-1 "$@"

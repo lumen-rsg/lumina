@@ -1,10 +1,10 @@
 # 1T Lumina distribution macros.
 
 %__bootstrap         ~bootstrap
-%lumina              26.08
-%lumina_version      26.08
+%lumina              26.9
+%lumina_version      26.9
 %lu26                1
-%lu2608              1
+%lu2609              1
 %fedora              44
 %fc44                1
 %distcore            .lu26

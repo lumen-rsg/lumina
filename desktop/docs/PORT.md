@@ -1,0 +1,46 @@
+# end-4 port boundary
+
+The source pin and exact imported files are in `lumina-shell/UPSTREAM.json`.
+The first port retains end-4's Material appearance, typography, ripple buttons,
+icons, text rendering, and portable drawing components. Lumina owns the panel
+composition and replaces all compositor-specific behavior with Chroma's v2
+control socket and standard Wayland layer shell. No files from Chroma's default
+Quickshell are imported into Lumina Shell.
+
+| Upstream function | Cassiopeia implementation |
+| --- | --- |
+| Hyprland workspaces and overview | Chroma windows, canvas zoom, teleport points, focus/bring/close, tiling/restore |
+| Hyprland global shortcuts | Chroma key bindings call stable shell IPC targets |
+| Hyprland focus grab | Exclusive layer-shell keyboard focus; Escape and Close dismiss the drawer |
+| Wallpaper | Lumina Cassiopeia artwork and editable wallpaper path |
+| AI tab | Provider picker, model and endpoint, private credentials, chat, cancellation, new conversation |
+| Audio, tray, battery, notifications | Quickshell service APIs |
+| Screenshot, lock, idle, clipboard, portals | Chroma session helpers and wlroots/GTK portals |
+| Anime/image-board content and character prompts | Excluded from the shipped source selection entirely |
+| Upstream identity | Lumina shell identity; upstream attribution retained in package documentation |
+
+This is an initial component-based port, **not full feature parity with the
+upstream ii or waffle panel families**. The upstream dock, full calendar,
+notification persistence, detached/pinned AI sidebar, live window thumbnails,
+wallpaper browser and dynamic Material generation, OCR/translation/Lens,
+media widgets, keyboard, accessibility settings, and general settings UI
+remain follow-up scope. Do not advertise these as implemented.
+
+The assistant currently renders selectable plain text. It does not execute
+commands, read windows, attach screenshots, or persist conversation history.
+Cloud use starts only after the user selects a provider/model, supplies a key,
+and sends a message. Keys live in a mode-0600 file at
+`$XDG_CONFIG_HOME/lumina/assistant.json`, never in argv or shell.json. Changing
+provider or endpoint cannot silently reuse a previous credential. Redirects
+are refused so credentials cannot follow a response to another origin.
+
+Protocol references: [Chroma source](https://github.com/lumen-rsg/chroma),
+[Gemini generateContent](https://ai.google.dev/api/generate-content),
+[Ollama chat](https://docs.ollama.com/api/chat), and
+[Anthropic Messages](https://docs.anthropic.com/en/api/messages).
+
+Quickshell packaging carries one test-only patch: `moveWithParent` now waits
+for the scheduled popup polish before asserting its coordinates. The
+production code already schedules this asynchronously. The unpatched suite
+failed the same assertion under offscreen and Xvfb; all nine tests pass under
+Xvfb with the wait. No production toolkit behavior was changed by that patch.

@@ -1,22 +1,17 @@
-# 1T Lumina artwork
+# Lumina 26.9 Cassiopeia artwork
 
-This package replaces Fedora's visible desktop and boot defaults with Lumina
-artwork:
+The release keeps the existing Lumina mark and introduces an original
+Cassiopeia wallpaper: a restrained five-star W over midnight-indigo and
+lavender nebula ribbons. The GNOME background, lock screen, Lumina Shell,
+and installer consumers use the packaged `lumina-default.png` path.
+Plymouth continues to use the reproducible white vector mark.
 
-- `lumina-default.png`: 16:9 indigo desktop and lock-screen wallpaper;
-- `lumina-logo.svg`: deterministic icon derived from the terminal mark in
-  `art/logo.txt`;
-- a GNOME background chooser entry and system defaults;
-- a Plymouth script theme using the white Lumina mark.
+The wallpaper was generated with the built-in image-generation tool on
+2026-09-11. Its source prompt requested a 3840x2160 desktop composition with
+quiet negative space, five small stars in the upper-right, subtle nebula
+ribbons in the bottom third, and no text, logos, people, anime or UI.
+The selected PNG is preserved as returned by the image tool; see its actual
+pixel dimensions in the acceptance evidence rather than assuming the prompt
+resolution was honored.
 
-The wallpaper was generated with the built-in OpenAI image-generation tool
-from this production prompt:
-
-> Create an original, calm, premium 16:9 Linux desktop wallpaper with two
-> luminous vertical forms and fine orbit-like arcs. Use deep midnight indigo,
-> violet, restrained lavender, and cool white. Keep broad low-detail desktop
-> areas. Do not include text, logos, trademarks, people, hardware, UI, or
-> watermarks.
-
-The selected image was losslessly stored as PNG and resized to 3840x2160 for
-desktop use. Vector logo and Plymouth raster generation remain reproducible.
+The vector logo and Plymouth raster generation remain reproducible.

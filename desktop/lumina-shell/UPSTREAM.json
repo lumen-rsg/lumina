@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/end-4/dots-hyprland",
+  "revision": "97c5bc651f68092351b24aaa935af708b1e04514",
+  "license": "GPL-3.0-only",
+  "files": [
+    "modules/common/Appearance.qml",
+    "modules/common/functions/ColorUtils.qml",
+    "modules/common/functions/StringUtils.qml",
+    "modules/common/functions/FileUtils.qml",
+    "modules/common/widgets/StyledText.qml",
+    "modules/common/widgets/RippleButton.qml",
+    "modules/common/widgets/MaterialSymbol.qml",
+    "modules/common/widgets/StyledRectangularShadow.qml",
+    "modules/common/widgets/ClippedFilledCircularProgress.qml",
+    "modules/common/widgets/CircularProgress.qml"
+  ],
+  "note": "Portable Material components form the initial port. Lumina owns compositor integration and panels; excluded upstream modules are tracked in desktop/docs/PORT.md."
+}

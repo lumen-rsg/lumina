@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+umask 077
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/lumina"
+config=${LUMINA_SHELL_PATH:-/usr/share/lumina-shell}
+if [ "${1:-}" = ipc ]; then
+    shift
+    exec quickshell ipc -p "$config" "$@"
+fi
+exec quickshell --no-duplicate -p "$config" "$@"

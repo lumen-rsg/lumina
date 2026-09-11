@@ -1,5 +1,5 @@
 Name:           lumina-artwork
-Version:        26.08
+Version:        26.9
 Release:        1.lu26
 Summary:        Desktop, installer, and boot artwork for 1T Lumina
 License:        LicenseRef-1T-Lumina-Artwork
@@ -61,5 +61,8 @@ install -Dpm0644 lumina-logo.png \
 %{_datadir}/plymouth/themes/lumina/
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-1.lu26
+- Introduce Lumina 26.9 Cassiopeia identity and desktop artwork
+
 * Wed Sep 02 2026 Lumina Linux <packages@linux.1t.ru> - 26.08-1.lu26
 - Add original indigo wallpaper, Lumina icon, GNOME defaults, and boot theme

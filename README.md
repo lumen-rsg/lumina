@@ -1,7 +1,11 @@
 # 1T Lumina
 
 RPM sources for 1T Lumina, a Fedora-derived Linux distribution for
-single-board computers.
+ARM64 and x86-64 desktops and single-board computers.
+
+The next desktop release is **Lumina 26.9 Cassiopeia**, with Chroma and an
+end-4-derived Lumina Quickshell configuration. See [desktop/README.md](desktop/README.md)
+and its acceptance checklist for build and qualification status.
 
 - Website: https://linux.1t.ru/
 - Source: https://github.com/lumen-rsg/lumina

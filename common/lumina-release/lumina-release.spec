@@ -2,8 +2,8 @@
 
 Name:           lumina-release
 Epoch:          2
-Version:        26.08
-Release:        5.lu26
+Version:        26.9
+Release:        1.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -62,7 +62,7 @@ Provides:       rpm_macro(dist_vendor)
 Provides:       rpm_macro(fc44)
 Provides:       rpm_macro(fedora)
 Provides:       rpm_macro(lu26)
-Provides:       rpm_macro(lu2608)
+Provides:       rpm_macro(lu2609)
 Provides:       rpm_macro(lumina)
 Provides:       rpm_macro(lumina_version)
 
@@ -158,6 +158,9 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.9-1.lu26
+- Introduce Lumina 26.9 Cassiopeia identity and desktop artwork
+
 * Thu Sep 03 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.08-5.lu26
 - Install the Lumina 2026 RPM repository signing key
 

@@ -1,0 +1,78 @@
+%global commit c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c
+Name:           chroma
+Version:        0.1.0^20260911gitc310258
+Release:        1.lu26
+Summary:        Spatial Wayland compositor for Lumina
+License:        MIT
+URL:            https://github.com/lumen-rsg/chroma
+Source0:        https://github.com/lumen-rsg/chroma/archive/%{commit}/chroma-%{commit}.tar.gz
+Source1:        chroma-shell
+Source2:        chroma-polkit-agent
+ExclusiveArch:  aarch64 x86_64
+BuildRequires:  gcc-c++
+BuildRequires:  meson
+BuildRequires:  ninja-build
+BuildRequires:  pkgconfig(wlroots-0.20)
+BuildRequires:  pkgconfig(wayland-server)
+BuildRequires:  pkgconfig(wayland-client)
+BuildRequires:  pkgconfig(wayland-protocols)
+BuildRequires:  pkgconfig(xkbcommon)
+BuildRequires:  pkgconfig(pixman-1)
+BuildRequires:  pkgconfig(systemd)
+BuildRequires:  python3
+Requires:       lumina-shell = 26.9
+Requires:       xorg-x11-server-Xwayland
+Requires:       wl-clip-persist
+Requires:       swayidle
+Requires:       swaylock
+Requires:       wlopm
+Requires:       wdisplays
+Requires:       polkit-kde
+Requires:       xdg-desktop-portal
+Requires:       xdg-desktop-portal-gtk
+Requires:       xdg-desktop-portal-wlr
+Requires:       grim
+Requires:       slurp
+Requires:       wireplumber
+Requires:       brightnessctl
+Requires:       kitty
+Requires:       python3
+Requires:       dbus-tools
+Requires:       systemd
+
+%description
+Chroma's infinite spatial canvas, teleport points, card stacks, Wayland
+protocols and session helpers. This package uses Lumina Shell and explicitly
+excludes the upstream Chroma Quickshell configuration.
+
+%prep
+echo '0f8f6d45bc80748b6e04a84545a552270167938045c1ef7f324e531bb023c60a  %{SOURCE0}' | sha256sum -c -
+%autosetup -n chroma-%{commit}
+
+%build
+%meson
+%meson_build
+
+%install
+%meson_install
+# Do not ship Chroma's first-party shell or its desktop entry.
+rm -rf %{buildroot}%{_datadir}/chroma/shell
+rm -f %{buildroot}%{_datadir}/wayland-sessions/chroma.desktop
+install -pm0755 %{SOURCE1} %{buildroot}%{_bindir}/chroma-shell
+install -pm0755 %{SOURCE2} %{buildroot}%{_bindir}/chroma-polkit-agent
+
+%check
+# Integration requires a nested Wayland session; run it in desktop QA.
+%meson_test --no-suite integration
+
+%files
+%license LICENSE
+%doc README.md
+%{_bindir}/chroma
+%{_bindir}/chroma-*
+%{_userunitdir}/chroma-session.target
+%{_datadir}/xdg-desktop-portal/chroma-portals.conf
+
+%changelog
+* Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260911gitc310258-1.lu26
+- Package pinned Chroma compositor and session helpers with Lumina Shell

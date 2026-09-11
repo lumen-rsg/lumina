@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Lumina
+Comment=Lumina 26.9 Cassiopeia on Chroma
+Exec=chroma-session
+TryExec=chroma-session
+Type=Application
+DesktopNames=Chroma;
