@@ -48,7 +48,9 @@ These RPMs are unsigned development artifacts.
   executable ran successfully. A udev hardware-database scriptlet reported
   “Function not implemented” inside the container; this is not boot validation.
 - The actual `ProjectDispatchPlanResolver` from the local LuminaCI checkout
-  accepted the main 34-package graph and each 10-package desktop graph.
+  accepted the existing 26-package main graph and each 10-package desktop graph.
+  Desktop definitions are separate so the existing main project retains its
+  live pipeline bindings, including the x64 distribution-identity build.
   Each desktop graph resolved four stages. One target per binding and separate
   per-architecture promotion groups are required; see `CI.md`.
 

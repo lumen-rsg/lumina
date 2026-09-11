@@ -10,16 +10,14 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--check', action='store_true')
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
-source = yaml.safe_load((root/'.lumina/packages.yaml').read_text())['packages']
-desktop = {name: spec for name, spec in source.items()
-           if spec['spec'].startswith('desktop/') or name in ['lumina-release', 'lumina-artwork']}
+desktop = yaml.safe_load((root/'.lumina/desktop-packages.yaml').read_text())['packages']
 for arch in ['aarch64', 'x86_64']:
     packages = copy.deepcopy(desktop)
     path = f'.lumina/desktop-{arch}.yaml'
     for name, spec in packages.items():
         spec['targets'] = [f'fedora-44-{arch}']
         spec['promotion_group'] = f'cassiopeia-desktop-26.9-{arch}'
-        spec['paths'].append(path)
+        spec['paths'].extend([path, '.lumina/desktop-packages.yaml', 'desktop/tools/desktop-manifests.py'])
         assert (root/spec['spec']).is_file(), name
         assert all(dep in packages for dep in spec.get('depends_on', [])), name
     assert len({spec['spec'] for spec in packages.values()}) == len(packages)

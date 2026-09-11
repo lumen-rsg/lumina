@@ -6,6 +6,8 @@ packages:
     paths:
     - common/lumina-release/**
     - .lumina/desktop-aarch64.yaml
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     targets:
     - fedora-44-aarch64
     promotion_group: cassiopeia-desktop-26.9-aarch64
@@ -14,6 +16,8 @@ packages:
     paths:
     - common/lumina-artwork/**
     - .lumina/desktop-aarch64.yaml
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     targets:
     - fedora-44-aarch64
     promotion_group: cassiopeia-desktop-26.9-aarch64
@@ -22,19 +26,23 @@ packages:
     paths:
     - desktop/quickshell/**
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     lookaside_sources:
     - file: quickshell-2d3b3e9c70ef380dff751b61d334dc88df016c29.tar.gz
       size: 499439
       sha256: 794f7c190ffb3d0b885169be459caf4b787ef07ff9faf3f9e144087fe9cbfffb
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64
   google-sans-flex-vf-fonts:
     spec: desktop/google-sans-flex-vf-fonts/google-sans-flex-vf-fonts.spec
     paths:
     - desktop/google-sans-flex-vf-fonts/**
     - desktop/tools/bundle-fonts.py
     - .lumina/desktop-aarch64.yaml
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     targets:
     - fedora-44-aarch64
     promotion_group: cassiopeia-desktop-26.9-aarch64
@@ -44,6 +52,8 @@ packages:
     - desktop/google-material-symbols-vf-rounded-fonts/**
     - desktop/tools/bundle-fonts.py
     - .lumina/desktop-aarch64.yaml
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     targets:
     - fedora-44-aarch64
     promotion_group: cassiopeia-desktop-26.9-aarch64
@@ -52,9 +62,8 @@ packages:
     paths:
     - desktop/bibata-cursor-theme/**
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     lookaside_sources:
     - file: Bibata-Modern-Ice.tar.xz
       size: 1701468
@@ -62,28 +71,32 @@ packages:
     - file: Bibata_Cursor-35ccfe209a808e40d6c2ca60a46cbe4faf68b690.tar.gz
       size: 211824
       sha256: a7aa077fd573956bc26aa889637164ce84d876df86d34076508a7fb1ef0bec86
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64
   lumina-shell:
     spec: desktop/lumina-shell/lumina-shell.spec
     paths:
     - desktop/lumina-shell/**
     - desktop/tools/bundle-shell.py
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     depends_on:
     - quickshell
     - google-sans-flex-vf-fonts
     - google-material-symbols-vf-rounded-fonts
     - lumina-artwork
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64
   chroma:
     spec: desktop/chroma/chroma.spec
     paths:
     - desktop/chroma/**
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     depends_on:
     - lumina-shell
     - wl-clip-persist
@@ -91,29 +104,36 @@ packages:
     - file: chroma-c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c.tar.gz
       size: 339797
       sha256: 0f8f6d45bc80748b6e04a84545a552270167938045c1ef7f324e531bb023c60a
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64
   wl-clip-persist:
     spec: desktop/wl-clip-persist/wl-clip-persist.spec
     paths:
     - desktop/wl-clip-persist/**
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     lookaside_sources:
     - file: wl-clip-persist-e26fde01c13922e3a65049dafb7d5adfbc52626e.tar.gz
       size: 34707
       sha256: 4f57033dae159b887168210bcc69de84ba5f43e7e39444e483297e6ccb4b747c
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64
   lumina-desktop:
     spec: desktop/lumina-desktop/lumina-desktop.spec
     paths:
     - desktop/lumina-desktop/**
     - .lumina/desktop-aarch64.yaml
-    targets:
-    - fedora-44-aarch64
-    promotion_group: cassiopeia-desktop-26.9-aarch64
+    - .lumina/desktop-packages.yaml
+    - desktop/tools/desktop-manifests.py
     depends_on:
     - chroma
     - lumina-shell
     - lumina-release
     - lumina-artwork
     - bibata-cursor-theme
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-desktop-26.9-aarch64

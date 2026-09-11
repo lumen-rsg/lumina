@@ -13,7 +13,9 @@ Both projects use `https://github.com/lumen-rsg/lumina.git`, initially on
 `codex/cassiopeia-desktop`. Bind every package ID in each manifest to its spec
 and the matching approved native build profile. These separate manifests
 contain ten packages and no board packages. The main repository manifest
-retains its existing ARM64 board targets. Generate the desktop manifests with
+retains its existing 26 package definitions and targets, including the x64
+identity binding. Desktop definitions live in `.lumina/desktop-packages.yaml`;
+only the two desktop projects consume the generated desktop manifests. Generate the desktop manifests with
 `python3 desktop/tools/desktop-manifests.py`; CI can use `--check` to detect drift.
 
 Source pushes must go through the project webhook/snapshot route. The
