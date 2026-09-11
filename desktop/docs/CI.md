@@ -23,15 +23,43 @@ Both desktop manifests were passed through the actual
 `ProjectDispatchPlanResolver` from the local LuminaCI checkout: each resolved
 ten packages in four dependency stages. This validates planning, not execution.
 
-The signed-in console was verified on 2026-09-11. The created
-`cassiopeia-quickshell-aarch64` pipeline may be reused as its project binding.
-Its first [remote attempt](https://console.lumina.1t.ru/builds/cf9caeb7-4e44-4d53-8794-60b420d3918c)
-failed before execution with “Kubernetes builds require a verified
-repository-project snapshot.” No artifact was built or published by that run.
-The console currently exposes no project-management screen. A configured API
-connection or working administration SSH endpoint is needed to register the
-project bindings and dispatch the two matrices. SSH port 22 timed out during
-this run; browser authentication itself succeeded.
+Both repository projects were registered on 2026-09-11 with ten bindings each:
+
+- ARM64: `2d6ba348-71a7-49d3-9ab3-e91d9302121c`
+- x64: `d275186a-8b93-493c-a601-e0c89bfd1956`
+
+The initial signed project deliveries (`5ebd7254-4f2e-40fa-b26f-e1b380192f0b`
+and `ecd785b6-9722-46b2-8d1d-3fa0272910e9`) verified source commit `da64d62`
+and dispatched native Kubernetes jobs. They exposed missing offline upstream
+inputs: the runner intentionally sets `AUTO_DOWNLOAD=false`. The manifests now
+register five pinned source archives as `lookaside_sources`. Upload each archive
+through `/api/extra-sources/pipeline/{pipelineId}` with `subFolder=pipeline` for
+both architecture bindings. CI verifies size and SHA-256 before sealing the
+source into its content-addressed object store.
+
+The font packages contain deterministic archives of their pinned font and
+license files, built by `desktop/tools/bundle-fonts.py`. The unchanged upstream
+URLs and digests are in each package's `sources.json`. Their release was bumped
+to `2.lu26` for this source-packaging correction. Both revised font RPMs were
+rebuilt locally. Verify source coverage before dispatch:
+
+```sh
+python3 desktop/tools/check-ci-sources.py
+python3 desktop/tools/desktop-manifests.py --check
+python3 desktop/tools/bundle-fonts.py google-sans-flex-vf-fonts --check
+python3 desktop/tools/bundle-fonts.py google-material-symbols-vf-rounded-fonts --check
+```
+
+The native runners are pinned to these verified live profile references:
+
+- `fedora-44-aarch64`: `registry.lumina.1t.ru/lumina-rpm-build@sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568`
+- `fedora-44-x86_64`: `registry.lumina.1t.ru/lumina-rpm-build@sha256:7d1b3de3f30585099fd8d2b89765d8816cf86293ffe11c7c523ddb08d2afc8e9`
+
+Each pipeline builds, scans, signs with the active Lumina key, and stages for
+`lumen` (`82886b10-0a9f-442a-a3fc-2e95afbaa254`). Native promotion gates must pass
+before publication. Project credentials remain server-side. The initial
+dispatch used administrator-signed webhook requests; recurring GitHub webhook
+registration for these desktop projects still needs verification.
 
 After native builds pass, use the existing scan, signing, candidate staging,
 dependency-closure and repository promotion path for each architecture.
