@@ -13,7 +13,7 @@ The implemented shell is an initial component-based port. **Full upstream
 module parity is not complete**; `PORT.md` and `../packaging/MIGRATION.md`
 list the outstanding modules and optional dependencies.
 
-## Gates as of 2026-09-11
+## Gates as of 2026-09-12
 
 - [x] Source bundles, provenance, spec paths and whitespace checks.
 - [x] Actual LuminaCI project planner accepts both architecture manifests.
@@ -23,11 +23,54 @@ list the outstanding modules and optional dependencies.
 - [x] Real QML/helper/HTTP assistant round trip with a simulated provider.
 - [x] ARM64 development network ISO composition, media checksum and UEFI boot to Anaconda.
 - [ ] Native x86-64 RPM builds and empty-root dependency closure.
-- [ ] Signed LuminaCI publication for both architectures.
-- [x] ARM64 development installer completes installation and boots the installed desktop.
+- [x] Signed ARM64/noarch LuminaCI publication and public artifact verification.
+- [ ] Signed x86-64 LuminaCI publication.
+- [x] Signed ARM64 installer completes fresh installation, first login and VM session checks.
 - [ ] x86-64 installer completes installation and boots the installed desktop.
 - [ ] Physical graphics, input, audio, networking, locking, suspend, portals,
   multi-monitor behavior and Secure Boot qualification.
+
+## Published ARM64 candidate and x64 continuation
+
+Source `b1feea2561be5af626abd61970efc3b0b6299342` completed all ten ARM64/noarch
+build, scan, sign and publication stages in delivery
+`24c3e48b-6df6-4a2e-8d5b-1b0f6a53adc7`. Native promotion gate
+`e33cd20f-81ba-8a14-a53d-af9186306e3f` passed at 20:52:20 UTC on September 11,
+with result SHA-256
+`dba3dc76870eb74bd43d8413171020a8ad2706c45f500d9f0e931b7ab7e463fc`.
+The result records the ARM64 runner digest, Kubernetes Job UID and the complete
+candidate inventory. Chroma's RPM check includes regular and primary clipboard
+round trips.
+
+All ten primary RPMs passed independent signature checks using the shipped
+Lumina key (`EBE39C736CAC92CEC2139DC7620675824776D3D7`). Public `lumen/aarch64`
+and `lumen/noarch` metadata and downloaded RPMs matched the signed CI artifact
+hashes exactly. After confirming all publication stages, x64 delivery
+`751fe2a3-cda9-412c-afb6-5ace1cae3775` was dispatched from the same source.
+Its three native packages are still being built; x64 publication is not yet
+claimed.
+
+The signed-package ARM64 network installer is
+`Lumina-26.9-Cassiopeia-aarch64-signed-b1feea2.iso`, SHA-256
+`621547163747b58abf6868f8ad503e7794cf9628c4bef05e952be43fee864270`.
+Composition verified the signed Fedora base checksum and all ten RPM signatures,
+without the unsigned-development override. A fresh 32 GiB QEMU/KVM installation
+installed 828 RPMs, rebooted automatically, and logged into Lumina without
+package/configuration repairs. The installed compositor is release 2. Terminal
+launch, canvas zoom/window close, regular and primary clipboard selections,
+FileChooser portal selection, lock and password unlock passed. The assistant
+opened its provider/model/key setup with Send disabled. SELinux remained
+enforcing with no AVC records; no system services were failed. Root is locked
+and the temporary evidence-collection SSH service is not enabled at boot.
+This is exact-image VM acceptance, not physical hardware qualification.
+Evidence is retained under `desktop/evidence/installed-aarch64-signed/` and
+`desktop/dist/ci-admin/`. The compact public record is
+[`evidence/cassiopeia-aarch64-b1feea2.json`](evidence/cassiopeia-aarch64-b1feea2.json).
+
+The preceding development image also passed a real FileChooser portal round
+trip: a Gio request opened the GTK dialog, the QA user selected the Cassiopeia
+wallpaper, and the portal returned response 0 with its file URI. This does not
+qualify screencasting or physical-device behavior.
 
 ## Fresh-install bootstrap correction
 
@@ -220,7 +263,7 @@ scalable. A native 4K wallpaper is not claimed.
 
 Remote execution now uses the verified project snapshot route over the
 normal authenticated administration API. Both native projects are registered;
-see `CI.md`. The current source is `cd10d253517180880d1749d2920a7915de99b900`.
+see `CI.md`. The earlier run used source `cd10d253517180880d1749d2920a7915de99b900`.
 ARM64 delivery `549b68ef-db4d-442e-bc97-d3cbc60750d9` has built, scanned and
 signed the six base packages other than Quickshell. Its Quickshell build
 `5b546f3c-41fa-4c5b-abfc-512d5ab10bea` generated RPMs with two compiler jobs; all nine CTest suites passed.
@@ -250,9 +293,9 @@ These are interim build
 observations, not release acceptance. The development ISO and local RPM hash
 list above predate the font and Quickshell `2.lu26` packaging corrections.
 
-## Final ARM64 boot evidence
+## Earlier development boot-only evidence
 
-The exact final ISO booted to the Lumina-branded graphical Anaconda summary
+The early development ISO booted to the Lumina-branded graphical Anaconda summary
 under QEMU 10.2.2/KVM with EDK2 UEFI, four vCPUs, 4 GiB RAM and a new empty
 24 GiB virtual disk. Fedora network source and the custom package selection
 loaded successfully. Both disk selection and User Creation were marked

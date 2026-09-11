@@ -1,0 +1,173 @@
+{
+  "Id": "e33cd20f-81ba-8a14-a53d-af9186306e3f",
+  "ProjectWebhookDeliveryId": "24c3e48b-6df6-4a2e-8d5b-1b0f6a53adc7",
+  "Status": 2,
+  "FailureReason": null,
+  "KubernetesJobName": "lumina-gate-e33cd20f81ba8a14a53daf9186306e3f",
+  "BundleSize": 60974592,
+  "StartedAt": "2026-09-11T20:44:03.40635+00:00",
+  "CompletedAt": "2026-09-11T20:52:20.068006+00:00",
+  "ResultSha256": "dba3dc76870eb74bd43d8413171020a8ad2706c45f500d9f0e931b7ab7e463fc",
+  "sourceCommit": "b1feea2561be5af626abd61970efc3b0b6299342",
+  "signingFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+  "publicArtifacts": {
+    "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.aarch64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/aarch64/chroma-compositor-0.1.0^20260911gitc310258-2.lu26.aarch64.rpm",
+      "sha256": "d8e1da8b35ec3b6329957924a30a61ef0b0f043f4cf7c4f5838779d0c6b148c9"
+    },
+    "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.aarch64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/aarch64/quickshell-0.3.1^20260911git2d3b3e9-2.lu26.aarch64.rpm",
+      "sha256": "a26a881eb3149affa3a556bb8e5f4f26e53f52b113c739024b3414ee785a9e71"
+    },
+    "wl-clip-persist-0.5.0-1.lu26.aarch64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/aarch64/wl-clip-persist-0.5.0-1.lu26.aarch64.rpm",
+      "sha256": "3dd5b3193016607c48510d83d546f8a3bad5aa1b1c3e86fddc9dfbd05c5adc07"
+    },
+    "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm",
+      "sha256": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f"
+    },
+    "google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm",
+      "sha256": "96709c88b021227c8ae73ad9974b6d70e99b55a94271e3cea385067514437801"
+    },
+    "google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm",
+      "sha256": "b60d938ff2ae83c00efc803c4c6fe0e5ef656e661f1143eec7d1562226c62e4e"
+    },
+    "lumina-artwork-26.9-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-artwork-26.9-2.lu26.noarch.rpm",
+      "sha256": "b9e9e27152ca26bae9ea4e1bdc864c29a5091869b5bad1e3ab356bb73bd3507d"
+    },
+    "lumina-desktop-26.9-3.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-desktop-26.9-3.lu26.noarch.rpm",
+      "sha256": "6429bd2f78e3c1d5ec667b619907aeb5f07bdf97db50b9ebcfc91793fba97c21"
+    },
+    "lumina-release-26.9-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-release-26.9-2.lu26.noarch.rpm",
+      "sha256": "5e45338146138436246a7a4a7b30a0a255af2261a794e99c64e8a9e1f7569fe3"
+    },
+    "lumina-shell-26.9-1.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-shell-26.9-1.lu26.noarch.rpm",
+      "sha256": "20d3231712459ac0c793736bc717a913724bcd1cdbf0d98cba11b4f0ae48a0be"
+    }
+  },
+  "installer": {
+    "sha256": "621547163747b58abf6868f8ad503e7794cf9628c4bef05e952be43fee864270",
+    "fileName": "Lumina-26.9-Cassiopeia-aarch64-signed-b1feea2.iso",
+    "status": "fresh installation and first-login VM checks passed",
+    "installedPackageCount": 828,
+    "virtualMachine": "QEMU 10.2.2/KVM, aarch64, EDK2 UEFI, 4 vCPU, 4 GiB RAM, empty 32 GiB disk",
+    "checks": [
+      "first login without repairs",
+      "terminal shortcut",
+      "canvas zoom and window close",
+      "regular and primary clipboard",
+      "FileChooser portal round trip",
+      "provider setup on first use",
+      "lock and password unlock",
+      "SELinux enforcing without AVC records",
+      "no failed system services",
+      "root account locked"
+    ]
+  },
+  "x86_64Delivery": "751fe2a3-cda9-412c-afb6-5ace1cae3775",
+  "limitations": [
+    "physical hardware not qualified",
+    "full upstream shell module parity incomplete",
+    "x86_64 build and image acceptance pending"
+  ],
+  "promotionResult": {
+    "baselinePackageNames": [
+      "lumina-release"
+    ],
+    "candidates": [
+      {
+        "fileName": "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm",
+        "nevra": "bibata-cursor-theme-0:2.0.7-1.lu26.noarch",
+        "sha256": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f"
+      },
+      {
+        "fileName": "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.aarch64.rpm",
+        "nevra": "chroma-compositor-0:0.1.0^20260911gitc310258-2.lu26.aarch64",
+        "sha256": "d8e1da8b35ec3b6329957924a30a61ef0b0f043f4cf7c4f5838779d0c6b148c9"
+      },
+      {
+        "fileName": "chroma-compositor-debuginfo-0.1.0^20260911gitc310258-2.lu26.aarch64.rpm",
+        "nevra": "chroma-compositor-debuginfo-0:0.1.0^20260911gitc310258-2.lu26.aarch64",
+        "sha256": "2aabbf445f8fdcb33a82e0341a03a3e8fca605b643d895a57d0359349d9bff12"
+      },
+      {
+        "fileName": "chroma-compositor-debugsource-0.1.0^20260911gitc310258-2.lu26.aarch64.rpm",
+        "nevra": "chroma-compositor-debugsource-0:0.1.0^20260911gitc310258-2.lu26.aarch64",
+        "sha256": "a83cf56a938248b15df91f588710ad7c97d95238f58d4112478187834d3203ba"
+      },
+      {
+        "fileName": "google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm",
+        "nevra": "google-material-symbols-vf-rounded-fonts-0:20260911-2.lu26.noarch",
+        "sha256": "96709c88b021227c8ae73ad9974b6d70e99b55a94271e3cea385067514437801"
+      },
+      {
+        "fileName": "google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm",
+        "nevra": "google-sans-flex-vf-fonts-0:20260911-2.lu26.noarch",
+        "sha256": "b60d938ff2ae83c00efc803c4c6fe0e5ef656e661f1143eec7d1562226c62e4e"
+      },
+      {
+        "fileName": "lumina-artwork-26.9-2.lu26.noarch.rpm",
+        "nevra": "lumina-artwork-0:26.9-2.lu26.noarch",
+        "sha256": "b9e9e27152ca26bae9ea4e1bdc864c29a5091869b5bad1e3ab356bb73bd3507d"
+      },
+      {
+        "fileName": "lumina-desktop-26.9-3.lu26.noarch.rpm",
+        "nevra": "lumina-desktop-0:26.9-3.lu26.noarch",
+        "sha256": "6429bd2f78e3c1d5ec667b619907aeb5f07bdf97db50b9ebcfc91793fba97c21"
+      },
+      {
+        "fileName": "lumina-release-26.9-2.lu26.noarch.rpm",
+        "nevra": "lumina-release-2:26.9-2.lu26.noarch",
+        "sha256": "5e45338146138436246a7a4a7b30a0a255af2261a794e99c64e8a9e1f7569fe3"
+      },
+      {
+        "fileName": "lumina-shell-26.9-1.lu26.noarch.rpm",
+        "nevra": "lumina-shell-0:26.9-1.lu26.noarch",
+        "sha256": "20d3231712459ac0c793736bc717a913724bcd1cdbf0d98cba11b4f0ae48a0be"
+      },
+      {
+        "fileName": "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.aarch64.rpm",
+        "nevra": "quickshell-0:0.3.1^20260911git2d3b3e9-2.lu26.aarch64",
+        "sha256": "a26a881eb3149affa3a556bb8e5f4f26e53f52b113c739024b3414ee785a9e71"
+      },
+      {
+        "fileName": "quickshell-debuginfo-0.3.1^20260911git2d3b3e9-2.lu26.aarch64.rpm",
+        "nevra": "quickshell-debuginfo-0:0.3.1^20260911git2d3b3e9-2.lu26.aarch64",
+        "sha256": "5f8b7b44e190aeeb2ee6b56323338788fe848c34da9921112ce5ea125558e2f8"
+      },
+      {
+        "fileName": "quickshell-debugsource-0.3.1^20260911git2d3b3e9-2.lu26.aarch64.rpm",
+        "nevra": "quickshell-debugsource-0:0.3.1^20260911git2d3b3e9-2.lu26.aarch64",
+        "sha256": "7ca4af3a53f7a46f758904c8eba1641ecba502bda10604b383083a65613dc372"
+      },
+      {
+        "fileName": "wl-clip-persist-0.5.0-1.lu26.aarch64.rpm",
+        "nevra": "wl-clip-persist-0:0.5.0-1.lu26.aarch64",
+        "sha256": "3dd5b3193016607c48510d83d546f8a3bad5aa1b1c3e86fddc9dfbd05c5adc07"
+      },
+      {
+        "fileName": "wl-clip-persist-debuginfo-0.5.0-1.lu26.aarch64.rpm",
+        "nevra": "wl-clip-persist-debuginfo-0:0.5.0-1.lu26.aarch64",
+        "sha256": "58af6145440a115e13fa8fcb83267daf77fe3dae259e74509b8d53ba8c4eb053"
+      },
+      {
+        "fileName": "wl-clip-persist-debugsource-0.5.0-1.lu26.aarch64.rpm",
+        "nevra": "wl-clip-persist-debugsource-0:0.5.0-1.lu26.aarch64",
+        "sha256": "b2ced866d1136ac6fd1d8be2d66efa1b7c2e1179f9d231139bb610652ed03bd1"
+      }
+    ],
+    "kubernetesJobUid": "4f495307-0980-4ea5-8660-87db6cf54f35",
+    "promotionSetId": "e33cd20f-81ba-8a14-a53d-af9186306e3f",
+    "runnerImageDigest": "sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568",
+    "targetArchitecture": "aarch64",
+    "transaction": "baseline-upgrade",
+    "version": 1
+  }
+}
