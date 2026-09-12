@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-12",
+  "shellVersion": "26.9-2.lu26",
+  "upstreamRevision": "97c5bc651f68092351b24aaa935af708b1e04514",
+  "nativeRuntime": "Fedora 44 aarch64, Qt 6.11.2, Quickshell 2d3b3e9, Chroma c310258 plus clipboard patch",
+  "tests": [
+    "15 Python assistant/control tests passed",
+    "Real QML assistant HTTP fixture passed in matching native runtime",
+    "Headless Chroma shell integration passed at 1280x800",
+    "Two outputs at 1920x1200 each with 200% scaling passed",
+    "Eight settings pages, switch model synchronization, theme updates, save coalescing and fresh-process preference reload passed",
+    "Existing Chroma zoom/close regression passed",
+    "x86_64 installed-session development preview: control center, DND, light/dark theme and expanded settings navigation with Bar preferences observed through noVNC"
+  ],
+  "artifacts": {
+    "lumina-shell-26.9-2.lu26.noarch.rpm": "03c760ce3748065b423fec9d7682ffda17226971ca962292a0a536f983d8c886",
+    "lumina-shell-26.9-2.lu26.src.rpm": "f828d27e40c8918b46ddff190d4c37d40765246d1ee9b125babce7a1e6a8a8cc"
+  },
+  "publication": "Unsigned development RPM and SRPM; LuminaCI publication and new installer composition pending",
+  "limitations": [
+    "This is not full upstream shell parity",
+    "Hardware audio, Bluetooth, backlight and pairing not qualified by the VM",
+    "Detailed device managers remain external; dynamic Material, tile editing, night light, dock and other upstream modules remain open",
+    "Published b1feea2 ISOs retain lumina-shell release 1"
+  ]
+}

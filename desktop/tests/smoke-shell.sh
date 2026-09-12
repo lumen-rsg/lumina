@@ -23,6 +23,7 @@ unset WAYLAND_DISPLAY
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
 export WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=${LUMINA_QA_OUTPUTS:-1} WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
 export QT_QUICK_BACKEND=software QT_QPA_PLATFORM=wayland
+export LUMINA_CONTROLS_HELPER="$repo/desktop/lumina-shell/files/lumina-controls"
 export LUMINA_ASSISTANT_HELPER="$repo/desktop/lumina-shell/files/lumina-assistant"
 compositor_pid= shell_pid= app_pid= audio_pid=
 pipewire >"$artifacts/pipewire.log" 2>&1 &
@@ -63,12 +64,28 @@ notify-send --app-name='Lumina QA' 'Cassiopeia notification' 'Notification deliv
 sleep 0.2
 quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell status >"$artifacts/status.json"
 grim "$artifacts/desktop.png"
-for panel in assistant overview launcher settings notifications clock; do
+for panel in assistant overview launcher controls settings notifications clock; do
     quickshell ipc -p "$repo/desktop/lumina-shell/shell" call "$panel" toggle
     sleep 0.4
     grim "$artifacts/$panel.png"
     quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell close
 done
+kill "$shell_pid"
+wait "$shell_pid" || true
+shell_pid=
+cp -a "$repo/desktop/lumina-shell/shell" "$artifacts/settings-fixture"
+cp "$repo/desktop/tests/SettingsFixture.qml" "$artifacts/settings-fixture/shell.qml"
+timeout 20 quickshell -p "$artifacts/settings-fixture" >"$artifacts/settings-actions.log" 2>&1
+grep -q SETTINGS_FIXTURE_PASS "$artifacts/settings-actions.log"
+LUMINA_SETTINGS_VERIFY_RELOAD=1 timeout 15 quickshell -p "$artifacts/settings-fixture" >"$artifacts/settings-reload.log" 2>&1
+grep -q SETTINGS_RELOAD_PASS "$artifacts/settings-reload.log"
+python3 - "$XDG_CONFIG_HOME/lumina/shell.json" <<'PYSAVED'
+import json,sys
+config=json.load(open(sys.argv[1]))
+assert config['notifications']['dnd'] is True, config
+assert config['appearance']['dark'] is False, config
+assert config['bar']['showAssistant'] is False, config
+PYSAVED
 mkdir -p "$artifacts/action-fixture/services"
 cp "$repo/desktop/tests/ChromaFixture.qml" "$artifacts/action-fixture/shell.qml"
 cp "$repo/desktop/lumina-shell/shell/services/Chroma.qml" "$artifacts/action-fixture/services/Chroma.qml"
@@ -82,7 +99,8 @@ assert state['windows'] >= 1,state
 PY
 python3 - "$artifacts/shell.log" <<'PYLOG'
 import re,sys
-text=open(sys.argv[1]).read()
+from pathlib import Path
+text=open(sys.argv[1]).read()+Path(sys.argv[1]).with_name('settings-actions.log').read_text()
 errors=[line for line in text.splitlines() if re.search(r'ERROR|ReferenceError|TypeError|is not a type|Cannot assign|Unable to assign|not defined',line)]
 if errors: raise SystemExit('\n'.join(errors))
 PYLOG

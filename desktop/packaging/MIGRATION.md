@@ -39,6 +39,11 @@ this first package, avoiding the old breakpad/cpptrace COPR build chain;
 regular system coredumps remain available. Hyprland-specific integrations
 are disabled at build time.
 
+The control-center continuation uses Fedora brightnessctl, NetworkManager
+and power-profiles-daemon through a small allowlisted helper; it adds no COPR
+or binary feed. Detailed device configuration uses the already packaged
+Fedora managers.
+
 Matugen already exists in Fedora, but wallpaper-driven Material generation
 is not yet ported. MicroTeX, additional upstream font families, darkly,
 starship, music recognition and the remaining upstream optional utilities

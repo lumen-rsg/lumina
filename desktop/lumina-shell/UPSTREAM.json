@@ -5,14 +5,38 @@
   "files": [
     "modules/common/Appearance.qml",
     "modules/common/functions/ColorUtils.qml",
-    "modules/common/functions/StringUtils.qml",
     "modules/common/functions/FileUtils.qml",
-    "modules/common/widgets/StyledText.qml",
-    "modules/common/widgets/RippleButton.qml",
-    "modules/common/widgets/MaterialSymbol.qml",
-    "modules/common/widgets/StyledRectangularShadow.qml",
+    "modules/common/functions/StringUtils.qml",
+    "modules/common/widgets/ButtonGroup.qml",
+    "modules/common/widgets/CircularProgress.qml",
     "modules/common/widgets/ClippedFilledCircularProgress.qml",
-    "modules/common/widgets/CircularProgress.qml"
+    "modules/common/widgets/ConfigSwitch.qml",
+    "modules/common/widgets/ContentPage.qml",
+    "modules/common/widgets/ContentSection.qml",
+    "modules/common/widgets/GroupButton.qml",
+    "modules/common/widgets/MaterialSymbol.qml",
+    "modules/common/widgets/NavigationRail.qml",
+    "modules/common/widgets/NavigationRailButton.qml",
+    "modules/common/widgets/NavigationRailExpandButton.qml",
+    "modules/common/widgets/NavigationRailTabArray.qml",
+    "modules/common/widgets/OptionalMaterialSymbol.qml",
+    "modules/common/widgets/PointingHandInteraction.qml",
+    "modules/common/widgets/RippleButton.qml",
+    "modules/common/widgets/StyledFlickable.qml",
+    "modules/common/widgets/StyledRectangularShadow.qml",
+    "modules/common/widgets/StyledScrollBar.qml",
+    "modules/common/widgets/StyledSlider.qml",
+    "modules/common/widgets/StyledSwitch.qml",
+    "modules/common/widgets/StyledText.qml",
+    "modules/common/widgets/StyledToolTip.qml",
+    "modules/common/widgets/StyledToolTipContent.qml",
+    "modules/common/widgets/WavyLine.qml"
   ],
-  "note": "Portable Material components form the initial port. Lumina owns compositor integration and panels; excluded upstream modules are tracked in desktop/docs/PORT.md."
+  "note": "Material widgets are retained from the pinned source. Control center and settings adapt the upstream ii layouts to Lumina services and Chroma; unsupported Hyprland and anime modules are excluded.",
+  "adaptedLayouts": [
+    "modules/ii/sidebarRight/SidebarRightContent.qml",
+    "modules/ii/sidebarRight/QuickSliders.qml",
+    "modules/ii/sidebarRight/quickToggles/androidStyle/AndroidQuickToggleButton.qml",
+    "settings.qml"
+  ]
 }

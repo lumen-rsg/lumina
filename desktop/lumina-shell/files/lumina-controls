@@ -1,0 +1,65 @@
+#!/usr/bin/python3
+"""Small allowlisted bridge for desktop utilities; never evaluates shell text."""
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def run(args):
+    try:
+        p = subprocess.run(args, text=True, capture_output=True, timeout=12,
+                           env={**os.environ, 'LC_ALL': 'C'})
+        return p.returncode, p.stdout.strip(), p.stderr.strip()
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return 1, '', str(e)
+
+
+def status():
+    _, radio, _ = run(['nmcli', 'radio', 'wifi'])
+    _, devices, _ = run(['nmcli', '-t', '-e', 'no', '-f', 'DEVICE,TYPE,STATE,CONNECTION', 'device', 'status'])
+    rows = [line.split(':', 3) for line in devices.splitlines()]
+    wifi = [r for r in rows if len(r) == 4 and r[1] == 'wifi']
+    connection = next((r[3] for r in rows if len(r) == 4 and r[2] == 'connected' and r[1] != 'loopback'), 'Disconnected')
+    code, brightness, _ = run(['brightnessctl', '-c', 'backlight', '-m'])
+    level = None
+    if code == 0:
+        try:
+            level = int(brightness.splitlines()[0].split(',')[3].rstrip('%'))
+        except (ValueError, IndexError):
+            pass
+    code, profile, _ = run(['powerprofilesctl', 'get'])
+    try:
+        minutes = int(float(Path('/proc/uptime').read_text().split()[0])) // 60
+        uptime = f'{minutes // 60}h {minutes % 60}m'
+    except (OSError, ValueError):
+        uptime = ''
+    return dict(wifiAvailable=bool(wifi), wifiEnabled=radio == 'enabled', connection=connection,
+                brightness=level, powerProfile=profile if code == 0 else '', uptime=uptime)
+
+
+def command(args):
+    if args == ['status']:
+        return dict(ok=True, state=status())
+    if len(args) != 2:
+        raise ValueError('Expected an action and value')
+    action, value = args
+    if action == 'wifi' and value in ('on', 'off'):
+        cmd = ['nmcli', 'radio', 'wifi', value]
+    elif action == 'brightness' and value.isdecimal() and 1 <= int(value) <= 100:
+        cmd = ['brightnessctl', '-c', 'backlight', 'set', value + '%']
+    elif action == 'profile' and value in ('power-saver', 'balanced', 'performance'):
+        cmd = ['powerprofilesctl', 'set', value]
+    else:
+        raise ValueError('Unsupported control action')
+    code, out, error = run(cmd)
+    return dict(ok=code == 0, error=(error or out)[:600] if code else '', state=status())
+
+
+if __name__ == '__main__':
+    try:
+        print(json.dumps(command(sys.argv[1:])))
+    except ValueError as e:
+        print(json.dumps(dict(ok=False, error=str(e))))
+        sys.exit(2)

@@ -19,7 +19,7 @@ ShellRoot {
     id: root
     property string panel: ""
     property var panelScreen: Quickshell.screens[0]
-    property bool dnd: false
+    property bool dnd: Config.options.notifications.dnd
     property var notices: []
     function toggle(name, screen) {
         if (screen) panelScreen = screen;
@@ -34,10 +34,11 @@ ShellRoot {
         onNotification: notice => {
             notice.tracked = true;
             root.notices = root.notices.concat([notice]);
+            notice.closed.connect(() => { root.notices = root.notices.filter(n => n && n !== notice); });
             if (!root.dnd) toastTimer.restart();
         }
     }
-    Timer { id: toastTimer; interval: 6000 }
+    Timer { id: toastTimer; interval: Config.options.notifications.timeout }
     Variants {
         model: Quickshell.screens
         delegate: Scope {
@@ -73,11 +74,11 @@ ShellRoot {
                         anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
                         spacing: 4
                         ActionButton { label: "lumina"; onClicked: root.toggle("launcher", bar.screen) }
-                        ActionButton { symbol: "grid_view"; label: bar.width > 900 ? "Canvas" : ""; onClicked: root.toggle("overview", bar.screen) }
-                        ActionButton { symbol: "auto_awesome"; label: bar.width > 1000 ? "Assistant" : ""; onClicked: root.toggle("assistant", bar.screen) }
+                        ActionButton { symbol: "grid_view"; label: Config.options.bar.verbose && bar.width > 900 ? "Canvas" : ""; onClicked: root.toggle("overview", bar.screen) }
+                        ActionButton { symbol: "auto_awesome"; visible: Config.options.bar.showAssistant; label: Config.options.bar.verbose && bar.width > 1000 ? "Assistant" : ""; onClicked: root.toggle("assistant", bar.screen) }
                         StyledText { Layout.fillWidth: true; text: Chroma.state.focused?.title || "Cassiopeia"; elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter; opacity: 0.8 }
                         Repeater {
-                            model: SystemTray.items
+                            model: Config.options.bar.showTray ? SystemTray.items : []
                             delegate: ActionButton {
                                 required property var modelData
                                 implicitWidth: 34
@@ -87,10 +88,10 @@ ShellRoot {
                                 altAction: () => modelData.display(bar, 0, bar.height)
                             }
                         }
-                        ActionButton { symbol: "volume_up"; label: bar.width > 1050 ? Math.round((Pipewire.defaultAudioSink?.audio?.volume ?? 0) * 100) + "%" : ""; onClicked: root.toggle("settings", bar.screen) }
+                        ActionButton { symbol: "instant_mix"; Accessible.name: "Control center"; label: Config.options.bar.verbose && bar.width > 1050 ? Math.round((Pipewire.defaultAudioSink?.audio?.volume ?? 0) * 100) + "%" : ""; onClicked: root.toggle("controls", bar.screen) }
                         StyledText { visible: UPower.displayDevice.isLaptopBattery && bar.width > 700; text: Math.round(UPower.displayDevice.percentage * 100) + "%"; font.pixelSize: 12 }
-                        ActionButton { label: Qt.formatDateTime(clock.date, "hh:mm"); onClicked: root.toggle("clock", bar.screen) }
-                        ActionButton { symbol: "notifications"; label: ""; Accessible.name: "Notifications"; onClicked: root.toggle("notifications", bar.screen) }
+                        ActionButton { label: Qt.formatDateTime(clock.date, Config.options.bar.clock24h ? "hh:mm" : "h:mm AP"); onClicked: root.toggle("clock", bar.screen) }
+                        ActionButton { symbol: "notifications"; label: ""; Accessible.name: "Notifications"; onClicked: root.toggle("controls", bar.screen) }
                         ActionButton { symbol: "power_settings_new"; label: ""; Accessible.name: "Session"; onClicked: root.toggle("session", bar.screen) }
                     }
                 }
@@ -105,7 +106,7 @@ ShellRoot {
         margins.top: 6
         margins.bottom: 8
         margins.right: 8
-        implicitWidth: Math.min(root.panelScreen?.width ?? 600, 600) - 16
+        implicitWidth: Math.min(root.panelScreen?.width ?? 600, root.panel === "controls" ? 470 : 600) - 16
         color: "transparent"
         exclusiveZone: 0
         WlrLayershell.namespace: "lumina:drawer"
@@ -116,15 +117,16 @@ ShellRoot {
             color: Appearance.colors.colLayer0
             border.color: Appearance.colors.colLayer0Border
             ColumnLayout {
-                anchors.fill: parent; anchors.margins: 20
+                anchors.fill: parent; anchors.margins: root.panel === "controls" ? 12 : 20
                 RowLayout {
+                    visible: root.panel !== "controls"
                     Layout.fillWidth: true
                     StyledText { text: "CASSIOPEIA"; font.letterSpacing: 2; font.pixelSize: 11; opacity: 0.5; Layout.fillWidth: true }
                     ActionButton { symbol: "close"; label: "Close"; onClicked: root.panel = "" }
                 }
                 Loader {
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    sourceComponent: root.panel === "assistant" ? assistantPanel : root.panel === "overview" ? overviewPanel : root.panel === "launcher" ? launcherPanel : root.panel === "session" ? sessionPanel : root.panel === "notifications" ? notificationPanel : root.panel === "clock" ? clockPanel : settingsPanel
+                    sourceComponent: root.panel === "assistant" ? assistantPanel : root.panel === "overview" ? overviewPanel : root.panel === "launcher" ? launcherPanel : root.panel === "session" ? sessionPanel : root.panel === "notifications" ? notificationPanel : root.panel === "clock" ? clockPanel : controlCenterPanel
                 }
             }
             Keys.onEscapePressed: root.panel = ""
@@ -165,29 +167,24 @@ ShellRoot {
             Item { Layout.fillHeight: true }
         }
     }
+    SettingsWindow { id: settingsWindow; onAssistantRequested: root.toggle("assistant") }
     Component {
-        id: settingsPanel
-        ColumnLayout {
-            spacing: 16
-            StyledText { text: "Quick settings"; font.pixelSize: 26 }
-            StyledText { text: "Volume" }
-            Slider { Layout.fillWidth: true; from: 0; to: 1; value: Pipewire.defaultAudioSink?.audio?.volume ?? 0; onMoved: if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.volume = value }
-            ActionButton { label: Pipewire.defaultAudioSink?.audio?.muted ? "Unmute" : "Mute"; onClicked: if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.muted = !Pipewire.defaultAudioSink.audio.muted }
-            ActionButton { label: "Audio devices"; symbol: "speaker"; onClicked: Quickshell.execDetached(["pavucontrol"]) }
-            ActionButton { label: "Network"; symbol: "wifi"; onClicked: Quickshell.execDetached(["nm-connection-editor"]) }
-            ActionButton { label: "Bluetooth"; symbol: "bluetooth"; onClicked: Quickshell.execDetached(["blueman-manager"]) }
-            ActionButton { label: "Displays"; symbol: "monitor"; onClicked: Quickshell.execDetached(["wdisplays"]) }
-            ActionButton { label: "Screenshot"; symbol: "screenshot_region"; onClicked: { root.panel = ""; Quickshell.execDetached(["chroma-capture", "screenshot", "area"]); } }
-            StyledText { text: "Wallpaper path" }
-            InputField { Layout.fillWidth: true; text: Config.options.background.wallpaperPath; Accessible.name: "Wallpaper path"; onEditingFinished: Config.options.background.wallpaperPath = text }
-            Item { Layout.fillHeight: true }
+        id: controlCenterPanel
+        ControlCenter {
+            notices: root.notices
+            onSettingsRequested: { root.panel = ""; settingsWindow.open(); }
+            onSessionRequested: root.panel = "session"
+            onCalendarRequested: root.panel = "clock"
+            onCloseRequested: root.panel = ""
+            onClearNotices: { const pending = root.notices.slice(); root.notices = []; for (const n of pending) if (n) n.dismiss(); }
         }
     }
     Component {
         id: clockPanel
         ColumnLayout {
-            StyledText { text: Qt.formatDateTime(clock.date, "hh:mm"); font.pixelSize: 64 }
+            StyledText { text: Qt.formatDateTime(clock.date, Config.options.bar.clock24h ? "hh:mm" : "h:mm AP"); font.pixelSize: 64 }
             StyledText { text: Qt.formatDateTime(clock.date, "dddd, d MMMM yyyy"); font.pixelSize: 20 }
+            CalendarCard { Layout.fillWidth: true; today: clock.date }
             Item { Layout.fillHeight: true }
         }
     }
@@ -196,7 +193,7 @@ ShellRoot {
         ColumnLayout {
             StyledText { text: "Notifications"; font.pixelSize: 26 }
             RowLayout {
-                ActionButton { label: root.dnd ? "Enable alerts" : "Do not disturb"; onClicked: root.dnd = !root.dnd }
+                ActionButton { label: root.dnd ? "Enable alerts" : "Do not disturb"; onClicked: Config.options.notifications.dnd = !Config.options.notifications.dnd }
                 ActionButton { label: "Clear all"; onClicked: { for (const n of root.notices) if (n) n.dismiss(); root.notices = []; } }
             }
             ListView {
@@ -220,10 +217,11 @@ ShellRoot {
     IpcHandler { target: "overview"; function toggle(): void { root.toggle("overview"); } }
     IpcHandler { target: "tiling"; function toggle(): void { root.toggle("overview"); } }
     IpcHandler { target: "assistant"; function toggle(): void { root.toggle("assistant"); } }
-    IpcHandler { target: "settings"; function toggle(): void { root.toggle("settings"); } }
-    IpcHandler { target: "notifications"; function toggle(): void { root.toggle("notifications"); } function dnd(): void { root.dnd = !root.dnd; } }
+    IpcHandler { target: "settings"; function toggle(): void { root.panel = ""; settingsWindow.visible ? settingsWindow.visible = false : settingsWindow.open(); } function open(): void { root.panel = ""; settingsWindow.open(); } }
+    IpcHandler { target: "controls"; function toggle(): void { root.toggle("controls"); } }
+    IpcHandler { target: "notifications"; function toggle(): void { root.toggle("notifications"); } function dnd(): void { Config.options.notifications.dnd = !Config.options.notifications.dnd; } }
     IpcHandler { target: "clock"; function toggle(): void { root.toggle("clock"); } }
     IpcHandler { target: "session"; function menu(): void { root.toggle("session"); } }
     IpcHandler { target: "hints"; function toggle(): void { root.toggle("overview"); } }
-    IpcHandler { target: "shell"; function close(): void { root.panel = ""; } function status(): string { return JSON.stringify({panel: root.panel, connected: Chroma.connected, version: "26.9", windows: Chroma.state.windows.length}); } }
+    IpcHandler { target: "shell"; function close(): void { root.panel = ""; settingsWindow.visible = false; } function status(): string { return JSON.stringify({panel: root.panel, connected: Chroma.connected, version: "26.9", settingsOpen: settingsWindow.visible, settingsPage: settingsWindow.currentPage, dark: Config.options.appearance.dark, dnd: root.dnd, windows: Chroma.state.windows.length}); } }
 }

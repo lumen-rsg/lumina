@@ -32,46 +32,46 @@ Singleton {
     }
     property real autoContentTransparency: 0.9
     property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
-    property real contentTransparency: Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
+    property real contentTransparency: !Config.options.appearance.transparency.enable ? 0 : Config.options.appearance.transparency.automatic ? autoContentTransparency : Math.min(0.9, Config.options.appearance.transparency.contentTransparency)
 
     m3colors: QtObject {
-        property bool darkmode: true
+        property bool darkmode: Config.options.appearance.dark
         property bool transparent: false
-        property color m3background: "#11121f"
-        property color m3onBackground: "#e7e7f7"
-        property color m3surface: "#11121f"
-        property color m3surfaceDim: "#11121f"
-        property color m3surfaceBright: "#3a3939"
-        property color m3surfaceContainerLowest: "#0f0e0e"
-        property color m3surfaceContainerLow: "#1c1b1c"
-        property color m3surfaceContainer: "#201f20"
-        property color m3surfaceContainerHigh: "#2b2a2a"
-        property color m3surfaceContainerHighest: "#363435"
-        property color m3onSurface: "#e7e7f7"
+        property color m3background: darkmode ? "#11121f" : "#f7f2fa"
+        property color m3onBackground: darkmode ? "#e7e7f7" : "#1e1b22"
+        property color m3surface: darkmode ? "#11121f" : "#f7f2fa"
+        property color m3surfaceDim: darkmode ? "#11121f" : "#ded8e1"
+        property color m3surfaceBright: darkmode ? "#3a3939" : "#fff8ff"
+        property color m3surfaceContainerLowest: darkmode ? "#0f0e0e" : "#ffffff"
+        property color m3surfaceContainerLow: darkmode ? "#1c1b1c" : "#f1ebf4"
+        property color m3surfaceContainer: darkmode ? "#201f20" : "#ebe5ee"
+        property color m3surfaceContainerHigh: darkmode ? "#2b2a2a" : "#e5dfe8"
+        property color m3surfaceContainerHighest: darkmode ? "#363435" : "#ded8e1"
+        property color m3onSurface: darkmode ? "#e7e7f7" : "#1e1b22"
         property color m3surfaceVariant: "#49464a"
-        property color m3onSurfaceVariant: "#cbc5ca"
+        property color m3onSurfaceVariant: darkmode ? "#cbc5ca" : "#49454e"
         property color m3inverseSurface: "#e7e7f7"
         property color m3inverseOnSurface: "#313030"
-        property color m3outline: "#948f94"
-        property color m3outlineVariant: "#49464a"
+        property color m3outline: darkmode ? "#948f94" : "#7a7480"
+        property color m3outlineVariant: darkmode ? "#49464a" : "#ccc4d1"
         property color m3shadow: "#000000"
         property color m3scrim: "#000000"
         property color m3surfaceTint: "#c3b8ff"
-        property color m3primary: "#c3b8ff"
-        property color m3onPrimary: "#322f34"
-        property color m3primaryContainer: "#2d2a2f"
-        property color m3onPrimaryContainer: "#bcb6bc"
+        property color m3primary: darkmode ? "#c3b8ff" : "#65558f"
+        property color m3onPrimary: darkmode ? "#322f34" : "#ffffff"
+        property color m3primaryContainer: darkmode ? "#2d2a2f" : "#e9ddff"
+        property color m3onPrimaryContainer: darkmode ? "#bcb6bc" : "#211047"
         property color m3inversePrimary: "#615d63"
-        property color m3secondary: "#cac5c8"
-        property color m3onSecondary: "#323032"
-        property color m3secondaryContainer: "#4d4b4d"
-        property color m3onSecondaryContainer: "#ece6e9"
+        property color m3secondary: darkmode ? "#cac5c8" : "#635b70"
+        property color m3onSecondary: darkmode ? "#323032" : "#ffffff"
+        property color m3secondaryContainer: darkmode ? "#4d4b4d" : "#e8def4"
+        property color m3onSecondaryContainer: darkmode ? "#ece6e9" : "#201a2b"
         property color m3tertiary: "#d1c3c6"
         property color m3onTertiary: "#372e30"
         property color m3tertiaryContainer: "#31292b"
         property color m3onTertiaryContainer: "#c1b4b7"
-        property color m3error: "#ffb4ab"
-        property color m3onError: "#690005"
+        property color m3error: darkmode ? "#ffb4ab" : "#ba1a1a"
+        property color m3onError: darkmode ? "#690005" : "#ffffff"
         property color m3errorContainer: "#93000a"
         property color m3onErrorContainer: "#ffdad6"
         property color m3primaryFixed: "#e7e0e7"
@@ -269,7 +269,7 @@ Singleton {
 
     animation: QtObject {
         property QtObject elementMove: QtObject {
-            property int duration: animationCurves.expressiveDefaultSpatialDuration
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (animationCurves.expressiveDefaultSpatialDuration)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
             property int velocity: 650
@@ -283,7 +283,7 @@ Singleton {
         }
 
         property QtObject elementMoveSmall: QtObject {
-            property int duration: animationCurves.expressiveFastSpatialDuration
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (animationCurves.expressiveFastSpatialDuration)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveFastSpatial
             property int velocity: 650
@@ -297,7 +297,7 @@ Singleton {
         }
 
         property QtObject elementMoveEnter: QtObject {
-            property int duration: 400
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (400)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedDecel
             property int velocity: 650
@@ -312,7 +312,7 @@ Singleton {
         }
 
         property QtObject elementMoveExit: QtObject {
-            property int duration: 200
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (200)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedAccel
             property int velocity: 650
@@ -327,7 +327,7 @@ Singleton {
         }
 
         property QtObject elementMoveFast: QtObject {
-            property int duration: animationCurves.expressiveEffectsDuration
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (animationCurves.expressiveEffectsDuration)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveEffects
             property int velocity: 850
@@ -345,7 +345,7 @@ Singleton {
         }
 
         property QtObject elementResize: QtObject {
-            property int duration: 300
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (300)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasized
             property int velocity: 650
@@ -360,7 +360,7 @@ Singleton {
         }
 
         property QtObject clickBounce: QtObject {
-            property int duration: 400
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (400)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
             property int velocity: 850
@@ -373,13 +373,13 @@ Singleton {
         }
 
         property QtObject scroll: QtObject {
-            property int duration: 200
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (200)
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: root.animationCurves.standardDecel
         }
 
         property QtObject menuDecel: QtObject {
-            property int duration: 350
+            property int duration: Config.options.appearance.reducedMotion ? 0 : (350)
             property int type: Easing.OutExpo
         }
     }

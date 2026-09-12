@@ -14,17 +14,21 @@ Quickshell are imported into Lumina Shell.
 | Hyprland focus grab | Exclusive layer-shell keyboard focus; Escape and Close dismiss the drawer |
 | Wallpaper | Lumina Cassiopeia artwork and editable wallpaper path |
 | AI tab | Provider picker, model and endpoint, private credentials, chat, cancellation, new conversation |
-| Audio, tray, battery, notifications | Quickshell service APIs |
+| Control center | Upstream ii grouping, Material toggle pills and sliders, live network/power status, audio/mic, DND, theme, notifications and calendar |
+| Settings | Separate window with upstream navigation rail; Quick, General, Bar, Background, Interface, Services, Advanced and About pages |
+| Audio, tray, battery, notifications | Quickshell service APIs; external device managers for detailed configuration |
 | Screenshot, lock, idle, clipboard, portals | Chroma session helpers and wlroots/GTK portals |
 | Anime/image-board content and character prompts | Excluded from the shipped source selection entirely |
 | Upstream identity | Lumina shell identity; upstream attribution retained in package documentation |
 
 This is an initial component-based port, **not full feature parity with the
-upstream ii or waffle panel families**. The upstream dock, full calendar,
+upstream ii or waffle panel families**. The upstream dock, calendar event integration,
 notification persistence, detached/pinned AI sidebar, live window thumbnails,
 wallpaper browser and dynamic Material generation, OCR/translation/Lens,
-media widgets, keyboard, accessibility settings, and general settings UI
-remain follow-up scope. Do not advertise these as implemented.
+media widgets, keyboard, and the remaining accessibility settings
+remain follow-up scope. Embedded Wi-Fi/Bluetooth pairing and per-application
+audio panes still open Fedora device managers; night light, tile rearrangement,
+to-do and Pomodoro are not yet ported. Do not advertise these as implemented.
 
 The assistant currently renders selectable plain text. It does not execute
 commands, read windows, attach screenshots, or persist conversation history.
@@ -44,3 +48,27 @@ for the scheduled popup polish before asserting its coordinates. The
 production code already schedules this asynchronously. The unpatched suite
 failed the same assertion under offscreen and Xvfb; all nine tests pass under
 Xvfb with the wait. No production toolkit behavior was changed by that patch.
+
+## Control center and settings continuation (2026-09-12)
+
+The earlier generic settings drawer is replaced by the ii-shaped control
+center. Eighteen additional upstream Material widgets are retained directly;
+UPSTREAM.json records the source and adapted layouts. A separate settings
+window exposes working, persistent controls rather than empty upstream tabs.
+Theme, panel transparency, motion, font, bar modules, clock format, wallpaper,
+notification duration, DND and control-center preferences apply immediately.
+A 150 ms write debounce prevents rapid edits from racing FileView's reload.
+PreferenceSwitch keeps the upstream switch's editable state synchronized with
+external model changes.
+
+Control actions use Pipewire/Bluetooth APIs or the allowlisted lumina-controls
+helper. Unavailable hardware is disabled or hidden; errors are shown instead
+of optimistic success. Brightness requests retain the latest value during an
+in-flight write. Network, Bluetooth, sound and display details launch the
+packaged Fedora managers. Calendar month navigation and Today work; its compact
+control-center button opens the larger calendar on short displays.
+
+This is lumina-shell 26.9-2.lu26 development work. The b1feea2 signed installer
+images and their exact-image acceptance record still describe release 1 of
+the shell. This continuation has not yet been published by LuminaCI or composed
+into new installer images. See PARITY-2026-09-12.md for validation.

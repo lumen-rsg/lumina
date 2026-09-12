@@ -13,6 +13,12 @@ The implemented shell is an initial component-based port. **Full upstream
 module parity is not complete**; `PORT.md` and `../packaging/MIGRATION.md`
 list the outstanding modules and optional dependencies.
 
+## Later shell development
+
+The control-center/settings continuation is documented in
+[PARITY-2026-09-12.md](PARITY-2026-09-12.md). It is a separately tested
+development shell, not part of the signed `b1feea2` images below.
+
 ## Gates as of 2026-09-12
 
 - [x] Source bundles, provenance, spec paths and whitespace checks.

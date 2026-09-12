@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Lumina Settings
+Comment=Customize your Cassiopeia desktop
+Exec=lumina-shell ipc call settings open
+Icon=preferences-system
+Categories=Settings;DesktopSettings;
+OnlyShowIn=Lumina;Chroma;
+Terminal=false
+StartupNotify=false
