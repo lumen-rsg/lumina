@@ -22,15 +22,15 @@ list the outstanding modules and optional dependencies.
 - [x] Real QML control requests change Chroma zoom and close a test window.
 - [x] Real QML/helper/HTTP assistant round trip with a simulated provider.
 - [x] ARM64 development network ISO composition, media checksum and UEFI boot to Anaconda.
-- [ ] Native x86-64 RPM builds and empty-root dependency closure.
+- [x] Native x86-64 RPM builds and complete empty-root desktop dependency closure.
 - [x] Signed ARM64/noarch LuminaCI publication and public artifact verification.
-- [ ] Signed x86-64 LuminaCI publication.
+- [x] Signed x86-64 LuminaCI publication and public artifact verification.
 - [x] Signed ARM64 installer completes fresh installation, first login and VM session checks.
-- [ ] x86-64 installer completes installation and boots the installed desktop.
+- [x] Signed x86-64 installer completes fresh installation, first login and VM session checks.
 - [ ] Physical graphics, input, audio, networking, locking, suspend, portals,
   multi-monitor behavior and Secure Boot qualification.
 
-## Published ARM64 candidate and x64 continuation
+## Published ARM64 candidate
 
 Source `b1feea2561be5af626abd61970efc3b0b6299342` completed all ten ARM64/noarch
 build, scan, sign and publication stages in delivery
@@ -47,8 +47,8 @@ Lumina key (`EBE39C736CAC92CEC2139DC7620675824776D3D7`). Public `lumen/aarch64`
 and `lumen/noarch` metadata and downloaded RPMs matched the signed CI artifact
 hashes exactly. After confirming all publication stages, x64 delivery
 `751fe2a3-cda9-412c-afb6-5ace1cae3775` was dispatched from the same source.
-Its three native packages are still being built; x64 publication is not yet
-claimed.
+Its three native packages subsequently completed every build, scan, sign
+and publication stage. The details are recorded below.
 
 The signed-package ARM64 network installer is
 `Lumina-26.9-Cassiopeia-aarch64-signed-b1feea2.iso`, SHA-256
@@ -62,6 +62,7 @@ FileChooser portal selection, lock and password unlock passed. The assistant
 opened its provider/model/key setup with Send disabled. SELinux remained
 enforcing with no AVC records; no system services were failed. Root is locked
 and the temporary evidence-collection SSH service is not enabled at boot.
+DNF resolves `releasever=44` while the OS identifies itself as Lumina 26.9.
 This is exact-image VM acceptance, not physical hardware qualification.
 Evidence is retained under `desktop/evidence/installed-aarch64-signed/` and
 `desktop/dist/ci-admin/`. The compact public record is
@@ -71,6 +72,60 @@ The preceding development image also passed a real FileChooser portal round
 trip: a Gio request opened the GTK dialog, the QA user selected the Cassiopeia
 wallpaper, and the portal returned response 0 with its file URI. This does not
 qualify screencasting or physical-device behavior.
+
+## Published x64 candidate
+
+Delivery `751fe2a3-cda9-412c-afb6-5ace1cae3775` built and published the three
+native x64 RPMs from `b1feea2`. Chroma passed five Meson tests and both
+regular/primary clipboard round trips. Native gate
+`32aef7b8-75c8-8d0b-bda4-97485516328c` passed at 21:27:38 UTC on September 11;
+its result SHA-256 is
+`1c3a30b03917d652a096f76a1e758d466292bde7d9c17baf095e6b338fc0a96f`.
+Public `lumen/x86_64` and `lumen/noarch` metadata and all ten primary RPMs
+matched the signed CI inputs. The seven noarch files are identical to the
+ARM64 installer's shared packages.
+
+A separate native Fedora 44 x64 container installed the complete
+`lumina-desktop` dependency set into an empty root, with weak dependencies
+excluded and package signature checking enabled. Its installed manifest has
+727 RPM records. The installed `/bin/sh` and Quickshell executable ran;
+verification of the desktop, shell, compositor, toolkit and clipboard RPMs was
+clean. This transaction is separate from graphical boot acceptance.
+
+Lorax requires matching host and ISO architectures. The x64 image was therefore
+composed on the native x64 server, verifying the Fedora base's signed checksum
+and all ten Lumina RPM signatures. The transferred image matched the server's
+SHA-256:
+`7d22a0b442e42fc686a01fd6a22b25983845ccd4635f8b080fa95e0555698e0b`.
+Its filename is `Lumina-26.9-Cassiopeia-x86_64-signed-b1feea2.iso`.
+UEFI boot reached branded Anaconda and the media check completed. The fresh
+32 GiB installation installed 830 RPMs; its post-install scripts returned 0
+at 22:19 UTC on September 11. After a host restart during the network outage,
+the existing VM disk booted the installed system. First login selected Chroma
+and Lumina Shell without package/configuration repairs or a session override.
+This test used QEMU/TCG CPU emulation on the ARM host, with four virtual CPUs,
+4 GiB RAM, OVMF UEFI and a single Virtio GPU; it is not native graphics or
+physical hardware qualification.
+
+Terminal launch, canvas zoom/window close, regular and primary clipboard
+selections, FileChooser portal selection, and lock/password unlock passed.
+The assistant opened explicit provider/model/key setup with Send disabled.
+SELinux remained enforcing, with no AVC records in the installed session;
+no system services were failed. Root is locked and guest SSH remains disabled
+at boot. DNF resolves Fedora `releasever=44`, independently of the Lumina
+26.9 identity. Desktop, shell, compositor, Quickshell and clipboard RPM
+verification was clean. The clipboard fixture needed a bounded readiness
+wait under TCG; its original 300 ms delay was too short. No installed package
+was changed for that retry.
+
+The installer environment's permissive SELinux messages and software-rendering
+warnings are retained in the raw logs; the no-AVC result above applies to the
+installed desktop boot. Evidence is under
+`desktop/evidence/installed-x86_64-signed/`; the compact public record is
+[`evidence/cassiopeia-x86_64-b1feea2.json`](evidence/cassiopeia-x86_64-b1feea2.json).
+Both network installers require Fedora repository access during installation.
+Their RPMs are signed; the complete ISO files are identified by SHA-256 and
+are not separately GPG-signed.
 
 ## Fresh-install bootstrap correction
 
@@ -122,8 +177,9 @@ its separate Bash filename check also rejected `^`. LuminaCI commit `b665492`
 corrects that check; all 249 BuildService tests pass, including execution of
 the actual Bash condition with valid snapshot versions and unsafe names.
 The deployed `lumina-build-service:b665492` is healthy, and console/repository
-HTTPS returned 200. No publication gate was bypassed. The next candidate must
-pass the native upgrade transaction before publication.
+HTTPS returned 200. No publication gate was bypassed. The subsequent
+`b1feea2` candidates passed their native transactions before publication,
+as recorded above.
 
 ## Installed ARM64 session corrections
 
@@ -154,8 +210,9 @@ replaced. The installed desktop displayed the Cassiopeia wallpaper and bar.
 This is a **repaired development VM**, not an exact signed-ISO acceptance pass.
 Logs under `desktop/evidence/installed-aarch64-fixed/` retain the dependency
 transactions and installed-session evidence. Portal app-ID registration and
-VM camera/Bluetooth warnings remain unqualified. Fresh signed media, x64 and
-physical-device acceptance are still open.
+VM camera/Bluetooth warnings remain unqualified. At this historical stage,
+fresh signed media, x64 and physical-device acceptance were still open;
+current results are listed above.
 
 The next fresh development ISO, SHA-256
 `97ddfe85df570369a04c10b5eb3caebfb90aaf7b6ac9174191f16465ca19a2d3`,
@@ -187,7 +244,7 @@ Delivery `17f14376-af3a-41bf-92b9-081f8e966eea` from `e8fbfc0` was deliberately
 cancelled before publication after finding the clipboard defect. Six packages
 had signed successfully; Quickshell was still compiling. Its status is failed
 (`project-build-failed`) because its build was cancelled. The x64 follow-up
-was not dispatched. A new full matrix must pass with the clipboard patch.
+was not dispatched. The subsequent `b1feea2` matrix passed with the clipboard patch.
 
 ## Source and package evidence
 

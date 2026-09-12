@@ -68,14 +68,14 @@
       "lock and password unlock",
       "SELinux enforcing without AVC records",
       "no failed system services",
-      "root account locked"
+      "root account locked",
+      "DNF releasever=44 with Lumina 26.9 identity"
     ]
   },
   "x86_64Delivery": "751fe2a3-cda9-412c-afb6-5ace1cae3775",
   "limitations": [
     "physical hardware not qualified",
-    "full upstream shell module parity incomplete",
-    "x86_64 build and image acceptance pending"
+    "full upstream shell module parity incomplete"
   ],
   "promotionResult": {
     "baselinePackageNames": [
@@ -169,5 +169,6 @@
     "targetArchitecture": "aarch64",
     "transaction": "baseline-upgrade",
     "version": 1
-  }
+  },
+  "x86_64Evidence": "cassiopeia-x86_64-b1feea2.json"
 }

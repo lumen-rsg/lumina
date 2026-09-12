@@ -1,0 +1,163 @@
+{
+  "Id": "32aef7b8-75c8-8d0b-bda4-97485516328c",
+  "ProjectWebhookDeliveryId": "751fe2a3-cda9-412c-afb6-5ace1cae3775",
+  "Status": 2,
+  "FailureReason": null,
+  "KubernetesJobName": "lumina-gate-32aef7b875c88d0bbda497485516328c",
+  "BundleSize": 61825536,
+  "StartedAt": "2026-09-11T21:23:48.394646+00:00",
+  "CompletedAt": "2026-09-11T21:27:38.728913+00:00",
+  "ResultSha256": "1c3a30b03917d652a096f76a1e758d466292bde7d9c17baf095e6b338fc0a96f",
+  "sourceCommit": "b1feea2561be5af626abd61970efc3b0b6299342",
+  "signingFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+  "publicArtifacts": {
+    "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/x86_64/chroma-compositor-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm",
+      "sha256": "20501082a6da7a9f4e31864366e24e816b9358235e48323947303b4b7c9f8955"
+    },
+    "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/x86_64/quickshell-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm",
+      "sha256": "f4477d67d7b00a574b30c9161856714ebb34defd6b4abd5e2dacceda08054e5c"
+    },
+    "wl-clip-persist-0.5.0-1.lu26.x86_64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/x86_64/wl-clip-persist-0.5.0-1.lu26.x86_64.rpm",
+      "sha256": "c490fab6e9fd7d07a313a9d20a0315d8dffaa9c7f22e2b5ac3fbff8506cf75ae"
+    },
+    "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm",
+      "sha256": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f"
+    },
+    "google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm",
+      "sha256": "96709c88b021227c8ae73ad9974b6d70e99b55a94271e3cea385067514437801"
+    },
+    "google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm",
+      "sha256": "b60d938ff2ae83c00efc803c4c6fe0e5ef656e661f1143eec7d1562226c62e4e"
+    },
+    "lumina-artwork-26.9-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-artwork-26.9-2.lu26.noarch.rpm",
+      "sha256": "b9e9e27152ca26bae9ea4e1bdc864c29a5091869b5bad1e3ab356bb73bd3507d"
+    },
+    "lumina-desktop-26.9-3.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-desktop-26.9-3.lu26.noarch.rpm",
+      "sha256": "6429bd2f78e3c1d5ec667b619907aeb5f07bdf97db50b9ebcfc91793fba97c21"
+    },
+    "lumina-release-26.9-2.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-release-26.9-2.lu26.noarch.rpm",
+      "sha256": "5e45338146138436246a7a4a7b30a0a255af2261a794e99c64e8a9e1f7569fe3"
+    },
+    "lumina-shell-26.9-1.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-shell-26.9-1.lu26.noarch.rpm",
+      "sha256": "20d3231712459ac0c793736bc717a913724bcd1cdbf0d98cba11b4f0ae48a0be"
+    }
+  },
+  "builds": {
+    "quickshell": "7a665386-18f3-46cf-803a-d94006bb30d2",
+    "wl-clip-persist": "76f71ac2-a2e0-497d-a152-8086384fa834",
+    "chroma": "16e2d33f-6e4f-4a7c-844e-b80f5f6c20e9"
+  },
+  "nativeChromaChecks": {
+    "mesonPassed": 5,
+    "mesonFailed": 0,
+    "regularClipboard": "passed",
+    "primaryClipboard": "passed"
+  },
+  "promotionResult": {
+    "baselinePackageNames": [],
+    "candidates": [
+      {
+        "fileName": "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm",
+        "nevra": "chroma-compositor-0:0.1.0^20260911gitc310258-2.lu26.x86_64",
+        "sha256": "20501082a6da7a9f4e31864366e24e816b9358235e48323947303b4b7c9f8955"
+      },
+      {
+        "fileName": "chroma-compositor-debuginfo-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm",
+        "nevra": "chroma-compositor-debuginfo-0:0.1.0^20260911gitc310258-2.lu26.x86_64",
+        "sha256": "2ab803a8f30b30d709012aa8526fd3eb560ca34f7dca439a50fd79c28b06d1eb"
+      },
+      {
+        "fileName": "chroma-compositor-debugsource-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm",
+        "nevra": "chroma-compositor-debugsource-0:0.1.0^20260911gitc310258-2.lu26.x86_64",
+        "sha256": "37992bfeba0e58925c3b98eaea5240cb9bb43cff6b4dfb2244653fb506b50650"
+      },
+      {
+        "fileName": "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm",
+        "nevra": "quickshell-0:0.3.1^20260911git2d3b3e9-2.lu26.x86_64",
+        "sha256": "f4477d67d7b00a574b30c9161856714ebb34defd6b4abd5e2dacceda08054e5c"
+      },
+      {
+        "fileName": "quickshell-debuginfo-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm",
+        "nevra": "quickshell-debuginfo-0:0.3.1^20260911git2d3b3e9-2.lu26.x86_64",
+        "sha256": "a02d7381c54c100080d9b0690a894126db2eab208c5aca1db72232dfe34f7e94"
+      },
+      {
+        "fileName": "quickshell-debugsource-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm",
+        "nevra": "quickshell-debugsource-0:0.3.1^20260911git2d3b3e9-2.lu26.x86_64",
+        "sha256": "90a1fd8ef4aca1606b10de927d8298b55ac9923f0aa2be504193214b6b4802d0"
+      },
+      {
+        "fileName": "wl-clip-persist-0.5.0-1.lu26.x86_64.rpm",
+        "nevra": "wl-clip-persist-0:0.5.0-1.lu26.x86_64",
+        "sha256": "c490fab6e9fd7d07a313a9d20a0315d8dffaa9c7f22e2b5ac3fbff8506cf75ae"
+      },
+      {
+        "fileName": "wl-clip-persist-debuginfo-0.5.0-1.lu26.x86_64.rpm",
+        "nevra": "wl-clip-persist-debuginfo-0:0.5.0-1.lu26.x86_64",
+        "sha256": "6a34ae3e316b6566719e0564bc0c138f5b3dfaa271262b6bf9c16dd3da72369a"
+      },
+      {
+        "fileName": "wl-clip-persist-debugsource-0.5.0-1.lu26.x86_64.rpm",
+        "nevra": "wl-clip-persist-debugsource-0:0.5.0-1.lu26.x86_64",
+        "sha256": "27a6454b74aa4c701763a16d5fe57ae34d878e8e4b85828ae56ccc24d9867190"
+      }
+    ],
+    "kubernetesJobUid": "fd06619a-068d-46f1-9a53-4603db4b3dc7",
+    "promotionSetId": "32aef7b8-75c8-8d0b-bda4-97485516328c",
+    "runnerImageDigest": "sha256:6254d7fccefa0d58a33dbdfc1c396339a10baff2eda319f6d204c48f9b168aa9",
+    "targetArchitecture": "x86_64",
+    "transaction": "baseline-upgrade",
+    "version": 1
+  },
+  "installer": {
+    "fileName": "Lumina-26.9-Cassiopeia-x86_64-signed-b1feea2.iso",
+    "sha256": "7d22a0b442e42fc686a01fd6a22b25983845ccd4635f8b080fa95e0555698e0b",
+    "composition": "native Fedora 44 x86_64, Lorax 44.7, verified Fedora base and Lumina RPM signatures",
+    "status": "fresh installation and first-login VM checks passed",
+    "installedPackageCount": 830,
+    "virtualMachine": "QEMU/TCG on aarch64 host, x86_64 guest, OVMF UEFI, 4 vCPU, 4 GiB RAM, empty 32 GiB disk, one Virtio GPU",
+    "checks": [
+      "first login without repairs",
+      "terminal shortcut",
+      "canvas zoom and window close",
+      "regular and primary clipboard",
+      "FileChooser portal round trip",
+      "provider setup on first use",
+      "lock and password unlock",
+      "SELinux enforcing without AVC records",
+      "no failed system services",
+      "root account locked",
+      "DNF releasever=44 with Lumina 26.9 identity"
+    ],
+    "installedManifestSha256": "fc7794a109f33e81073b5325b250b4dcf78d9352be8fdf4e9f0014a817975b49",
+    "hostInterruption": "Host restarted after installation completed; the existing disk booted successfully and was not repaired.",
+    "clipboardFixture": "Bounded selection-readiness wait replaces the insufficient 300 ms fixed delay under TCG."
+  },
+  "limitations": [
+    "physical hardware not qualified",
+    "full upstream shell module parity incomplete",
+    "CPU emulation and software rendering do not qualify native graphics performance",
+    "FileChooser tested; screencasting, suspend, Secure Boot and physical devices unqualified"
+  ],
+  "nativeDesktopClosure": {
+    "status": "passed",
+    "installedPackageCount": 727,
+    "manifestSha256": "aa58a4658c4191ad1eaf477c1ce6f5c76092f562449288c261d97922786fa9a9",
+    "checks": [
+      "empty-root install of lumina-desktop",
+      "native /bin/sh execution",
+      "Quickshell version execution",
+      "RPM verification of desktop, shell, compositor, toolkit and clipboard utility"
+    ]
+  }
+}

@@ -6,8 +6,11 @@ ten Lumina desktop RPMs and an Anaconda package profile. It supports
 are checked before composition. It is a network installer, not a live desktop
 or an offline Fedora mirror. Network access is needed for Fedora packages.
 
-Run on a Fedora 44 builder with `lorax`, `pykickstart`, `createrepo_c`, `rpm`,
+Run on a Fedora 44 builder of the **same architecture as the target ISO**
+with `lorax`, `pykickstart`, `createrepo_c`, `rpm`,
 `gnupg2`, `dosfstools`, `mtools`, and `squashfs-tools` installed.
+Lorax rejects cross-architecture composition even when the RPMs and base ISO
+are valid; use the native ARM64 or x64 builder for its respective image.
 Import the reviewed Lumina signing key into that
 builder's RPM keyring before composing release media. Example:
 
