@@ -1,4 +1,4 @@
-# Generic UEFI network installer
+# UEFI network installer with Mesa and Nouveau
 
 `build-iso.py` remasters a **Fedora 44 Everything netinstall ISO** with the
 ten Lumina desktop RPMs and an Anaconda package profile. It supports
@@ -45,27 +45,47 @@ support. This does not replace the board boot flows for Jetson or Orange Pi.
 Firmware loading, graphical installation, account creation, first boot,
 Secure Boot and physical-device operation require separate qualification.
 
-For an x64 desktop with a supported NVIDIA GPU, `--graphics nvidia-open`
-adds NVIDIA's open kernel module and desktop libraries. Supply the signed
-NVIDIA repository package closure in a separate `--driver-rpms` directory,
-and import `nvidia/RPM-GPG-KEY-nvidia-fedora44` into the builder's RPM keyring.
-The key fingerprint is `129994480EC63D2789BC98E490DFED2F73CD9B30`.
-This profile bundles the driver RPMs; Fedora packages still require network
-access. The target receives NVIDIA's official Fedora 44 repository for updates.
-Include `nvidia-driver-selinux` in the bundled closure: NVIDIA requires this
-conditionally when the target uses `selinux-policy-targeted`. Resolve the
-complete core, desktop, kernel and SELinux selection in one transaction;
-resolving the driver alone misses this dependency.
-The target post-install step builds the module against each installed kernel,
-checks the open module's license, enables DRM modesetting, and rebuilds the
-initramfs. Any failure stops installation with an error. Its log is
-`/var/log/lumina-nvidia-install.log` on the installed system.
+## Default graphics
 
-This profile currently targets **Secure Boot disabled**. It does not enroll a
-DKMS signing certificate in firmware. See NVIDIA's
-[Fedora installation guide](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/fedora.html)
-and [open kernel module support](https://download.nvidia.com/XFree86/Linux-x86_64/595.58.03/README/kernel_open.html).
-Physical GPU/display and wireless acceptance remain separate from package and
-virtual-machine checks.
+The default `--graphics mesa` profile installs Fedora's Mesa OpenGL/Vulkan
+packages and in-kernel graphics drivers, including Nouveau for NVIDIA hardware.
+`nvidia-gpu-firmware` is deliberately retained: Nouveau needs the GPU firmware.
+Vendor NVIDIA drivers, CUDA libraries, DKMS/akmod modules and NVIDIA repository
+configuration are not bundled or activated. The composer rejects vendor NVIDIA
+RPMs accidentally supplied to the Mesa profile.
+
+For the x64 replacement image, use `--graphics mesa --installer-graphics basic`.
+The latter adds `nomodeset` to USB installer boot entries, following Fedora's
+[basic graphics boot option](https://fedoraproject.org/wiki/QA:Testcase_Anaconda_User_Interface_Basic_Video_Driver).
+The installed system must use native modesetting for Chroma/Wayland. A fatal-on-error
+post-install step removes `nomodeset` from installed kernel entries, GRUB defaults
+and the kernel command-line template. This intentionally differs from Fedora's
+normal basic-mode persistence. ARM64 media retains standard boot graphics unless
+explicitly requested otherwise.
+
+The previous NVIDIA candidate lost monitor signal while booting the USB installer
+on the user's RTX 4090 machine. At that stage its bundled target driver was not
+installed. Basic installer graphics addresses that boot path; physical confirmation
+is still required. See the [replacement image record](../docs/INSTALLER-X64-NOUVEAU-2026-09-18.md).
+
+Users can opt into a vendor driver after installation. RPM Fusion calls its
+package `akmod-nvidia` (not `nvidia-akmod`); see its
+[Fedora 44 package listing](https://archive.rpmfusion.org/Mirrors/rpmfusion.org/nonfree/fedora/nvidia-driver/44/x86_64/a/)
+and [setup guide](https://rpmfusion.org/Howto/NVIDIA). This is RPM Fusion packaging,
+not a Fedora-provided driver. Repository/package naming must match the provider: NVIDIA's official Fedora guide currently uses
+`nvidia-open` for the full stack, or `nvidia-driver kmod-nvidia-open-dkms` for a
+desktop-only installation. See the
+[official NVIDIA guide](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/fedora.html)
+for repository setup. No driver installation runs automatically.
+
+## Historical NVIDIA compose profile
+
+`--graphics nvidia-open --driver-rpms DIRECTORY` remains available for reproducing
+historical package tests, but is not the default or the recommended replacement
+image. It requires signed NVIDIA RPMs and the matching imported signing key;
+its target script builds DKMS modules and configures NVIDIA updates. It targets
+Secure Boot disabled and does not enroll a signing certificate. The
+[previous candidate record](../docs/INSTALLER-X64-NVIDIA-2026-09-18.md)
+retains those checks and the subsequent physical boot failure.
 
 Implementation reference: [Lorax mkksiso](https://weldr.io/lorax/mkksiso.html).

@@ -19,7 +19,7 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def render_kickstart(arch, graphics='mesa'):
+def render_kickstart(arch, graphics='mesa', installer_graphics='standard'):
     if graphics == 'nvidia-open' and arch != 'x86_64':
         raise ValueError('The NVIDIA desktop profile is x86_64 only')
     template = Path(__file__).with_name('lumina-desktop.ks.in').read_text()
@@ -28,7 +28,16 @@ def render_kickstart(arch, graphics='mesa'):
     if graphics == 'nvidia-open':
         result = result.replace('lumina-desktop\n', 'lumina-desktop\nkernel-devel-matched\nkernel-headers\nselinux-policy-targeted\nnvidia-driver\nnvidia-driver-selinux\nkmod-nvidia-open-dkms\n')
         result += '\n' + Path(__file__).with_name('nvidia').joinpath('post.ks').read_text()
+    if installer_graphics == 'basic':
+        result += '\n' + Path(__file__).with_name('basic-graphics-post.ks').read_text()
     return result
+
+
+def is_vendor_nvidia_package(name):
+    # Fedora's firmware is needed by Nouveau; it is not a vendor driver.
+    return name != 'nvidia-gpu-firmware' and (
+        name.startswith(('nvidia-', 'libnvidia-', 'cuda-', 'kmod-nvidia',
+                         'akmod-nvidia', 'xorg-x11-drv-nvidia')))
 
 
 def main():
@@ -43,6 +52,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--allow-unsigned-development-rpms', action='store_true')
     parser.add_argument('--graphics', choices=['mesa', 'nvidia-open'], default='mesa')
+    parser.add_argument('--installer-graphics', choices=['standard', 'basic'], default='standard',
+                        help='Basic uses nomodeset only during installation; target KMS is restored')
     parser.add_argument('--driver-rpms', type=Path,
                         help='Verified NVIDIA repository RPM closure to bundle for nvidia-open')
     args = parser.parse_args()
@@ -83,6 +94,8 @@ def main():
                 parser.error(f'wrong architecture in {rpm.name}: {arch}')
             if name in names:
                 parser.error(f'duplicate package name in installer inputs: {name}')
+            if args.graphics == 'mesa' and is_vendor_nvidia_package(name):
+                parser.error(f'vendor NVIDIA package is not allowed in the Mesa profile: {name}')
             if not args.allow_unsigned_development_rpms:
                 checked = subprocess.run(['rpmkeys', '--checksig', str(rpm)], text=True, capture_output=True)
                 if checked.returncode or 'signatures OK' not in checked.stdout:
@@ -100,14 +113,16 @@ def main():
         (packages/'SHA256SUMS').write_text('\n'.join(records)+'\n')
         run('createrepo_c', str(packages))
         kickstart = work/'lumina-desktop.ks'
-        kickstart.write_text(render_kickstart(args.arch, args.graphics))
+        kickstart.write_text(render_kickstart(args.arch, args.graphics, args.installer_graphics))
         run('ksvalidator', '-v', 'F44', str(kickstart))
         suffix = '-dev' if args.allow_unsigned_development_rpms else ''
         additions = []
+        if args.installer_graphics == 'basic':
+            additions += ['--cmdline', 'nomodeset']
         if args.graphics == 'nvidia-open':
             support = work/'NvidiaSupport'
             shutil.copytree(Path(__file__).with_name('nvidia'), support)
-            additions = ['--add', str(support)]
+            additions += ['--add', str(support)]
             suffix = '-nvidia' + suffix
         product = work/'product'
         shutil.copytree(Path(__file__).with_name('branding'), product)

@@ -35,6 +35,22 @@ class InstallerProfiles(unittest.TestCase):
         with self.assertRaises(ValueError):
             builder.render_kickstart('aarch64', 'nvidia-open')
 
+    def test_basic_installer_restores_target_modesetting(self):
+        text = builder.render_kickstart('x86_64', installer_graphics='basic')
+        self.assertIn('grubby --update-kernel=ALL --remove-args="nomodeset"', text)
+        self.assertIn('%post --erroronfail --log=/var/log/lumina-basic-graphics-install.log', text)
+        self.assertNotIn('NvidiaSupport', text)
+        self.assertNotIn('blacklist nouveau', text)
+
+    def test_mesa_rejects_vendor_driver_but_keeps_firmware(self):
+        for package in ['nvidia-driver', 'kmod-nvidia-open-dkms', 'akmod-nvidia',
+                        'xorg-x11-drv-nvidia', 'libnvidia-ml', 'cuda-driver-devel-13-4']:
+            self.assertTrue(builder.is_vendor_nvidia_package(package), package)
+        self.assertFalse(builder.is_vendor_nvidia_package('nvidia-gpu-firmware'))
+        text = builder.render_kickstart('x86_64')
+        for package in ['nvidia-gpu-firmware', 'mesa-dri-drivers', 'mesa-vulkan-drivers']:
+            self.assertIn('\n' + package + '\n', text)
+
 
 if __name__ == '__main__':
     unittest.main()

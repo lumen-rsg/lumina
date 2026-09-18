@@ -22,7 +22,11 @@ kernel
 kernel-modules
 kernel-modules-extra
 linux-firmware
+nvidia-gpu-firmware
+mesa-dri-drivers
+mesa-vulkan-drivers
 dracut-config-generic
+grubby
 efibootmgr
 @EFI_PACKAGES@
 lumina-desktop
