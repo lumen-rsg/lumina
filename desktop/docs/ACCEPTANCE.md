@@ -60,6 +60,12 @@ desktop startup and networking acceptance after the firmware repair; the
 original v5 ISO still lacks that firmware. DisplayPort, suspend, audio and
 broader desktop behavior remain unqualified.
 
+The [v6 offline image](INSTALLER-X64-GNOME-2026-09-19.md) now bundles the firmware
+repair, RPM Fusion Free/Nonfree and Nautilus with six GNOME utilities. It contains
+764 signed RPMs and passed a network-disabled dependency resolution, media
+integrity and transferred checksum checks. Its exact-image boot and application
+runtime qualification remain pending; emulator tests stay paused.
+
 ## Gates as of 2026-09-12
 
 - [x] Source bundles, provenance, spec paths and whitespace checks.

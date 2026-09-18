@@ -1,0 +1,73 @@
+{
+  "status": "signed-offline-candidate-ready-for-user-test",
+  "source_commit": "d91362e876dfb3020a63d9311f5208586b6349b4",
+  "iso": {
+    "filename": "Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v6-shell3.iso",
+    "sha256": "ef4b74e17f8ab64ca3cac89f13ecff8e0650fda53ba2ac7a970873caa325f89c",
+    "bytes": 2535260160,
+    "packages": 764,
+    "embedded_media_check": "PASS",
+    "local_sha256_verified": true
+  },
+  "supersedes_sha256": "bc54efbca5cedf78ef380f6edbce5d2b97acdcfd148a4b804914da3385921c40",
+  "ci": {
+    "delivery_id": "fe8cf45b-fed4-4ff6-b0c8-46be3eb936dd",
+    "build_id": "075aa32d-541e-4f7d-a06e-233d206d6836",
+    "artifact": {
+      "id": "c52f918d-2e09-4044-9384-29f5b089958c",
+      "fileName": "lumina-desktop-26.9-5.lu26.noarch.rpm",
+      "fileSize": 11391,
+      "hashSha256": "fa0da6ca578a8ba39f2525ab3d4367015422b7b852128e04e34014ec21528dc5",
+      "hashMd5": "23c29825f36af52677764893a15a2ea9",
+      "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+      "signedAt": "2026-09-18T23:15:14.268747Z",
+      "cveScanStatus": 5,
+      "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254",
+      "publishedAt": "2026-09-18T23:20:14.386814Z"
+    }
+  },
+  "desktop_applications": {
+    "nautilus": "50.3-1.fc44.x86_64",
+    "gvfs": "1.60.3-1.fc44.x86_64",
+    "gnome-calculator": "50.0-1.fc44.x86_64",
+    "gnome-text-editor": "50.1-1.fc44.x86_64",
+    "file-roller": "44.7-1.fc44.x86_64",
+    "gnome-disk-utility": "46.1-4.fc44.x86_64",
+    "gnome-system-monitor": "50.0-1.fc44.x86_64",
+    "papers": "49.8-1.fc44.x86_64"
+  },
+  "repositories": [
+    "rpmfusion-free",
+    "rpmfusion-free-updates",
+    "rpmfusion-nonfree",
+    "rpmfusion-nonfree-updates"
+  ],
+  "kernel": "7.2.5-200.fc44.x86_64",
+  "validation": {
+    "embedded_kickstart_matches_source": true,
+    "embedded_rpmfusion_keys_match_source": true,
+    "offline_rpmfusion_disabled_in_installer": true,
+    "mime_default_desktop_ids_exist": true,
+    "bytes": 2535260160,
+    "sha256": "ef4b74e17f8ab64ca3cac89f13ecff8e0650fda53ba2ac7a970873caa325f89c",
+    "packages": 764,
+    "all_rpm_signatures_verified": true,
+    "empty_root_dependency_resolution": "PASS",
+    "dependency_check_network": "none; local repository only",
+    "rpm_transaction_executed": false,
+    "public_desktop_rpm_matches_ci": true,
+    "installer_profile_tests": 9,
+    "dolphin_absent": true,
+    "gnome_session_absent": true,
+    "vendor_nvidia_driver_absent": true
+  },
+  "emulator_tests": "paused at user request; this ISO not boot-tested",
+  "physical_hardware": "v6 not tested; repaired v5 HDMI and Wi-Fi success is recorded separately",
+  "local_evidence_sha256": {
+    "prepare.log": "c1c0979b80b553e7ca4fb69aa5f565c5d638b08bc5845473f518e7c03caf4c55",
+    "verify-closure.log": "bbb310f48774ce0622e3b3035d930f7b4747ab3f05df0494177b502b27ee41b4",
+    "compose.log": "cdd8ff0cac703002e8b83f588129ea76f03b5e1c1c867bf2bf6175f721df21c7",
+    "packages.json": "1ab4f8862573292e19b62d1b22def5ff9ec9e59814041975707a7e61b9a84d5d",
+    "public-package.txt": "126e8bbbcea4f0b1e080bd5dfb266a9d80b2b73d0aeca1057b5860237dcad1b9"
+  }
+}

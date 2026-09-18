@@ -61,7 +61,7 @@ The installer excludes Dolphin; it does not install the GNOME desktop session.
 
 ## Offline media
 
-Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-NVME-2026-09-19.md).
+Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-GNOME-2026-09-19.md).
 
 On the matching native builder, first download the full dependency set into an
 empty directory, using an empty RPM database so host packages cannot hide a
@@ -116,7 +116,7 @@ Network media carries these two RPMs in `LuminaPackages`. Offline media carries
 them in its complete closure and disables remote RPM Fusion sources inside
 Anaconda; the installed system still gets their normal enabled repositories.
 Only repository configuration and public keys are added, not codecs or a vendor
-graphics driver. The current v5 ISO predates this change and is unchanged.
+graphics driver. The v5 ISO predates this change; the v6 image includes it.
 
 ## Default graphics
 

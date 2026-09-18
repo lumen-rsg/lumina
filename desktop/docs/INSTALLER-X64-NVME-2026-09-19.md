@@ -1,5 +1,7 @@
 # Cassiopeia offline x64 installer: NVMe utilities
 
+Superseded by the [v6 firmware, RPM Fusion and GNOME utilities image](INSTALLER-X64-GNOME-2026-09-19.md).
+
 `Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v5-shell3.iso` replaces the
 [v4 offline Ly image](INSTALLER-X64-OFFLINE-LY-2026-09-18.md). It contains
 739 signed RPMs and is 2,291,531,776 bytes. SHA-256:

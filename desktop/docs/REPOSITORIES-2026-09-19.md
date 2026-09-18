@@ -37,5 +37,8 @@ Nine installer profile tests pass, including corrupted bootstrap RPM rejection.
 `lumina-desktop-26.9-5.lu26` replaces Dolphin with Nautilus/GVfs and adds GNOME
 Calculator, Text Editor, File Roller, Disks, System Monitor and Papers. It ships
 Chroma-specific MIME defaults for folders, text and PDF documents. The local
-noarch RPM build and offline source-accounting check passed. Signed CI build
-and replacement ISO composition are pending; the v5 ISO is unchanged.
+noarch RPM build and offline source-accounting check passed. The package was
+subsequently signed and published, and included in the
+[v6 offline ISO](INSTALLER-X64-GNOME-2026-09-19.md). Its media, package signatures,
+offline dependency resolution and transferred checksum passed. Emulator tests
+remain paused; application runtime testing is pending.
