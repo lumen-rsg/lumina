@@ -25,7 +25,8 @@ class InstallerProfiles(unittest.TestCase):
     def test_nvidia_target_has_matching_headers_and_fatal_post(self):
         text = builder.render_kickstart('x86_64', 'nvidia-open')
         packages = text.split('%packages', 1)[1].split('%end', 1)[0]
-        for package in ['kernel-devel-matched', 'kernel-headers', 'nvidia-driver', 'kmod-nvidia-open-dkms']:
+        for package in ['kernel-devel-matched', 'kernel-headers', 'selinux-policy-targeted',
+                        'nvidia-driver', 'nvidia-driver-selinux', 'kmod-nvidia-open-dkms']:
             self.assertIn('\n' + package + '\n', packages)
         self.assertIn('%post --nochroot --erroronfail', text)
         self.assertIn('chroot /mnt/sysroot /bin/bash', text)

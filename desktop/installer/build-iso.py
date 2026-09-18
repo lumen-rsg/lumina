@@ -26,7 +26,7 @@ def render_kickstart(arch, graphics='mesa'):
     efi = 'grub2-efi-aa64\nshim-aa64' if arch == 'aarch64' else 'grub2-efi-x64\nshim-x64'
     result = template.replace('@ARCH@', arch).replace('@EFI_PACKAGES@', efi)
     if graphics == 'nvidia-open':
-        result = result.replace('lumina-desktop\n', 'lumina-desktop\nkernel-devel-matched\nkernel-headers\nnvidia-driver\nkmod-nvidia-open-dkms\n')
+        result = result.replace('lumina-desktop\n', 'lumina-desktop\nkernel-devel-matched\nkernel-headers\nselinux-policy-targeted\nnvidia-driver\nnvidia-driver-selinux\nkmod-nvidia-open-dkms\n')
         result += '\n' + Path(__file__).with_name('nvidia').joinpath('post.ks').read_text()
     return result
 
@@ -94,7 +94,7 @@ def main():
                     'chroma-compositor', 'quickshell', 'wl-clip-persist', 'bibata-cursor-theme',
                     'google-sans-flex-vf-fonts', 'google-material-symbols-vf-rounded-fonts'}
         if args.graphics == 'nvidia-open':
-            required |= {'nvidia-driver', 'kmod-nvidia-open-dkms'}
+            required |= {'nvidia-driver', 'nvidia-driver-selinux', 'kmod-nvidia-open-dkms'}
         if missing := required - names:
             parser.error('missing Lumina packages: ' + ', '.join(sorted(missing)))
         (packages/'SHA256SUMS').write_text('\n'.join(records)+'\n')

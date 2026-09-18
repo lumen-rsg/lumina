@@ -52,6 +52,10 @@ and import `nvidia/RPM-GPG-KEY-nvidia-fedora44` into the builder's RPM keyring.
 The key fingerprint is `129994480EC63D2789BC98E490DFED2F73CD9B30`.
 This profile bundles the driver RPMs; Fedora packages still require network
 access. The target receives NVIDIA's official Fedora 44 repository for updates.
+Include `nvidia-driver-selinux` in the bundled closure: NVIDIA requires this
+conditionally when the target uses `selinux-policy-targeted`. Resolve the
+complete core, desktop, kernel and SELinux selection in one transaction;
+resolving the driver alone misses this dependency.
 The target post-install step builds the module against each installed kernel,
 checks the open module's license, enables DRM modesetting, and rebuilds the
 initramfs. Any failure stops installation with an error. Its log is
