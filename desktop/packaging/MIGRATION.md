@@ -44,6 +44,10 @@ and power-profiles-daemon through a small allowlisted helper; it adds no COPR
 or binary feed. Detailed device configuration uses the already packaged
 Fedora managers.
 
+The sidebar widgets and MPRIS media continuation uses Quickshell services and
+Fedora libnotify for local timer notifications. It adds no COPR dependency.
+Python GObject is used only by the isolated media-player QA fixture.
+
 Matugen already exists in Fedora, but wallpaper-driven Material generation
 is not yet ported. MicroTeX, additional upstream font families, darkly,
 starship, music recognition and the remaining upstream optional utilities

@@ -32,11 +32,18 @@
     "modules/common/widgets/StyledToolTipContent.qml",
     "modules/common/widgets/WavyLine.qml"
   ],
-  "note": "Material widgets are retained from the pinned source. Control center and settings adapt the upstream ii layouts to Lumina services and Chroma; unsupported Hyprland and anime modules are excluded.",
+  "note": "Material widgets are retained from the pinned source. Control center and settings adapt the upstream ii layouts to Lumina services and Chroma; unsupported Hyprland and anime modules are excluded. The sidebar productivity group and media card retain the upstream navigation and control composition with Lumina persistence and direct MPRIS services.",
   "adaptedLayouts": [
     "modules/ii/sidebarRight/SidebarRightContent.qml",
     "modules/ii/sidebarRight/QuickSliders.qml",
     "modules/ii/sidebarRight/quickToggles/androidStyle/AndroidQuickToggleButton.qml",
-    "settings.qml"
+    "settings.qml",
+    "modules/ii/sidebarRight/BottomWidgetGroup.qml",
+    "modules/ii/sidebarRight/todo/TodoWidget.qml",
+    "modules/ii/sidebarRight/todo/TaskList.qml",
+    "modules/ii/sidebarRight/pomodoro/PomodoroWidget.qml",
+    "modules/ii/sidebarRight/pomodoro/PomodoroTimer.qml",
+    "modules/ii/sidebarRight/pomodoro/Stopwatch.qml",
+    "modules/ii/mediaControls/PlayerControl.qml"
   ]
 }

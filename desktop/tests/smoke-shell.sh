@@ -8,6 +8,7 @@ artifacts=$(realpath "$artifacts")
 if [[ ${LUMINA_QA_DBUS:-0} != 1 ]]; then
     exec dbus-run-session -- env LUMINA_QA_DBUS=1 bash "$0" "$chroma" "$artifacts"
 fi
+export LUMINA_QA_ARTIFACTS="$artifacts"
 export XDG_RUNTIME_DIR="$artifacts/runtime"
 export XDG_CONFIG_HOME="$artifacts/config"
 export XDG_STATE_HOME="$artifacts/state"
@@ -25,11 +26,11 @@ export WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=${LUMINA_QA_OUTPUTS:-1} WLR_LI
 export QT_QUICK_BACKEND=software QT_QPA_PLATFORM=wayland
 export LUMINA_CONTROLS_HELPER="$repo/desktop/lumina-shell/files/lumina-controls"
 export LUMINA_ASSISTANT_HELPER="$repo/desktop/lumina-shell/files/lumina-assistant"
-compositor_pid= shell_pid= app_pid= audio_pid=
+compositor_pid= shell_pid= app_pid= audio_pid= media_pid=
 pipewire >"$artifacts/pipewire.log" 2>&1 &
 audio_pid=$!
 cleanup() {
-    for pid in "$app_pid" "$shell_pid" "$compositor_pid" "$audio_pid"; do
+    for pid in "$app_pid" "$shell_pid" "$compositor_pid" "$audio_pid" "$media_pid"; do
         [[ -z "$pid" ]] || kill "$pid" 2>/dev/null || true
     done
     wait 2>/dev/null || true
@@ -53,7 +54,7 @@ shell_pid=$!
 ready=0
 for _ in {1..100}; do
     if ! kill -0 "$shell_pid" 2>/dev/null; then cat "$artifacts/shell.log"; exit 1; fi
-    if quickshell ipc -p "$repo/desktop/lumina-shell/shell" show >"$artifacts/ipc.txt" 2>/dev/null; then ready=1; break; fi
+    if quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell status >"$artifacts/ipc.txt" 2>/dev/null; then ready=1; break; fi
     sleep 0.1
 done
 [[ $ready = 1 ]] || { cat "$artifacts/shell.log"; exit 1; }
@@ -73,6 +74,34 @@ done
 kill "$shell_pid"
 wait "$shell_pid" || true
 shell_pid=
+cp -a "$repo/desktop/lumina-shell/shell" "$artifacts/widgets-fixture"
+cp "$repo/desktop/tests/SidebarFixture.qml" "$artifacts/widgets-fixture/shell.qml"
+timeout 20 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/sidebar.log" 2>&1
+grep -q SIDEBAR_FIXTURE_PASS "$artifacts/sidebar.log"
+cp "$repo/desktop/tests/ProductivityFixture.qml" "$artifacts/widgets-fixture/shell.qml"
+timeout 20 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/productivity.log" 2>&1
+grep -q PRODUCTIVITY_FIXTURE_PASS "$artifacts/productivity.log"
+LUMINA_PRODUCTIVITY_RELOAD=1 timeout 15 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/productivity-reload.log" 2>&1
+grep -q PRODUCTIVITY_RELOAD_PASS "$artifacts/productivity-reload.log"
+cp "$XDG_CONFIG_HOME/lumina/productivity.json" "$artifacts/productivity.json"
+printf '%s' '{"tasks":"invalid"}' >"$XDG_CONFIG_HOME/lumina/productivity.json"
+LUMINA_PRODUCTIVITY_CORRUPT=1 timeout 15 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/productivity-corrupt.log" 2>&1
+grep -q PRODUCTIVITY_CORRUPT_PASS "$artifacts/productivity-corrupt.log"
+[[ $(cat "$XDG_CONFIG_HOME/lumina/productivity.json") == '{"tasks":"invalid"}' ]]
+cp "$artifacts/productivity.json" "$XDG_CONFIG_HOME/lumina/productivity.json"
+cp "$repo/desktop/tests/MediaFixture.qml" "$artifacts/widgets-fixture/shell.qml"
+python3 "$repo/desktop/tests/fake-mpris.py" "$artifacts/media-calls.json" >"$artifacts/media-player.log" 2>&1 &
+media_pid=$!
+timeout 20 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/media.log" 2>&1
+grep -q MEDIA_FIXTURE_PASS "$artifacts/media.log"
+wait "$media_pid"
+media_pid=
+python3 - "$artifacts/media-calls.json" <<'PYMEDIA'
+import json,sys
+calls=json.load(open(sys.argv[1]))
+assert ['SetPosition', ['/lumina/track1', 90000000]] in calls,calls
+assert [c[0] for c in calls] == ['Play','Pause','Next','SetPosition','Previous','Quit'],calls
+PYMEDIA
 cp -a "$repo/desktop/lumina-shell/shell" "$artifacts/settings-fixture"
 cp "$repo/desktop/tests/SettingsFixture.qml" "$artifacts/settings-fixture/shell.qml"
 timeout 20 quickshell -p "$artifacts/settings-fixture" >"$artifacts/settings-actions.log" 2>&1
@@ -100,8 +129,8 @@ PY
 python3 - "$artifacts/shell.log" <<'PYLOG'
 import re,sys
 from pathlib import Path
-text=open(sys.argv[1]).read()+Path(sys.argv[1]).with_name('settings-actions.log').read_text()
-errors=[line for line in text.splitlines() if re.search(r'ERROR|ReferenceError|TypeError|is not a type|Cannot assign|Unable to assign|not defined',line)]
+text='\n'.join(p.read_text() for p in Path(sys.argv[1]).parent.glob('*.log') if p.name in ['shell.log','sidebar.log','settings-actions.log','productivity.log','productivity-reload.log','productivity-corrupt.log','media.log'])
+errors=[line for line in text.splitlines() if re.search(r'ERROR|ReferenceError|TypeError|is not a type|Cannot assign|Unable to assign|not defined|Binding loop',line)]
 if errors: raise SystemExit('\n'.join(errors))
 PYLOG
 printf 'Shell integration passed: %s\n' "$artifacts"

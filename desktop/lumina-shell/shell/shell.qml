@@ -23,6 +23,7 @@ ShellRoot {
     property var notices: []
     function toggle(name, screen) {
         if (screen) panelScreen = screen;
+        if (name === "clock") Config.options.controls.widgetTab = 0;
         panel = panel === name ? "" : name;
     }
     SystemClock { id: clock; precision: SystemClock.Minutes }
@@ -37,6 +38,10 @@ ShellRoot {
             notice.closed.connect(() => { root.notices = root.notices.filter(n => n && n !== notice); });
             if (!root.dnd) toastTimer.restart();
         }
+    }
+    Connections {
+        target: Productivity
+        function onCompleted(phase) { Quickshell.execDetached(["notify-send", "--app-name=Lumina Timer", phase === "focus" ? "Focus complete" : "Break complete", "The next session is ready when you are."]); }
     }
     Timer { id: toastTimer; interval: Config.options.notifications.timeout }
     Variants {
@@ -184,7 +189,7 @@ ShellRoot {
         ColumnLayout {
             StyledText { text: Qt.formatDateTime(clock.date, Config.options.bar.clock24h ? "hh:mm" : "h:mm AP"); font.pixelSize: 64 }
             StyledText { text: Qt.formatDateTime(clock.date, "dddd, d MMMM yyyy"); font.pixelSize: 20 }
-            CalendarCard { Layout.fillWidth: true; today: clock.date }
+            ProductivityGroup { Layout.fillWidth: true; Layout.fillHeight: true; forceExpanded: true }
             Item { Layout.fillHeight: true }
         }
     }

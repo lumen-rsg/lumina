@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-18",
+  "shellVersion": "26.9-3.lu26",
+  "upstreamRevision": "97c5bc651f68092351b24aaa935af708b1e04514",
+  "runtime": "Fedora 44 aarch64; Quickshell 2d3b3e9; existing Chroma QA binary",
+  "tests": [
+    "Chroma integration at 1280x800",
+    "Two 1920x1200 outputs at 200%",
+    "Tasks/timers control actions, phase transitions, stopwatch, fresh-process reload and invalid-file preservation",
+    "Real MPRIS Play/Pause/Next/90-second seek/Previous/Quit, metadata/capabilities and removal",
+    "Settings and Chroma action regression fixtures",
+    "4 controls and 11 assistant Python tests; QML assistant HTTP fixture",
+    "Source accounting for 10 packages; unsigned RPM and SRPM builds",
+    "Compact Timer click expands group and scrolls all timer controls into the short viewport"
+  ],
+  "artifacts": {
+    "lumina-shell-26.9-3.lu26.src.rpm": "2bd4d35008909c32a87770404489cae4cd24fa2ece79e6945eee6c1b2c87a77b",
+    "lumina-shell-26.9-3.lu26.noarch.rpm": "8a28c4507bf3dc1d2af6d18bd106902e1927d74ad1e09f9b1d3cebf20ecb6d45"
+  },
+  "evidenceSha256": {
+    "final-standard/shell.log": "62a5294d92a8fa07b5d5577e215233edb1b5d4047071c8e740d369d443cbd51a",
+    "final-standard/sidebar.log": "f27eae4450d3e661e454109cca016b13571d72bb7bf06ac71a48aa15758ec1e1",
+    "final-standard/productivity.log": "38d27f37e1273bf450950ab29b4376d7a41c1ae3c558c656cd440df25325265b",
+    "final-standard/productivity-reload.log": "0075cfa14f53ae05caa5265c627c58ac103cd5990cbbfe355c4b7ebb8ba853d7",
+    "final-standard/productivity-corrupt.log": "6e6a69d0ddaf7eb3a89238070a184bb01fea72f90aeb316c174f0539c8b2bcbf",
+    "final-standard/media.log": "d3a0a84ab01386f2361aec4ec7b12f10cff927fcc784c11f6bfdd252d8c2f021",
+    "final-standard/media-calls.json": "98b06af51d19f41846f95e82e3621640923aa8d84e1f3163bc6fe14679fa3e3d",
+    "final-standard/settings-actions.log": "da7e59f78a0cf0628e0b9a203855011fe2151a9deed64fac8277f2a70ae6241e",
+    "final-standard/settings-reload.log": "8ea524aecc6ce2684e1d71820259b5bae08ad031b915cd90e859a97d5584fff4",
+    "final-standard/actions.log": "338ce50987a8a6eba201ab4f6fd446b9590b07b9c488847bb03b9fd1dd39beb9",
+    "final-hidpi/shell.log": "7169b3f0d7c12e11d4dd3d35048b9f8a2e898d6fe7e3effa79960bf5afa044b9",
+    "final-hidpi/sidebar.log": "16cbd281bd088e1696ad6f8e13334f2536c79323646cbb0ff70911d4665ad8d2",
+    "final-hidpi/productivity.log": "102398359f9426c3e9c1451e21318c136ce28af9234487ae98af22f9b9b52fad",
+    "final-hidpi/productivity-reload.log": "f1e89d168879de0929e0679350301dbb9967ab3577e2850c1cdeb39b94546052",
+    "final-hidpi/productivity-corrupt.log": "357a0ab757986b211b2cc91183eaf3f594b429190427889ddb300b0014024cd0",
+    "final-hidpi/media.log": "2894b619ab1b370179d043c63db9bf2bc97404bf4c3a6f092e6f30da2776f3f9",
+    "final-hidpi/media-calls.json": "98b06af51d19f41846f95e82e3621640923aa8d84e1f3163bc6fe14679fa3e3d",
+    "final-hidpi/settings-actions.log": "5c5b3288ca51e2de169a491d50de7835e3f2de3faf2a2a7e8866a33db1d43ce9",
+    "final-hidpi/settings-reload.log": "487652163f231188a95d8713b9e25a86ff86c0c622b4a2b5f79879809ec5f81d",
+    "final-hidpi/actions.log": "f9e236d9ea157e1c8615b4619d6aea005f763b78d9cbf245c306f3d705c93d43"
+  },
+  "publication": "Development only; no LuminaCI publication or new installer composition",
+  "limitations": [
+    "No updated x86_64 VM run",
+    "No physical hardware or X11 qualification",
+    "Full upstream parity remains incomplete"
+  ]
+}

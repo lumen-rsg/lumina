@@ -16,6 +16,8 @@ Quickshell are imported into Lumina Shell.
 | AI tab | Provider picker, model and endpoint, private credentials, chat, cancellation, new conversation |
 | Control center | Upstream ii grouping, Material toggle pills and sliders, live network/power status, audio/mic, DND, theme, notifications and calendar |
 | Settings | Separate window with upstream navigation rail; Quick, General, Bar, Background, Interface, Services, Advanced and About pages |
+| Sidebar widgets | Collapsible Calendar / To Do / Timer rail, saved tasks, focus/break cycles, stopwatch and laps |
+| Media | MPRIS player selection, art, metadata, play/pause, previous/next and seeking |
 | Audio, tray, battery, notifications | Quickshell service APIs; external device managers for detailed configuration |
 | Screenshot, lock, idle, clipboard, portals | Chroma session helpers and wlroots/GTK portals |
 | Anime/image-board content and character prompts | Excluded from the shipped source selection entirely |
@@ -25,10 +27,10 @@ This is an initial component-based port, **not full feature parity with the
 upstream ii or waffle panel families**. The upstream dock, calendar event integration,
 notification persistence, detached/pinned AI sidebar, live window thumbnails,
 wallpaper browser and dynamic Material generation, OCR/translation/Lens,
-media widgets, keyboard, and the remaining accessibility settings
+audio visualization/lyrics, keyboard, and the remaining accessibility settings
 remain follow-up scope. Embedded Wi-Fi/Bluetooth pairing and per-application
-audio panes still open Fedora device managers; night light, tile rearrangement,
-to-do and Pomodoro are not yet ported. Do not advertise these as implemented.
+audio panes still open Fedora device managers; night light and tile rearrangement
+are not yet ported. Do not advertise these as implemented.
 
 The assistant currently renders selectable plain text. It does not execute
 commands, read windows, attach screenshots, or persist conversation history.
@@ -72,3 +74,25 @@ This is lumina-shell 26.9-2.lu26 development work. The b1feea2 signed installer
 images and their exact-image acceptance record still describe release 1 of
 the shell. This continuation has not yet been published by LuminaCI or composed
 into new installer images. See PARITY-2026-09-12.md for validation.
+
+## Sidebar widgets continuation (2026-09-18)
+
+Shell release 3 restores the upstream lower-group navigation: Calendar, To Do
+and Timer, with Pomodoro/Stopwatch inside Timer. It starts collapsed so the
+three entry points remain visible on short displays; expanding scrolls the
+control center to the group. The clock opens the expanded calendar group.
+Tasks support completion, reopening, deletion and undo. Tasks, focus deadlines,
+stopwatch elapsed time and laps persist in `lumina/productivity.json` alongside
+the shell preferences. Invalid saved data is kept intact with editing disabled.
+Focus/break transitions pause for the user; every fourth focus session offers a
+long break. Completion emits a local desktop notification, respecting DND.
+
+The media card appears for MPRIS players and follows their capabilities. It
+supports player selection, artwork, metadata, transport and seeking. Artwork
+uses Qt image loading, without spawning shell commands. It does not add the
+upstream Cava visualizer or lyrics. Settings expose media/widget visibility and
+focus/break durations. The imported scrollbar has a narrow sizing fix to avoid
+a Qt binding loop. See [PARITY-2026-09-18.md](PARITY-2026-09-18.md) for evidence.
+
+Release 3 is an unsigned development RPM. This continuation does not update
+LuminaCI publication or the previously qualified installer images.

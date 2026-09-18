@@ -18,6 +18,9 @@ list the outstanding modules and optional dependencies.
 The control-center/settings continuation is documented in
 [PARITY-2026-09-12.md](PARITY-2026-09-12.md). It is a separately tested
 development shell, not part of the signed `b1feea2` images below.
+The [sidebar widgets/media continuation](PARITY-2026-09-18.md) advances the
+development shell to release 3 with native ARM64 runtime evidence; it does
+not requalify the earlier x86-64 preview or either installer image.
 
 ## Gates as of 2026-09-12
 

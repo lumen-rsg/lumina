@@ -1,6 +1,6 @@
 Name:           lumina-shell
 Version:        26.9
-Release:        2.lu26
+Release:        3.lu26
 Summary:        Cassiopeia desktop shell derived from end-4 dotfiles
 License:        GPL-3.0-only
 URL:            https://github.com/lumen-rsg/lumina
@@ -26,6 +26,7 @@ Requires:       wdisplays
 Requires:       brightnessctl
 Requires:       NetworkManager
 Requires:       power-profiles-daemon
+Requires:       libnotify
 Provides:       desktop-notification-daemon
 
 %description
@@ -57,6 +58,10 @@ install -Dpm0644 %{SOURCE4} %{buildroot}%{_datadir}/applications/lumina-settings
 %{_datadir}/applications/lumina-settings.desktop
 
 %changelog
+* Fri Sep 18 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-3.lu26
+- Restore sidebar Calendar/To Do/Timer group and MPRIS media controls
+- Persist tasks, focus deadlines, stopwatch and laps across shell restarts
+
 * Sat Sep 12 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-2.lu26
 - Restore upstream Material control center and settings navigation
 - Persist appearance, bar, notification and control preferences

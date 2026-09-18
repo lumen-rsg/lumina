@@ -110,7 +110,8 @@ ApplicationWindow {
                         title: "Control center"; icon: "instant_mix"
                         PreferenceSwitch { text: "Show microphone slider"; buttonIcon: "mic"; value: Config.options.controls.showMic; onEdited: if (checked !== Config.options.controls.showMic) Config.options.controls.showMic = checked }
                         PreferenceSwitch { text: "Show brightness when a backlight is available"; buttonIcon: "light_mode"; value: Config.options.controls.showBrightness; onEdited: if (checked !== Config.options.controls.showBrightness) Config.options.controls.showBrightness = checked }
-                        PreferenceSwitch { text: "Show calendar in the control center"; buttonIcon: "calendar_month"; value: Config.options.controls.showCalendar; onEdited: if (checked !== Config.options.controls.showCalendar) Config.options.controls.showCalendar = checked }
+                        PreferenceSwitch { text: "Show Calendar / To Do / Timer"; buttonIcon: "calendar_month"; value: Config.options.controls.showCalendar; onEdited: if (checked !== Config.options.controls.showCalendar) Config.options.controls.showCalendar = checked }
+                        PreferenceSwitch { text: "Show media controls"; buttonIcon: "music_note"; value: Config.options.controls.showMedia; onEdited: Config.options.controls.showMedia = checked }
                     }
                     ContentSection {
                         visible: root.currentPage === 1
@@ -165,6 +166,23 @@ ApplicationWindow {
                         title: "Assistant"; icon: "auto_awesome"
                         StyledText { text: "Choose your provider, model and credentials in the assistant. No messages are sent until you configure a provider and press Send."; Layout.fillWidth: true; wrapMode: Text.Wrap; font.pixelSize: 14 }
                         ActionButton { label: "Configure assistant"; symbol: "arrow_forward"; onClicked: { root.visible = false; root.assistantRequested(); } }
+                    }
+                    ContentSection {
+                        visible: root.currentPage === 5
+                        title: "Focus timer"; icon: "timer"
+                        StyledText { text: "Minutes per session. Changes apply after Reset or at the next session."; Layout.fillWidth: true; wrapMode: Text.Wrap; font.pixelSize: 13 }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Repeater { model: [{label: "Focus", key: "focusMinutes"}, {label: "Break", key: "breakMinutes"}, {label: "Long break", key: "longBreakMinutes"}]
+                                ColumnLayout {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    StyledText { text: modelData.label; font.pixelSize: 12 }
+                                    SpinBox { Layout.fillWidth: true; from: 1; to: 180; value: Productivity.data[modelData.key]; enabled: Productivity.ready; onValueModified: Productivity.data[modelData.key] = value }
+                                }
+                            }
+                        }
+                        StyledText { text: "A long break follows every fourth focus session."; Layout.fillWidth: true; wrapMode: Text.Wrap; font.pixelSize: 12; opacity: 0.65 }
                     }
                     ContentSection {
                         visible: root.currentPage === 6

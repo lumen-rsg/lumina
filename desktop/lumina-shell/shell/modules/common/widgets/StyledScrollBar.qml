@@ -13,7 +13,8 @@ ScrollBar {
 
     contentItem: Rectangle {
         implicitWidth: 4
-        implicitHeight: root.visualSize
+        // ScrollBar assigns the thumb geometry; its size must not feed its implicit size.
+        implicitHeight: 4
         radius: width / 2
         color: Appearance.colors.colOnSurfaceVariant
 
