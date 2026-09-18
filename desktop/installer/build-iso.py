@@ -19,7 +19,7 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def render_kickstart(arch, graphics='mesa', installer_graphics='standard'):
+def render_kickstart(arch, graphics='mesa', installer_graphics='standard', installer_network='auto'):
     if graphics == 'nvidia-open' and arch != 'x86_64':
         raise ValueError('The NVIDIA desktop profile is x86_64 only')
     template = Path(__file__).with_name('lumina-desktop.ks.in').read_text()
@@ -30,7 +30,18 @@ def render_kickstart(arch, graphics='mesa', installer_graphics='standard'):
         result += '\n' + Path(__file__).with_name('nvidia').joinpath('post.ks').read_text()
     if installer_graphics == 'basic':
         result += '\n' + Path(__file__).with_name('basic-graphics-post.ks').read_text()
+    if installer_network == 'ipv4-dns':
+        result += '\n' + Path(__file__).with_name('ipv4-dns.ks').read_text()
     return result
+
+
+def installer_kernel_args(graphics='standard', network='auto'):
+    args = []
+    if graphics == 'basic':
+        args.append('nomodeset')
+    if network == 'ipv4-dns':
+        args.append('ipv6.disable=1')
+    return args
 
 
 def is_vendor_nvidia_package(name):
@@ -54,6 +65,8 @@ def main():
     parser.add_argument('--graphics', choices=['mesa', 'nvidia-open'], default='mesa')
     parser.add_argument('--installer-graphics', choices=['standard', 'basic'], default='standard',
                         help='Basic uses nomodeset only during installation; target KMS is restored')
+    parser.add_argument('--installer-network', choices=['auto', 'ipv4-dns'], default='auto',
+                        help='ipv4-dns uses IPv4 and public DNS during installation')
     parser.add_argument('--driver-rpms', type=Path,
                         help='Verified NVIDIA repository RPM closure to bundle for nvidia-open')
     args = parser.parse_args()
@@ -113,12 +126,13 @@ def main():
         (packages/'SHA256SUMS').write_text('\n'.join(records)+'\n')
         run('createrepo_c', str(packages))
         kickstart = work/'lumina-desktop.ks'
-        kickstart.write_text(render_kickstart(args.arch, args.graphics, args.installer_graphics))
+        kickstart.write_text(render_kickstart(args.arch, args.graphics, args.installer_graphics,
+                                            args.installer_network))
         run('ksvalidator', '-v', 'F44', str(kickstart))
         suffix = '-dev' if args.allow_unsigned_development_rpms else ''
         additions = []
-        if args.installer_graphics == 'basic':
-            additions += ['--cmdline', 'nomodeset']
+        if kernel_args := installer_kernel_args(args.installer_graphics, args.installer_network):
+            additions += ['--cmdline', ' '.join(kernel_args)]
         if args.graphics == 'nvidia-open':
             support = work/'NvidiaSupport'
             shutil.copytree(Path(__file__).with_name('nvidia'), support)

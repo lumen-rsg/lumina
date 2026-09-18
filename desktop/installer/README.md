@@ -78,6 +78,31 @@ desktop-only installation. See the
 [official NVIDIA guide](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/fedora.html)
 for repository setup. No driver installation runs automatically.
 
+## Installer network compatibility profile
+
+The x64 `Nouveau-netfix-shell3` image is composed with
+`--graphics mesa --installer-graphics basic --installer-network ipv4-dns`.
+The network option reproduces the successful workaround for a physical install
+that had a working IPv4 route but stalled fetching sources until its DNS and
+IPv6 settings were overridden. The combined workaround succeeded; this does
+not isolate DNS versus IPv6 as the sole cause.
+
+This option adds `ipv6.disable=1` to USB boot entries and runs an error-checked
+kickstart `%pre` before repository setup. The pre-script writes a per-boot
+NetworkManager global DNS configuration under `/run/NetworkManager/conf.d`,
+using `1.1.1.1` and `8.8.8.8`, and reloads DNS. Global DNS covers both existing
+connections and Wi-Fi connections subsequently created in Anaconda. It does
+not contain a device name, SSID or credentials. See
+[NetworkManager global DNS configuration](https://networkmanager.dev/docs/api/latest/NetworkManager.conf.html#global-dns-section).
+
+The target post-script removes the installer-only `ipv6.disable` argument from
+kernel entries and persistent templates. The runtime DNS override is not
+copied into the installed system. This is an installer compatibility option;
+it does not impose a permanent IPv4-only/public-DNS policy on installed desktops.
+Public DNS must be reachable on the installation network. The default `auto`
+profile keeps normal network-provided DNS and IPv6 for other networks, including
+IPv6-only and split-DNS environments. [Verification record](../docs/INSTALLER-X64-NETFIX-2026-09-18.md).
+
 ## Historical NVIDIA compose profile
 
 `--graphics nvidia-open --driver-rpms DIRECTORY` remains available for reproducing

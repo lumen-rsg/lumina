@@ -51,6 +51,18 @@ class InstallerProfiles(unittest.TestCase):
         for package in ['nvidia-gpu-firmware', 'mesa-dri-drivers', 'mesa-vulkan-drivers']:
             self.assertIn('\n' + package + '\n', text)
 
+    def test_installer_network_override_is_explicit_and_runtime_only(self):
+        self.assertNotIn('global-dns-domain', builder.render_kickstart('x86_64'))
+        self.assertEqual(builder.installer_kernel_args(), [])
+        self.assertEqual(builder.installer_kernel_args('basic', 'ipv4-dns'),
+                         ['nomodeset', 'ipv6.disable=1'])
+        text = builder.render_kickstart('x86_64', installer_network='ipv4-dns')
+        self.assertIn('%pre --erroronfail', text)
+        self.assertIn('/run/NetworkManager/conf.d/99-lumina-installer-dns.conf', text)
+        self.assertIn('servers=1.1.1.1,8.8.8.8', text)
+        self.assertNotIn('--noipv6', text)
+        self.assertIn('grubby --update-kernel=ALL --remove-args="ipv6.disable"', text)
+
 
 if __name__ == '__main__':
     unittest.main()
