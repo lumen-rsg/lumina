@@ -19,6 +19,18 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def render_kickstart(arch, graphics='mesa'):
+    if graphics == 'nvidia-open' and arch != 'x86_64':
+        raise ValueError('The NVIDIA desktop profile is x86_64 only')
+    template = Path(__file__).with_name('lumina-desktop.ks.in').read_text()
+    efi = 'grub2-efi-aa64\nshim-aa64' if arch == 'aarch64' else 'grub2-efi-x64\nshim-x64'
+    result = template.replace('@ARCH@', arch).replace('@EFI_PACKAGES@', efi)
+    if graphics == 'nvidia-open':
+        result = result.replace('lumina-desktop\n', 'lumina-desktop\nkernel-devel-matched\nkernel-headers\nnvidia-driver\nkmod-nvidia-open-dkms\n')
+        result += '\n' + Path(__file__).with_name('nvidia').joinpath('post.ks').read_text()
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--arch', choices=['aarch64', 'x86_64'], required=True)
@@ -30,7 +42,14 @@ def main():
     parser.add_argument('--rpms', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--allow-unsigned-development-rpms', action='store_true')
+    parser.add_argument('--graphics', choices=['mesa', 'nvidia-open'], default='mesa')
+    parser.add_argument('--driver-rpms', type=Path,
+                        help='Verified NVIDIA repository RPM closure to bundle for nvidia-open')
     args = parser.parse_args()
+    if args.graphics == 'nvidia-open' and (args.arch != 'x86_64' or not args.driver_rpms):
+        parser.error('nvidia-open requires x86_64 and --driver-rpms')
+    if args.driver_rpms and args.graphics != 'nvidia-open':
+        parser.error('--driver-rpms requires --graphics nvidia-open')
     for name in ['gpg', 'rpm', 'rpmkeys', 'createrepo_c', 'ksvalidator', 'mkksiso', 'mkfs.fat', 'mmd', 'mcopy', 'mksquashfs']:
         if not shutil.which(name):
             parser.error(f'missing tool: {name}')
@@ -53,12 +72,17 @@ def main():
         packages.mkdir()
         records = []
         names = set()
-        for rpm in sorted(args.rpms.glob('*.rpm')):
+        inputs = list(args.rpms.glob('*.rpm'))
+        if args.driver_rpms:
+            inputs += list(args.driver_rpms.glob('*.rpm'))
+        for rpm in sorted(inputs):
             name, arch = subprocess.check_output(['rpm', '-qp', '--qf', '%{NAME} %{ARCH}', str(rpm)], text=True).split()
             if name.endswith(('-debuginfo', '-debugsource')):
                 continue
             if arch not in [args.arch, 'noarch']:
                 parser.error(f'wrong architecture in {rpm.name}: {arch}')
+            if name in names:
+                parser.error(f'duplicate package name in installer inputs: {name}')
             if not args.allow_unsigned_development_rpms:
                 checked = subprocess.run(['rpmkeys', '--checksig', str(rpm)], text=True, capture_output=True)
                 if checked.returncode or 'signatures OK' not in checked.stdout:
@@ -69,16 +93,22 @@ def main():
         required = {'lumina-release', 'lumina-artwork', 'lumina-desktop', 'lumina-shell',
                     'chroma-compositor', 'quickshell', 'wl-clip-persist', 'bibata-cursor-theme',
                     'google-sans-flex-vf-fonts', 'google-material-symbols-vf-rounded-fonts'}
+        if args.graphics == 'nvidia-open':
+            required |= {'nvidia-driver', 'kmod-nvidia-open-dkms'}
         if missing := required - names:
             parser.error('missing Lumina packages: ' + ', '.join(sorted(missing)))
         (packages/'SHA256SUMS').write_text('\n'.join(records)+'\n')
         run('createrepo_c', str(packages))
-        template = Path(__file__).with_name('lumina-desktop.ks.in').read_text()
-        efi = 'grub2-efi-aa64\nshim-aa64' if args.arch == 'aarch64' else 'grub2-efi-x64\nshim-x64'
         kickstart = work/'lumina-desktop.ks'
-        kickstart.write_text(template.replace('@ARCH@', args.arch).replace('@EFI_PACKAGES@', efi))
+        kickstart.write_text(render_kickstart(args.arch, args.graphics))
         run('ksvalidator', '-v', 'F44', str(kickstart))
         suffix = '-dev' if args.allow_unsigned_development_rpms else ''
+        additions = []
+        if args.graphics == 'nvidia-open':
+            support = work/'NvidiaSupport'
+            shutil.copytree(Path(__file__).with_name('nvidia'), support)
+            additions = ['--add', str(support)]
+            suffix = '-nvidia' + suffix
         product = work/'product'
         shutil.copytree(Path(__file__).with_name('branding'), product)
         (product/'.buildstamp').write_text(
@@ -95,7 +125,7 @@ def main():
         helper = helpers/'mkefiboot'
         shutil.copyfile(Path(__file__).with_name('mkefiboot-mtools.py'), helper)
         helper.chmod(0o755)
-        run('mkksiso', '--ks', str(kickstart), '--add', str(packages), '--add', str(images),
+        run('mkksiso', '--ks', str(kickstart), '--add', str(packages), '--add', str(images), *additions,
             '--volid', f'Lumina-26.9-{args.arch}{suffix}',
             '--replace', 'Fedora 44', 'Lumina 26.9 Cassiopeia',
             str(args.base_iso.resolve()), str(args.output),

@@ -45,4 +45,23 @@ support. This does not replace the board boot flows for Jetson or Orange Pi.
 Firmware loading, graphical installation, account creation, first boot,
 Secure Boot and physical-device operation require separate qualification.
 
+For an x64 desktop with a supported NVIDIA GPU, `--graphics nvidia-open`
+adds NVIDIA's open kernel module and desktop libraries. Supply the signed
+NVIDIA repository package closure in a separate `--driver-rpms` directory,
+and import `nvidia/RPM-GPG-KEY-nvidia-fedora44` into the builder's RPM keyring.
+The key fingerprint is `129994480EC63D2789BC98E490DFED2F73CD9B30`.
+This profile bundles the driver RPMs; Fedora packages still require network
+access. The target receives NVIDIA's official Fedora 44 repository for updates.
+The target post-install step builds the module against each installed kernel,
+checks the open module's license, enables DRM modesetting, and rebuilds the
+initramfs. Any failure stops installation with an error. Its log is
+`/var/log/lumina-nvidia-install.log` on the installed system.
+
+This profile currently targets **Secure Boot disabled**. It does not enroll a
+DKMS signing certificate in firmware. See NVIDIA's
+[Fedora installation guide](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/fedora.html)
+and [open kernel module support](https://download.nvidia.com/XFree86/Linux-x86_64/595.58.03/README/kernel_open.html).
+Physical GPU/display and wireless acceptance remain separate from package and
+virtual-machine checks.
+
 Implementation reference: [Lorax mkksiso](https://weldr.io/lorax/mkksiso.html).
