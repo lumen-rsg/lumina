@@ -1,0 +1,107 @@
+{
+  "release": "Lumina 26.9 Cassiopeia",
+  "architecture": "x86_64",
+  "profile": "nvidia-open",
+  "secureBoot": "disabled",
+  "iso": {
+    "file": "Lumina-26.9-Cassiopeia-x86_64-NVIDIA-shell3.iso",
+    "sha256": "0340edc8c62dfac5d2386135e15b0f1c6d5c4e37f1f1e495a059aee280528410",
+    "sizeBytes": 1619656704
+  },
+  "installerSource": "ef6413d948fc4149330cf870e5ff443b89ea0cd6",
+  "shellSource": "3e90e150b320a48cb0a6cc37b6193f28511d0e20",
+  "shellDelivery": "70268518-d2dd-43bb-920d-1faba881a246",
+  "shellArtifact": {
+    "id": "d3228ff5-ce2f-482e-8aac-dda956b48406",
+    "fileName": "lumina-shell-26.9-3.lu26.noarch.rpm",
+    "fileSize": 65171,
+    "hashSha256": "8939171c1a79dc532b5e2202882cc4c19d32cf5518082bbb493f3b2dda582dde",
+    "hashMd5": "dfe38d1f27ff9212a4a518e5a2f862c3",
+    "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+    "signedAt": "2026-09-18T14:54:34.603341Z",
+    "cveScanStatus": 5,
+    "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254",
+    "publishedAt": "2026-09-18T14:57:00.648168Z"
+  },
+  "kernel": "7.2.5-200.fc44.x86_64",
+  "nvidia": "615.71.09-1.fc44",
+  "luminaRpmCount": 10,
+  "nvidiaRpmCount": 7,
+  "checks": {
+    "publicLuminaArtifacts": "pass",
+    "rpmSignatures": "pass",
+    "fullNativePackageInstall": "pass",
+    "nvidiaOpenModuleBuild": "pass",
+    "nvidiaTargetPostInstall": "pass",
+    "nvidiaModulesInInitramfs": "pass",
+    "isoEmbeddedChecksum": "pass",
+    "transferredIsoSha256": "pass",
+    "finalUefiBoot": "pass: branded graphical Anaconda installation summary",
+    "nativeInstalledShellPanels": "pass",
+    "nvidiaFirmwareInInitramfs": "pass",
+    "embeddedPostInstallScripts": "pass"
+  },
+  "limitations": [
+    "Network installation; Fedora packages are not bundled",
+    "No physical RTX 4090 or motherboard Wi-Fi test",
+    "No complete fresh installation or first desktop login for this exact ISO yet",
+    "Secure Boot disabled; no signing-certificate enrollment"
+  ],
+  "logs": {
+    "prepare-native.log": "5c701889dbc583e32504a7c6686d5377e30363dec1022b5d8280dc928a1e4b37",
+    "core.log": "a64ace022553c056aa7d86bb11ff5b2fa0c575929502ddf485e002e098441adf",
+    "validate-module.log": "6f8f673ae65e57187356efd407369720d770931c1300658214732754752f328b",
+    "media-check-final.log": "7728b631973d3cb28f69e3dd852fdd1cffe3bf11d50be78d6303efa33c6d25bc",
+    "installed-rpms.txt": "98f9afb1729a166ac3ef2d8b3c72134407c666dd93bad8b9f1104e48ec70d209",
+    "public-packages.json": "afa295d729411a6af37ddbf8f4689d43f8c505d58c27bb0a8bac83cb796f36af",
+    "installed-shell-smoke.log": "a3aa0e0e565fd0c6d9285f3e310c7f0d633ae9370b5efa647e2d6776cc030581",
+    "wifi-inventory.txt": "7898e6282e6e1553de9e8d39910afb206fdbeac60e234ad4c1cef53cc79f964a"
+  },
+  "nativeShellTest": {
+    "backend": "Chroma headless; pixman; Qt software",
+    "panels": [
+      "controls",
+      "settings",
+      "assistant",
+      "clock"
+    ],
+    "limitation": "Rendering and IPC only; no physical device actions"
+  },
+  "bundledRpms": {
+    "cuda-driver-devel-13-4-13.4.92-1.x86_64.rpm": "a310bdb85081ae6bd467e63ddadc7e6701a3c77fede4385bacfa2ff6b6328057",
+    "kmod-nvidia-open-dkms-615.71.09-1.fc44.noarch.rpm": "b1088f9b974334e3939fb98fccdad0788cb6c8d02a5d9bec0ebf825c77276dc5",
+    "nvidia-driver-615.71.09-1.fc44.x86_64.rpm": "ace0c5e1f7a323c9270c12696d908fe38a7cb331d93c9892f03e04c26eac0f4e",
+    "nvidia-driver-common-615.71.09-1.fc44.x86_64.rpm": "cf20cc024cab43134618294d6a3ed7fc99de8e88b1b2d6e2da783d272ebdf4a7",
+    "nvidia-driver-libs-615.71.09-1.fc44.x86_64.rpm": "a125a04897b10a2631b783627d22ec61511e1a8f9f7abcdc412515c07e3df474",
+    "nvidia-kmod-common-615.71.09-1.fc44.noarch.rpm": "08c1f20aae1d7f5b49642ebae55aca4980742a9845ca963c922876bac40f2c4c",
+    "nvidia-modprobe-615.71.09-1.fc44.x86_64.rpm": "8371622616c15854896cad166b7e17645cdf4f5ed9fcd043feb8e38115c27141",
+    "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f",
+    "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm": "20501082a6da7a9f4e31864366e24e816b9358235e48323947303b4b7c9f8955",
+    "google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm": "96709c88b021227c8ae73ad9974b6d70e99b55a94271e3cea385067514437801",
+    "google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm": "b60d938ff2ae83c00efc803c4c6fe0e5ef656e661f1143eec7d1562226c62e4e",
+    "lumina-artwork-26.9-2.lu26.noarch.rpm": "b9e9e27152ca26bae9ea4e1bdc864c29a5091869b5bad1e3ab356bb73bd3507d",
+    "lumina-desktop-26.9-3.lu26.noarch.rpm": "6429bd2f78e3c1d5ec667b619907aeb5f07bdf97db50b9ebcfc91793fba97c21",
+    "lumina-release-26.9-2.lu26.noarch.rpm": "5e45338146138436246a7a4a7b30a0a255af2261a794e99c64e8a9e1f7569fe3",
+    "lumina-shell-26.9-3.lu26.noarch.rpm": "8939171c1a79dc532b5e2202882cc4c19d32cf5518082bbb493f3b2dda582dde",
+    "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm": "f4477d67d7b00a574b30c9161856714ebb34defd6b4abd5e2dacceda08054e5c",
+    "wl-clip-persist-0.5.0-1.lu26.x86_64.rpm": "c490fab6e9fd7d07a313a9d20a0315d8dffaa9c7f22e2b5ac3fbff8506cf75ae"
+  },
+  "installerKernel": "6.19.10-300.fc44.x86_64",
+  "wifiInventory": [
+    "iwlwifi",
+    "iwlmvm",
+    "iwlwifi-ty-a0-gf-a0 firmware",
+    "rtw89_8852ce",
+    "rtw8852c firmware"
+  ],
+  "bootTests": [
+    {
+      "environment": "native x64 VMware host, QEMU 10.2.2 TCG, 4 vCPUs, 6 GiB",
+      "result": "stalled at initrd switch-root"
+    },
+    {
+      "environment": "ARM64 host, QEMU 10.2.2 x64 TCG, 4 vCPUs, 4 GiB, OVMF UEFI, Virtio GPU",
+      "result": "pass: branded graphical Anaconda 44.30-2.fc44 installation summary, disk and account creation interactive"
+    }
+  ]
+}
