@@ -1,7 +1,7 @@
 # UEFI installer with Ly, Mesa and Nouveau
 
 `build-iso.py` remasters a **Fedora 44 Everything netinstall ISO** with the
-ten Lumina desktop RPMs and an Anaconda package profile. It supports
+ten Lumina desktop RPMs, two RPM Fusion repository RPMs and an Anaconda package profile. It supports
 `aarch64` and `x86_64`; package architecture and base ISO signature/checksum
 are checked before composition. It produces network or offline installation
 media. The default profile downloads base packages; the offline profile below
@@ -13,7 +13,16 @@ with `lorax`, `pykickstart`, `createrepo_c`, `rpm`,
 Lorax rejects cross-architecture composition even when the RPMs and base ISO
 are valid; use the native ARM64 or x64 builder for its respective image.
 Import the reviewed Lumina signing key into that
-builder's RPM keyring before composing release media. Example:
+builder's RPM keyring before composing release media. For a network image,
+add the pinned RPM Fusion release RPMs to that input directory and import
+their reviewed public keys:
+
+```sh
+python3 desktop/installer/rpmfusion.py --output desktop/dist/RPMS
+sudo rpmkeys --import desktop/installer/branding/etc/pki/rpm-gpg/RPM-GPG-KEY-rpmfusion-*-fedora-2020
+```
+
+Then compose:
 
 ```sh
 python3 desktop/installer/build-iso.py \
@@ -44,6 +53,12 @@ available. A Lumina software environment keeps the desktop package set intact
 when users visit or change Anaconda's Software Selection screen.
 The installed RPM supplies signed Lumina repositories for subsequent updates.
 
+The desktop application set uses Nautilus with GVfs for file management,
+GNOME Calculator, Text Editor, Archive Manager (File Roller), Disks, System
+Monitor and Papers. Chroma's MIME defaults select Nautilus for folders,
+Text Editor for plain text and Papers for PDFs. User overrides take precedence.
+The installer excludes Dolphin; it does not install the GNOME desktop session.
+
 ## Offline media
 
 Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-NVME-2026-09-19.md).
@@ -58,7 +73,9 @@ python3 desktop/installer/prepare-offline.py \
   --output /path/to/offline-closure
 ```
 
-Import the Fedora 44 and Lumina signing keys in the builder's RPM keyring. Then
+`prepare-offline.py` downloads and verifies the pinned RPM Fusion release RPMs
+automatically. Import the Fedora 44, Lumina and the two bundled RPM Fusion
+signing keys in the builder's RPM keyring. Then
 run `build-iso.py` as above, adding `--offline-rpms /path/to/offline-closure` and,
 for the current x64 hardware candidate, `--installer-graphics basic
 --installer-network ipv4-dns`. The offline profile currently supports Mesa and
@@ -74,8 +91,8 @@ The composer refuses an offline snapshot missing either NetworkManager package
 or the required storage and bootloader tools, including `nvme-cli` for NVMe disks. This is a curated desktop installer,
 not an offline copy of every package available in the distribution.
 
-The installer imports the explicit Fedora **44** signing key and the Lumina
-key; it never substitutes Lumina's `VERSION_ID=26.9` into Fedora's key filename.
+The installer imports the explicit Fedora **44**, Lumina and RPM Fusion
+signing keys; it never substitutes Lumina's `VERSION_ID=26.9` into Fedora's key filename.
 Visible installer identity, boot menus and login branding say Lumina. Fedora
 repository IDs, signature identities, EFI paths and compatibility metadata
 retain their technical meanings.
@@ -85,13 +102,30 @@ support. This does not replace the board boot flows for Jetson or Orange Pi.
 Firmware loading, graphical installation, account creation, first boot,
 Secure Boot and physical-device operation require separate qualification.
 
+## RPM Fusion repositories
+
+Both architecture profiles install the upstream `rpmfusion-free-release` and
+`rpmfusion-nonfree-release` packages for Fedora **44**. These enable the stable
+Free/Nonfree release and updates repositories, with package signature checks.
+Testing, source, debuginfo, Rawhide and tainted repositories are not enabled.
+The bootstrap helper pins release RPM checksums and checks signatures against
+the bundled upstream keys in an isolated RPM database. The keys were compared
+between RPM Fusion's HTTPS download server and its official GitHub repositories.
+
+Network media carries these two RPMs in `LuminaPackages`. Offline media carries
+them in its complete closure and disables remote RPM Fusion sources inside
+Anaconda; the installed system still gets their normal enabled repositories.
+Only repository configuration and public keys are added, not codecs or a vendor
+graphics driver. The current v5 ISO predates this change and is unchanged.
+
 ## Default graphics
 
 The default `--graphics mesa` profile installs Fedora's Mesa OpenGL/Vulkan
 packages and in-kernel graphics drivers, including Nouveau for NVIDIA hardware.
 `nvidia-gpu-firmware` is deliberately retained: Nouveau needs the GPU firmware.
-Vendor NVIDIA drivers, CUDA libraries, DKMS/akmod modules and NVIDIA repository
-configuration are not bundled or activated. The composer rejects vendor NVIDIA
+Vendor NVIDIA drivers, CUDA libraries, DKMS/akmod modules and NVIDIA's own repository
+configuration are not bundled or activated. RPM Fusion is available for user-selected
+packages after installation. The composer rejects vendor NVIDIA
 RPMs accidentally supplied to the Mesa profile.
 
 For the x64 replacement image, use `--graphics mesa --installer-graphics basic`.

@@ -1,5 +1,5 @@
 {
-  "status": "candidate-ready-for-user-hardware-test",
+  "status": "physical-hdmi-desktop-and-wifi-recovered-after-firmware-repair",
   "iso": {
     "filename": "Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v5-shell3.iso",
     "sha256": "bc54efbca5cedf78ef380f6edbce5d2b97acdcfd148a4b804914da3385921c40",
@@ -29,7 +29,18 @@
     "installer_profile_tests": 8
   },
   "emulator_tests": "paused at user request; v5 was not boot-tested",
-  "physical_hardware": "user testing pending",
+  "physical_hardware": {
+    "installation": "completed per user report",
+    "gpu": "Palit RTX 4090, 10de:2684, nouveau",
+    "kernel": "7.2.5-200.fc44.x86_64",
+    "display": "HDMI-A-1 connected; user confirms working screen; nomodeset absent",
+    "desktop": "Chroma and Lumina Shell Quickshell processes running",
+    "wifi": "RTL8922AE 10ec:8922 connected with rtw89_8922ae after installing realtek-firmware-20260916-1.fc44",
+    "failed_system_units": 0,
+    "post_install_additions": ["realtek-firmware", "pciutils", "usbutils"],
+    "displayport": "original boot failed link training with ret:-5; underlying cable/port/monitor/driver cause not isolated",
+    "boundary": "ISO unchanged; bounded HDMI desktop startup and Wi-Fi recovery only, not full hardware acceptance"
+  },
   "local_evidence_sha256": {
     "verify-v5.log": "a2c4bdc195e35043352d5a3cddfdc7ee4a46c8ee586e21f91d7cbb6701a65771",
     "compose-signed-v5.log": "66893bbe0cf4f5626a9808391259077517e671f775fd78e9578dbf1770bbb48a",

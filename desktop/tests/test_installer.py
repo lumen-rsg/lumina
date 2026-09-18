@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import tempfile
 import xml.etree.ElementTree as ET
 
 path = Path(__file__).resolve().parents[1] / 'installer' / 'build-iso.py'
@@ -11,6 +12,16 @@ spec.loader.exec_module(builder)
 
 
 class InstallerProfiles(unittest.TestCase):
+    def test_rpmfusion_rejects_corrupted_cached_release_rpm(self):
+        spec = importlib.util.spec_from_file_location('rpmfusion', path.with_name('rpmfusion.py'))
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            (output/'rpmfusion-free-release-44-3.noarch.rpm').write_bytes(b'corrupted RPM')
+            with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
+                helper.prepare(output)
+
     def test_desktop_survives_environment_reselection(self):
         for arch in ['x86_64', 'aarch64']:
             comps = ET.fromstring(builder.render_comps(arch))
@@ -23,8 +34,17 @@ class InstallerProfiles(unittest.TestCase):
             self.assertTrue({'lumina-desktop', 'kernel', 'linux-firmware', 'grubby',
                              'nvme-cli', 'btrfs-progs', 'dosfstools', 'grub2-tools-extra',
                              'cryptsetup', 'lvm2', 'mdadm', 'xfsprogs',
-                             'NetworkManager', 'NetworkManager-wifi'} <= mandatory)
+                             'NetworkManager', 'NetworkManager-wifi', 'pciutils', 'usbutils',
+                             'rpmfusion-free-release', 'rpmfusion-nonfree-release',
+                             'nautilus', 'gvfs', 'gnome-calculator', 'gnome-text-editor',
+                             'file-roller', 'gnome-disk-utility', 'gnome-system-monitor', 'papers',
+                             'amd-gpu-firmware', 'intel-gpu-firmware', 'nvidia-gpu-firmware',
+                             'atheros-firmware', 'brcmfmac-firmware', 'mt7xxx-firmware',
+                             'realtek-firmware', 'iwlwifi-mvm-firmware',
+                             'iwlwifi-dvm-firmware', 'iwlwifi-mld-firmware',
+                             'iwlegacy-firmware', 'iwlbluetooth-firmware'} <= mandatory)
             self.assertNotIn('gdm', mandatory)
+            self.assertNotIn('dolphin', mandatory)
 
     def test_offline_has_only_media_source_and_self_contained_environment(self):
         packages = {'lumina-desktop', 'ly', 'kernel', 'bash', 'NetworkManager-wifi'}

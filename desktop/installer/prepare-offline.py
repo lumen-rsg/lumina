@@ -9,6 +9,7 @@ import importlib.util
 from pathlib import Path
 import subprocess
 import tempfile
+from rpmfusion import prepare as prepare_rpmfusion
 
 
 def main():
@@ -22,6 +23,7 @@ def main():
     if args.output.exists() and any(args.output.iterdir()):
         parser.error('output must be empty; do not mix package snapshots')
     args.output.mkdir(parents=True, exist_ok=True)
+    repository_rpms = prepare_rpmfusion(args.output)
     spec = importlib.util.spec_from_file_location('builder', Path(__file__).with_name('build-iso.py'))
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)
@@ -29,6 +31,9 @@ def main():
     block = text.split('%packages', 1)[1].split('%end', 1)[0]
     selected = [line for line in block.splitlines()[1:]
                 if line and not line.startswith(('#', '-', '@^'))]
+    selected = [line for line in selected
+                if line not in {'rpmfusion-free-release', 'rpmfusion-nonfree-release'}]
+    selected += [str(path) for path in repository_rpms]
     subprocess.run(['createrepo_c', str(args.rpms)], check=True)
     with tempfile.TemporaryDirectory(prefix='lumina-offline-', dir=args.output.parent) as tmp:
         work = Path(tmp)

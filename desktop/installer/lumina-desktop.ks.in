@@ -28,9 +28,42 @@ kernel
 kernel-modules
 kernel-modules-extra
 linux-firmware
+# Fedora splits hardware firmware into weak dependencies. Select them explicitly
+# because both the offline resolver and this transaction exclude weak deps.
+amd-gpu-firmware
+amd-ucode-firmware
+atheros-firmware
+brcmfmac-firmware
+cirrus-audio-firmware
+intel-audio-firmware
+intel-gpu-firmware
+iwlegacy-firmware
+iwlwifi-dvm-firmware
+iwlwifi-mvm-firmware
+iwlwifi-mld-firmware
+iwlbluetooth-firmware
+mt7xxx-firmware
+nvidia-gpu-firmware
+nxpwireless-firmware
+qcom-wwan-firmware
+realtek-firmware
+tiwilink-firmware
 NetworkManager
 NetworkManager-wifi
-nvidia-gpu-firmware
+# Official Fedora 44 repository definitions and signing keys, bundled on media.
+rpmfusion-free-release
+rpmfusion-nonfree-release
+# Keep hardware identification available even before networking is functional.
+pciutils
+usbutils
+nautilus
+gvfs
+gnome-calculator
+gnome-text-editor
+file-roller
+gnome-disk-utility
+gnome-system-monitor
+papers
 mesa-dri-drivers
 mesa-vulkan-drivers
 dracut-config-generic
@@ -54,6 +87,7 @@ lumina-desktop
 chrony
 firewalld
 -initial-setup
+-dolphin
 %end
 
 %post --erroronfail --log=/var/log/lumina-desktop-install.log

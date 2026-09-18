@@ -45,6 +45,21 @@ lacked `nvme-cli`. The [NVMe utilities update](INSTALLER-X64-NVME-2026-09-19.md)
 adds that package and supersedes this image. Physical workstation acceptance and
 the final post-login system audit remain open.
 
+The user reports that v5 completed physical installation, but lost video before
+login and had no working Wi-Fi. The exact package manifest omitted split vendor
+firmware because weak dependencies were disabled. Source selection now includes
+it explicitly; the existing v5 image is unchanged.
+
+After installing the Realtek firmware RPM, SSH inspection confirmed connected
+RTL8922AE Wi-Fi with successful firmware loading. On DisplayPort,
+the original boot logs show Nouveau/GSP DisplayPort link-training errors on the
+RTX 4090. Switching to HDMI restored the screen with native modesetting:
+SSH confirmed Nouveau bound, no `nomodeset`, Chroma and Lumina Shell running,
+Wi-Fi connected and no failed system units. This is bounded physical HDMI
+desktop startup and networking acceptance after the firmware repair; the
+original v5 ISO still lacks that firmware. DisplayPort, suspend, audio and
+broader desktop behavior remain unqualified.
+
 ## Gates as of 2026-09-12
 
 - [x] Source bundles, provenance, spec paths and whitespace checks.

@@ -218,8 +218,14 @@ def main():
             names.add(name)
         required = {'lumina-release', 'lumina-artwork', 'lumina-desktop', 'lumina-shell',
                     'chroma-compositor', 'quickshell', 'wl-clip-persist', 'bibata-cursor-theme',
-                    'google-sans-flex-vf-fonts', 'google-material-symbols-vf-rounded-fonts'}
+                    'google-sans-flex-vf-fonts', 'google-material-symbols-vf-rounded-fonts',
+                    'rpmfusion-free-release', 'rpmfusion-nonfree-release'}
         if args.offline_rpms:
+            # Require every explicit target package, including split firmware.
+            # A satisfiable RPM closure alone cannot detect missing weak deps.
+            block = render_kickstart(args.arch, args.graphics).split('%packages', 1)[1].split('%end', 1)[0]
+            required |= {line.strip() for line in block.splitlines()[1:]
+                         if line.strip() and not line.startswith(('#', '@', '-'))}
             required |= {'ly', 'kernel-core', 'NetworkManager', 'NetworkManager-wifi', 'linux-firmware',
                          'nvidia-gpu-firmware', 'mesa-dri-drivers', 'mesa-vulkan-drivers',
                          'nvme-cli', 'btrfs-progs', 'dosfstools', 'e2fsprogs', 'xfsprogs',
@@ -263,7 +269,7 @@ def main():
             (product/'etc/anaconda/conf.d/91-lumina-offline.conf').write_text(
                 '[Payload]\nenable_closest_mirror = False\n'
                 'disabled_repositories =\n    fedora*\n    updates*\n'
-                '    *source*\n    *debuginfo*\n')
+                '    rpmfusion*\n    *source*\n    *debuginfo*\n')
         (product/'.buildstamp').write_text(
             '[Main]\nProduct=Lumina\nVersion=26.9 Cassiopeia\n'
             'BugURL=https://github.com/lumen-rsg/lumina/issues\n'

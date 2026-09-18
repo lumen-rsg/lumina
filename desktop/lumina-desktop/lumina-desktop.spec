@@ -1,6 +1,6 @@
 Name:           lumina-desktop
 Version:        26.9
-Release:        4.lu26
+Release:        5.lu26
 Summary:        Lumina Cassiopeia desktop composition
 License:        MIT
 URL:            https://github.com/lumen-rsg/lumina
@@ -10,6 +10,7 @@ Source2:        lumina-user-template
 Source3:        ly-config.ini
 Source4:        ly-lumina.conf
 Source5:        50-lumina-display-manager.preset
+Source6:        chroma-mimeapps.list
 BuildArch:      noarch
 BuildRequires:  systemd-rpm-macros
 Requires:       lumina-release >= 2:26.9
@@ -39,7 +40,14 @@ Requires:       adw-gtk3-theme
 Requires:       breeze-icon-theme
 Requires:       bibata-cursor-theme
 Requires:       kitty
-Requires:       dolphin
+Requires:       nautilus
+Requires:       gvfs
+Requires:       gnome-calculator
+Requires:       gnome-text-editor
+Requires:       file-roller
+Requires:       gnome-disk-utility
+Requires:       gnome-system-monitor
+Requires:       papers
 Requires:       firefox
 Requires:       wl-clipboard
 Requires:       cliphist
@@ -63,6 +71,7 @@ install -Dpm0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/lumina/ly/config.ini
 ln -s /etc/ly/lang %{buildroot}%{_sysconfdir}/lumina/ly/lang
 install -Dpm0644 %{SOURCE4} %{buildroot}%{_unitdir}/ly@tty1.service.d/50-lumina.conf
 install -Dpm0644 %{SOURCE5} %{buildroot}%{_presetdir}/50-lumina-display-manager.preset
+install -Dpm0644 %{SOURCE6} %{buildroot}%{_datadir}/applications/chroma-mimeapps.list
 
 %posttrans
 # Fedora Ly's %%post attempts this before semanage is necessarily available.
@@ -82,8 +91,13 @@ restorecon /usr/bin/ly
 %{_sysconfdir}/lumina/ly/lang
 %{_unitdir}/ly@tty1.service.d/
 %{_presetdir}/50-lumina-display-manager.preset
+%{_datadir}/applications/chroma-mimeapps.list
 
 %changelog
+* Sat Sep 19 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-5.lu26
+- Replace Dolphin with Nautilus and add GNOME desktop utilities
+- Set Chroma defaults for folders, plain text and PDF documents
+
 * Fri Sep 18 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-4.lu26
 - Use the lightweight Ly greeter with a Lumina Wayland session and branding
 
