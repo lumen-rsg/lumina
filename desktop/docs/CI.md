@@ -101,3 +101,17 @@ available to desktop clients. Test the published repository in an empty
 install root before composing signed release media. Record delivery/build IDs,
 source commit, RPM signatures, repository URLs and artifact checksums in
 `ACCEPTANCE.md`. Local unsigned RPMs are development artifacts.
+
+## Independent shell releases
+
+`.lumina/desktop-shell.yaml` selects only the architecture-independent shell,
+using the approved ARM64 runner and the `cassiopeia-shell-26.9` promotion group.
+Its dedicated project/pipeline keeps the usual source snapshot, scan, signing,
+native dependency validation and publication gates. Runtime dependencies come
+from the already published signed desktop repositories. Use the coordinated
+manifests when compositor/toolkit or shared dependency versions change.
+
+Do not redispatch the whole desktop group for a shell-only update: it rebuilds
+unchanged package versions, and repository staging correctly rejects duplicate
+NEVRAs. The September 18 aggregate attempt `3afa01db-8a7b-4eb1-86fe-24ce3167f918`
+failed on this check before shell publication; it is not a release candidate.

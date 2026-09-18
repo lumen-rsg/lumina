@@ -1,0 +1,13 @@
+# Independent noarch shell releases consume the already published desktop stack.
+# Keep the complete desktop manifests for coordinated compositor/toolkit changes.
+version: 1
+packages:
+  lumina-shell:
+    spec: desktop/lumina-shell/lumina-shell.spec
+    paths:
+      - desktop/lumina-shell/**
+      - desktop/tools/bundle-shell.py
+      - .lumina/desktop-shell.yaml
+    targets:
+      - fedora-44-aarch64
+    promotion_group: cassiopeia-shell-26.9
