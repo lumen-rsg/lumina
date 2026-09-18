@@ -1,10 +1,11 @@
-# UEFI network installer with Mesa and Nouveau
+# UEFI installer with Ly, Mesa and Nouveau
 
 `build-iso.py` remasters a **Fedora 44 Everything netinstall ISO** with the
 ten Lumina desktop RPMs and an Anaconda package profile. It supports
 `aarch64` and `x86_64`; package architecture and base ISO signature/checksum
-are checked before composition. It is a network installer, not a live desktop
-or an offline Fedora mirror. Network access is needed for Fedora packages.
+are checked before composition. It produces network or offline installation
+media. The default profile downloads base packages; the offline profile below
+bundles the complete, signed package closure.
 
 Run on a Fedora 44 builder of the **same architecture as the target ISO**
 with `lorax`, `pykickstart`, `createrepo_c`, `rpm`,
@@ -37,8 +38,47 @@ Lumina vector mark. Development images retain Anaconda's prerelease indication.
 
 The profile leaves disk selection, partitioning and account creation to
 Anaconda. It includes no automatic disk erasure command and no predefined
-password. It enables GDM with the Lumina session and retains Fedora SELinux.
+password. It enables the Ly text greeter with the Lumina Wayland session and
+retains enforcing SELinux. TTY1 belongs to Ly; the other text consoles remain
+available. A Lumina software environment keeps the desktop package set intact
+when users visit or change Anaconda's Software Selection screen.
 The installed RPM supplies signed Lumina repositories for subsequent updates.
+
+## Offline media
+
+Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-OFFLINE-LY-2026-09-18.md).
+
+On the matching native builder, first download the full dependency set into an
+empty directory, using an empty RPM database so host packages cannot hide a
+missing dependency:
+
+```sh
+python3 desktop/installer/prepare-offline.py \
+  --arch x86_64 --rpms /path/to/signed-lumina-rpms \
+  --output /path/to/offline-closure
+```
+
+Import the Fedora 44 and Lumina signing keys in the builder's RPM keyring. Then
+run `build-iso.py` as above, adding `--offline-rpms /path/to/offline-closure` and,
+for the current x64 hardware candidate, `--installer-graphics basic
+--installer-network ipv4-dns`. The offline profile currently supports Mesa and
+Nouveau. Every bundled RPM is signature-checked and recorded in the ISO's
+package checksum sidecar; unsigned development mode remains explicitly marked.
+
+Offline media supplies its own package repository, comps environment, tree
+metadata and `cdrom` source. It disables installer network repositories and
+does not require a network connection. The complete resolved package set is
+mandatory within the Lumina environment, including core packages, Ly, Chroma,
+the shell, Mesa, NetworkManager, NetworkManager-wifi and hardware firmware.
+The composer refuses an offline snapshot missing either NetworkManager package
+or the required storage and bootloader tools. This is a curated desktop installer,
+not an offline copy of every package available in the distribution.
+
+The installer imports the explicit Fedora **44** signing key and the Lumina
+key; it never substitutes Lumina's `VERSION_ID=26.9` into Fedora's key filename.
+Visible installer identity, boot menus and login branding say Lumina. Fedora
+repository IDs, signature identities, EFI paths and compatibility metadata
+retain their technical meanings.
 
 ARM64 requires generic UEFI firmware, ACPI/device-tree and mainline graphics
 support. This does not replace the board boot flows for Jetson or Orange Pi.

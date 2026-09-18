@@ -1,0 +1,12 @@
+NAME="Lumina Installer"
+PRETTY_NAME="Lumina 26.9 Cassiopeia Installer"
+ID=lumina
+ID_LIKE=fedora
+VERSION="26.9 (Cassiopeia)"
+VERSION_ID=26.9
+VERSION_CODENAME=cassiopeia
+PLATFORM_ID="platform:f44"
+FEDORA_VERSION=44
+DEFAULT_HOSTNAME=lumina
+HOME_URL="https://linux.1t.ru/"
+BUG_REPORT_URL="https://github.com/lumen-rsg/lumina/issues"

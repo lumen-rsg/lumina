@@ -4,7 +4,7 @@ graphical
 lang en_US.UTF-8
 keyboard --xlayouts=us
 timezone Etc/UTC --utc
-network --bootproto=dhcp --device=link --activate --onboot=yes
+network --bootproto=dhcp --device=link --activate --onboot=yes --hostname=lumina
 url --url=https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Everything/@ARCH@/os/
 repo --name=fedora-updates --baseurl=https://dl.fedoraproject.org/pub/fedora/linux/updates/44/Everything/@ARCH@/
 repo --name=lumina-media --baseurl=file:///run/install/repo/LuminaPackages
@@ -12,23 +12,43 @@ repo --name=lumina-media --baseurl=file:///run/install/repo/LuminaPackages
 # satisfy its administrator-account check even when no user exists.
 selinux --enforcing
 firewall --enabled
-services --enabled=NetworkManager,gdm,bluetooth,firewalld,chronyd
+services --enabled=NetworkManager,ly@tty1,bluetooth,firewalld,chronyd --disabled=getty@tty1
 firstboot --enable
 reboot
 
+%pre --erroronfail --log=/tmp/lumina-installer-identity.log
+# The stage2 overlay is applied after systemd initially chooses a hostname.
+python3 -c 'import socket; socket.sethostname("lumina")'
+%end
+
 %packages --exclude-weakdeps
+@^lumina-desktop-environment
 @core
 kernel
 kernel-modules
 kernel-modules-extra
 linux-firmware
+NetworkManager
+NetworkManager-wifi
 nvidia-gpu-firmware
 mesa-dri-drivers
 mesa-vulkan-drivers
 dracut-config-generic
 grubby
+grub2-tools-extra
 efibootmgr
 @EFI_PACKAGES@
+# Anaconda adds storage requirements after the user chooses a layout. Keep
+# standard UEFI, Btrfs/ext4/XFS, LUKS, LVM and MD RAID tools on offline media.
+btrfs-progs
+dosfstools
+e2fsprogs
+xfsprogs
+cryptsetup
+lvm2
+mdadm
+langpacks-en
+glibc-all-langpacks
 lumina-desktop
 chrony
 firewalld
@@ -36,13 +56,13 @@ firewalld
 %end
 
 %post --erroronfail --log=/var/log/lumina-desktop-install.log
+set -eu
 usermod -L root
 systemctl set-default graphical.target
-mkdir -p /etc/gdm
-# New-account session defaults are provided by lumina-desktop's AccountsService
-# templates. GDM retains users' subsequent session choices.
-cat > /etc/gdm/custom.conf <<'GDM'
-[daemon]
-WaylandEnable=true
-GDM
+systemctl mask getty@tty1.service
+systemctl enable ly@tty1.service
+# Avoid leaking the live installer's hostname into the new desktop.
+if [ ! -s /etc/hostname ] || grep -Eq '^(fedora|localhost)(\.localdomain)?$' /etc/hostname; then
+    echo lumina > /etc/hostname
+fi
 %end

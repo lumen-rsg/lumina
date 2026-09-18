@@ -1,0 +1,123 @@
+{
+  "status": "candidate-ready-for-user-hardware-test",
+  "iso": {
+    "filename": "Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v4-shell3.iso",
+    "sha256": "a45de9b503ef794cc878f3fad12baf90463da0b277c19d7aa50c56aa4dbea8d3",
+    "bytes": 2290352128,
+    "embedded_media_check": "PASS",
+    "packages": 738,
+    "local_sha256_verified": true
+  },
+  "packages_source_commit": "0af68f905909ad35c86dbeabb34253be37816ad2",
+  "delivery_id": "f62f94ff-2232-46ef-922b-f14d0223e090",
+  "updated_rpms": [
+    {
+      "id": "510c5ccc-726c-4b9d-9c97-5a13e9bd7cc1",
+      "fileName": "lumina-release-26.9-3.lu26.noarch.rpm",
+      "fileSize": 22395,
+      "hashSha256": "9a64f0a28a1705ea99cf7cf070029916031c23fb02922ca50b8aade0524b13af",
+      "hashMd5": "d5b1a98edb1e5aa8ab4dc5a40623e345",
+      "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+      "signedAt": "2026-09-18T19:34:04.105378Z",
+      "cveScanStatus": 5,
+      "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254",
+      "publishedAt": "2026-09-18T19:39:08.10616Z"
+    },
+    {
+      "id": "dec3fbfb-0d5c-4699-9962-03f59b97418d",
+      "fileName": "lumina-desktop-26.9-4.lu26.noarch.rpm",
+      "fileSize": 10819,
+      "hashSha256": "0b09a2a8f63e2e341da11cdbbdbdf047aa60a256ab7e034ef56dfa493554bce8",
+      "hashMd5": "7723e2c88ea87149e7a420a5476bdebe",
+      "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+      "signedAt": "2026-09-18T19:34:29.191885Z",
+      "cveScanStatus": 5,
+      "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254",
+      "publishedAt": "2026-09-18T19:39:08.10616Z"
+    }
+  ],
+  "signing_keys": {
+    "lumina": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+    "fedora44": "36F612DCF27F7D1A48A835E4DBFCF71C6D9F90A6"
+  },
+  "native_empty_root": {
+    "network": "none",
+    "repositories": "local file repository only",
+    "result": "OFFLINE_NATIVE_INSTALL_LY_SELINUX_KEYS_OK",
+    "gpgcheck": true,
+    "ly_selinux_type": "xdm_exec_t",
+    "gdm_present": false,
+    "nvidia_vendor_driver_present": false,
+    "repository_display_names": {
+      "fedora": "Lumina 26.9 - Base",
+      "updates": "Lumina 26.9 - Updates"
+    },
+    "system_release_releasever": 44,
+    "packages": 738,
+    "required_network_packages": [
+      "NetworkManager",
+      "NetworkManager-wifi"
+    ]
+  },
+  "vm_installation": {
+    "status": "offline-installation-and-first-login-passed",
+    "qemu": "10.2.2",
+    "architecture": "x86_64",
+    "acceleration": "TCG",
+    "firmware": "OVMF UEFI",
+    "vcpus": 2,
+    "memory_mib": 4096,
+    "disk_gib": 32,
+    "network": "virtual cable disconnected throughout installation and first desktop login; restricted diagnostic network enabled afterward",
+    "source": "Local media",
+    "environment": "Lumina Desktop",
+    "software_selection_revisited": true,
+    "dependency_warnings": false,
+    "automatic_reboot": true,
+    "uefi_entry": "Lumina",
+    "ly_login": true,
+    "chroma_shell_started": true,
+    "control_center_opened": true,
+    "settings_opened": true,
+    "installer_key_imports": [
+      "RPM-GPG-KEY-fedora-44-x86_64",
+      "RPM-GPG-KEY-lumina-2026"
+    ],
+    "package_or_configuration_repairs": false
+  },
+  "physical_hardware": "not qualified",
+  "rejected_candidates": [
+    {
+      "sha256": "c4393dacf6a88bf97560db799d6f4920ecaead085f468ce3d76e4596ae01f3a0",
+      "reason": "Anaconda rejects an empty flatpak_remote option; override removed before v2."
+    },
+    {
+      "sha256": "a68c51081589e40651812542ad971c1ee705a082b4b3052d5a59fa90a48fb6b4",
+      "reason": "Booted graphical Anaconda but its implicit core group produced a nonfatal missing-group warning; replaced with v3."
+    },
+    {
+      "sha256": "27b3a8bfd08c01cf0f614ecccd2f2f218541339f7d7b5fcec334ea39b0ad0d80",
+      "reason": "Missing Anaconda storage/boot requirements: btrfs-progs, dosfstools, grub2-tools-extra."
+    }
+  ],
+  "local_evidence_sha256": {
+    "native-offline.log": "983881dfc212efbd594106d19f4b17c3502715636cccbdea31a4a6f28982468a",
+    "native-installed-rpms.txt": "78cb82dab6b46c957c81711dbd4d0498eeef205529ebfec3d2ad406cd428ccba",
+    "native-offline-v4.log": "716bff5cd9e040499c86040e4cebbb54c3a126d0719a59cba214acf549bdbae8",
+    "native-installed-rpms-v4.txt": "f81cf76a61dcef24b4f2b866179e33bced0e06664d93f09cad17c195b9778920",
+    "v4-install-serial.log": "50121732d9b902639135b26ac2d5c0f45195a5401cae41fd2dbf2c36945ad624"
+  },
+  "testing_pause": {
+    "requested_by": "user",
+    "vm_state": "paused",
+    "unfinished": [
+      "post-login active-service audit",
+      "installed boot-argument and resolver audit",
+      "running-system SELinux AVC audit",
+      "physical workstation testing"
+    ]
+  },
+  "observations": [
+    "Malformed text-console box-border glyphs in the emulated Ly greeter; session selection and login worked."
+  ]
+}

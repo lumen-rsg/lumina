@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import xml.etree.ElementTree as ET
 
 path = Path(__file__).resolve().parents[1] / 'installer' / 'build-iso.py'
 spec = importlib.util.spec_from_file_location('build_iso', path)
@@ -10,6 +11,35 @@ spec.loader.exec_module(builder)
 
 
 class InstallerProfiles(unittest.TestCase):
+    def test_desktop_survives_environment_reselection(self):
+        for arch in ['x86_64', 'aarch64']:
+            comps = ET.fromstring(builder.render_comps(arch))
+            groups = {g.findtext('id'): g for g in comps.findall('group')}
+            environment = comps.find('environment')
+            self.assertEqual(environment.findtext('id'), 'lumina-desktop-environment')
+            self.assertIn('lumina-desktop', [g.text for g in environment.findall('grouplist/groupid')])
+            mandatory = {p.text for p in groups['lumina-desktop'].findall('packagelist/packagereq')
+                         if p.get('type') == 'mandatory'}
+            self.assertTrue({'lumina-desktop', 'kernel', 'linux-firmware', 'grubby',
+                             'btrfs-progs', 'dosfstools', 'grub2-tools-extra',
+                             'cryptsetup', 'lvm2', 'mdadm', 'xfsprogs',
+                             'NetworkManager', 'NetworkManager-wifi'} <= mandatory)
+            self.assertNotIn('gdm', mandatory)
+
+    def test_offline_has_only_media_source_and_self_contained_environment(self):
+        packages = {'lumina-desktop', 'ly', 'kernel', 'bash', 'NetworkManager-wifi'}
+        for arch in ['x86_64', 'aarch64']:
+            text = builder.render_kickstart(arch, offline=True)
+            self.assertIn('\ncdrom\n', text)
+            self.assertIn('@^lumina-desktop-environment', text)
+            self.assertNotIn('\n@core\n', text)
+            self.assertFalse(any(line.startswith(('url ', 'repo ', 'network ')) for line in text.splitlines()))
+            comps = ET.fromstring(builder.render_comps(arch, package_names=packages))
+            self.assertEqual(packages, {p.text for p in comps.findall('group/packagelist/packagereq')})
+            defined = {g.findtext('id') for g in comps.findall('group')}
+            self.assertIn('core', defined)  # Anaconda also requests this implicitly.
+            self.assertTrue({g.text for g in comps.findall('environment/grouplist/groupid')} <= defined)
+
     def test_generic_architectures_and_interactive_storage(self):
         for arch, efi in [('x86_64', 'grub2-efi-x64'), ('aarch64', 'grub2-efi-aa64')]:
             with self.subTest(arch=arch):

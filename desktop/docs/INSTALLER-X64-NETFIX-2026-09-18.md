@@ -1,5 +1,8 @@
 # Cassiopeia x64 installer network compatibility fix
 
+**Superseded by the [offline installer with Ly](INSTALLER-X64-OFFLINE-LY-2026-09-18.md).**
+The subsequent physical installation failures and replacement are documented there.
+
 `Lumina-26.9-Cassiopeia-x86_64-Nouveau-netfix2-shell3.iso` is a 1,353,383,936-byte
 UEFI network installer. SHA-256:
 

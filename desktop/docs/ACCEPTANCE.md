@@ -33,6 +33,15 @@ workaround. The [network compatibility image](INSTALLER-X64-NETFIX-2026-09-18.md
 bakes that workaround into the installer. Full installation and desktop
 hardware acceptance remain open; the older signed images remain unchanged.
 
+The [offline x64 installer with Ly](INSTALLER-X64-OFFLINE-LY-2026-09-18.md)
+supersedes the network compatibility image after physical installation failures.
+It bundles 738 signed packages, explicitly including NetworkManager and
+NetworkManager-wifi, corrects the signing-key import and preserves the desktop
+when Software Selection is revisited. The exact image completed a disconnected
+UEFI VM installation, rebooted, and logged into Chroma through Ly; control center
+and settings opened. Further emulator checks were paused at the user's request.
+Physical workstation acceptance and the final post-login system audit remain open.
+
 ## Gates as of 2026-09-12
 
 - [x] Source bundles, provenance, spec paths and whitespace checks.
