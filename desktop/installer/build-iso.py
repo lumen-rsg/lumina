@@ -222,7 +222,7 @@ def main():
         if args.offline_rpms:
             required |= {'ly', 'kernel-core', 'NetworkManager', 'NetworkManager-wifi', 'linux-firmware',
                          'nvidia-gpu-firmware', 'mesa-dri-drivers', 'mesa-vulkan-drivers',
-                         'btrfs-progs', 'dosfstools', 'e2fsprogs', 'xfsprogs',
+                         'nvme-cli', 'btrfs-progs', 'dosfstools', 'e2fsprogs', 'xfsprogs',
                          'cryptsetup', 'lvm2', 'mdadm', 'grub2-tools-extra',
                          'langpacks-en', 'glibc-all-langpacks'}
         if args.graphics == 'nvidia-open':

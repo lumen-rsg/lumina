@@ -1,0 +1,38 @@
+{
+  "status": "candidate-ready-for-user-hardware-test",
+  "iso": {
+    "filename": "Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v5-shell3.iso",
+    "sha256": "bc54efbca5cedf78ef380f6edbce5d2b97acdcfd148a4b804914da3385921c40",
+    "bytes": 2291531776,
+    "packages": 739,
+    "embedded_media_check": "PASS",
+    "local_sha256_verified": true
+  },
+  "supersedes_sha256": "a45de9b503ef794cc878f3fad12baf90463da0b277c19d7aa50c56aa4dbea8d3",
+  "reason": "User reported Anaconda failure on physical NVMe storage with nvme-cli missing from the offline repository.",
+  "added_rpms": [
+    {
+      "filename": "nvme-cli-2.16-3.fc44.x86_64.rpm",
+      "sha256": "ff096a46df5e866ee8addf7f99926b42bba59236fcc914827624ac24c7b581aa",
+      "signature_check": "digests signatures OK"
+    }
+  ],
+  "unchanged_rpms": 738,
+  "already_bundled_dependency": "libnvme-1.16.2-1.fc44.x86_64",
+  "validation": {
+    "all_rpm_signatures_verified": true,
+    "empty_root_dependency_resolution": "PASS",
+    "dependency_check_network": "none; local repository only",
+    "rpm_transaction_executed": false,
+    "embedded_kickstart_matches_source": true,
+    "nvme_cli_mandatory": true,
+    "installer_profile_tests": 8
+  },
+  "emulator_tests": "paused at user request; v5 was not boot-tested",
+  "physical_hardware": "user testing pending",
+  "local_evidence_sha256": {
+    "verify-v5.log": "a2c4bdc195e35043352d5a3cddfdc7ee4a46c8ee586e21f91d7cbb6701a65771",
+    "compose-signed-v5.log": "66893bbe0cf4f5626a9808391259077517e671f775fd78e9578dbf1770bbb48a",
+    "nvme-download-v5.log": "8d1a62c879fa7b8b82f70d56c7490adc005380d5db81ed5908fc7bb86aa95763"
+  }
+}

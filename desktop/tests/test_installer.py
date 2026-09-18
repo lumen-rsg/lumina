@@ -21,7 +21,7 @@ class InstallerProfiles(unittest.TestCase):
             mandatory = {p.text for p in groups['lumina-desktop'].findall('packagelist/packagereq')
                          if p.get('type') == 'mandatory'}
             self.assertTrue({'lumina-desktop', 'kernel', 'linux-firmware', 'grubby',
-                             'btrfs-progs', 'dosfstools', 'grub2-tools-extra',
+                             'nvme-cli', 'btrfs-progs', 'dosfstools', 'grub2-tools-extra',
                              'cryptsetup', 'lvm2', 'mdadm', 'xfsprogs',
                              'NetworkManager', 'NetworkManager-wifi'} <= mandatory)
             self.assertNotIn('gdm', mandatory)

@@ -40,7 +40,10 @@ NetworkManager-wifi, corrects the signing-key import and preserves the desktop
 when Software Selection is revisited. The exact image completed a disconnected
 UEFI VM installation, rebooted, and logged into Chroma through Ly; control center
 and settings opened. Further emulator checks were paused at the user's request.
-Physical workstation acceptance and the final post-login system audit remain open.
+The user subsequently reported an NVMe installation failure: the offline snapshot
+lacked `nvme-cli`. The [NVMe utilities update](INSTALLER-X64-NVME-2026-09-19.md)
+adds that package and supersedes this image. Physical workstation acceptance and
+the final post-login system audit remain open.
 
 ## Gates as of 2026-09-12
 

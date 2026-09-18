@@ -1,5 +1,9 @@
 # Cassiopeia x64 offline installer with Ly
 
+**Superseded by the [NVMe utilities update](INSTALLER-X64-NVME-2026-09-19.md).**
+The user reported a physical NVMe installation failure because this image lacked
+the `nvme-cli` RPM. Its successful Virtio-disk VM test did not cover that path.
+
 The replacement installer includes Ly, Chroma, Lumina Shell release 3,
 Mesa/Nouveau, NetworkManager, its NetworkManager-wifi plugin, and hardware
 firmware on the ISO. Installation

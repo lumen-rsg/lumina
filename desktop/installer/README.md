@@ -46,7 +46,7 @@ The installed RPM supplies signed Lumina repositories for subsequent updates.
 
 ## Offline media
 
-Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-OFFLINE-LY-2026-09-18.md).
+Current x64 artifact and bounded validation: [offline Ly installer record](../docs/INSTALLER-X64-NVME-2026-09-19.md).
 
 On the matching native builder, first download the full dependency set into an
 empty directory, using an empty RPM database so host packages cannot hide a
@@ -71,7 +71,7 @@ does not require a network connection. The complete resolved package set is
 mandatory within the Lumina environment, including core packages, Ly, Chroma,
 the shell, Mesa, NetworkManager, NetworkManager-wifi and hardware firmware.
 The composer refuses an offline snapshot missing either NetworkManager package
-or the required storage and bootloader tools. This is a curated desktop installer,
+or the required storage and bootloader tools, including `nvme-cli` for NVMe disks. This is a curated desktop installer,
 not an offline copy of every package available in the distribution.
 
 The installer imports the explicit Fedora **44** signing key and the Lumina

@@ -1,5 +1,5 @@
 {
-  "status": "candidate-ready-for-user-hardware-test",
+  "status": "superseded-after-user-reported-nvme-installation-failure",
   "iso": {
     "filename": "Lumina-26.9-Cassiopeia-x86_64-Offline-Ly-v4-shell3.iso",
     "sha256": "a45de9b503ef794cc878f3fad12baf90463da0b277c19d7aa50c56aa4dbea8d3",
@@ -85,7 +85,7 @@
     ],
     "package_or_configuration_repairs": false
   },
-  "physical_hardware": "not qualified",
+  "physical_hardware": "User reported Anaconda failure with nvme-cli missing from the offline package repository.",
   "rejected_candidates": [
     {
       "sha256": "c4393dacf6a88bf97560db799d6f4920ecaead085f468ce3d76e4596ae01f3a0",
@@ -119,5 +119,6 @@
   },
   "observations": [
     "Malformed text-console box-border glyphs in the emulated Ly greeter; session selection and login worked."
-  ]
+  ],
+  "superseded_by": "cassiopeia-x86_64-offline-nvme-20260919.json"
 }

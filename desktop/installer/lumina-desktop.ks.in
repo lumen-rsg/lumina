@@ -39,7 +39,8 @@ grub2-tools-extra
 efibootmgr
 @EFI_PACKAGES@
 # Anaconda adds storage requirements after the user chooses a layout. Keep
-# standard UEFI, Btrfs/ext4/XFS, LUKS, LVM and MD RAID tools on offline media.
+# standard UEFI, NVMe, Btrfs/ext4/XFS, LUKS, LVM and MD RAID tools on offline media.
+nvme-cli
 btrfs-progs
 dosfstools
 e2fsprogs
