@@ -1,0 +1,21 @@
+# The two noarch installer integration packages use the published desktop stack.
+version: 1
+packages:
+  lumina-release:
+    spec: common/lumina-release/lumina-release.spec
+    paths:
+      - common/lumina-release/**
+      - .lumina/desktop-installer.yaml
+    targets:
+      - fedora-44-x86_64
+    promotion_group: cassiopeia-installer-26.9
+  lumina-desktop:
+    spec: desktop/lumina-desktop/lumina-desktop.spec
+    paths:
+      - desktop/lumina-desktop/**
+      - .lumina/desktop-installer.yaml
+    targets:
+      - fedora-44-x86_64
+    depends_on:
+      - lumina-release
+    promotion_group: cassiopeia-installer-26.9

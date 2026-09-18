@@ -3,3 +3,9 @@
 # Users can deliberately override this policy under /etc/dnf/repos.override.d.
 [fedora-cisco-openh264]
 enabled=false
+
+[fedora]
+name=Lumina 26.9 - Base
+
+[updates]
+name=Lumina 26.9 - Updates

@@ -1,0 +1,3 @@
+enable ly@tty1.service
+disable getty@tty1.service
+disable gdm.service

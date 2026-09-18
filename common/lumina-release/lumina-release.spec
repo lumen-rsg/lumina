@@ -3,7 +3,7 @@
 Name:           lumina-release
 Epoch:          2
 Version:        26.9
-Release:        2.lu26
+Release:        3.lu26
 Summary:        1T Lumina release identity and defaults
 License:        MIT AND LicenseRef-1T-Lumina-Logo
 URL:            https://linux.1t.ru/
@@ -161,6 +161,9 @@ ln -s lumina-release %{buildroot}%{_prefix}/lib/system-release
 %{_libexecdir}/lumina-release/update-boot-branding
 
 %changelog
+* Fri Sep 18 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.9-3.lu26
+- Brand the compatible base and updates repository display names as Lumina
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 2:26.9-2.lu26
 - Keep post-transaction branding tools out of bootstrap dependency ordering
 
