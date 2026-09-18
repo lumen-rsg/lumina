@@ -60,6 +60,8 @@ class InstallerProfiles(unittest.TestCase):
         self.assertIn('%pre --erroronfail', text)
         self.assertIn('/run/NetworkManager/conf.d/99-lumina-installer-dns.conf', text)
         self.assertIn('servers=1.1.1.1,8.8.8.8', text)
+        self.assertIn('dns=default\nrc-manager=symlink\nsystemd-resolved=false', text)
+        self.assertIn('ln -sfn /run/NetworkManager/resolv.conf /etc/resolv.conf', text)
         self.assertNotIn('--noipv6', text)
         self.assertIn('grubby --update-kernel=ALL --remove-args="ipv6.disable"', text)
 
