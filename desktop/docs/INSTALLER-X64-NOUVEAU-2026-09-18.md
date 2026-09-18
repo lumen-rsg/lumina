@@ -1,5 +1,13 @@
 # Cassiopeia x64 Nouveau installer candidate
 
+**Superseded by the [network compatibility image](INSTALLER-X64-NETFIX-2026-09-18.md).**
+After this image was delivered, the user reported successful physical USB boot
+and demonstrated connected Wi-Fi, a DHCP IPv4 address, default route and
+successful numeric-IP pings. Source fetching stalled until public DNS was
+selected and IPv6 disabled in the active connection. The user confirmed that
+combined workaround worked. The physical image checksum was not independently
+re-read, and a completed installation/desktop login was not reported.
+
 `Lumina-26.9-Cassiopeia-x86_64-Nouveau-shell3.iso` is a 1,353,383,936-byte
 UEFI network installer. SHA-256:
 
@@ -56,8 +64,9 @@ generation completed successfully. The initial Virtio GPU VM preview had no
 active display with basic graphics, so the framebuffer boot check uses QEMU's
 standard VGA device instead. This is a VM display change, not an ISO modification.
 
-Physical RTX 4090 boot/display, motherboard Wi-Fi and installed desktop operation
-remain unqualified. The exact image has not completed a full Anaconda install
+Physical USB boot and Wi-Fi IPv4 connectivity were subsequently reported as
+working above. Installed desktop graphics and end-to-end installation remain
+unqualified. The exact image has not completed a full Anaconda install
 and first desktop login. The previous image's physical failure is retained in
 [its historical record](INSTALLER-X64-NVIDIA-2026-09-18.md).
 

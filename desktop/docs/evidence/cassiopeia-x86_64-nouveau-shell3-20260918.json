@@ -45,8 +45,8 @@
     "anacondaPackageSelection": "pass: installation source ready; Custom software selected; only interactive disk/account setup remains"
   },
   "limitations": [
-    "Physical RTX 4090 USB boot and installed graphics require user testing",
-    "Motherboard Wi-Fi remains unqualified",
+    "Installed graphics still require physical testing; USB boot reported working",
+    "Wi-Fi IPv4 connectivity reported working; complete installation not reported",
     "No complete Anaconda installation or first desktop login from this exact ISO",
     "Fedora packages require network access during installation"
   ],
@@ -68,5 +68,15 @@
     "result": "graphical installer with accepted package selection",
     "notTested": "Full installation and installed-system first boot"
   },
-  "initialVmPreview": "Virtio GPU display became inactive with nomodeset; retried unchanged ISO using standard VGA framebuffer"
+  "initialVmPreview": "Virtio GPU display became inactive with nomodeset; retried unchanged ISO using standard VGA framebuffer",
+  "status": "superseded-by-installer-network-compatibility-image",
+  "physicalUserReport": {
+    "boot": "USB installer boot succeeded",
+    "network": "Wi-Fi connected, DHCP IPv4 address and default route present; 1.1.1.1 ping succeeded",
+    "failure": "Fetching sources stalled",
+    "workaround": "public IPv4 DNS and disabled IPv6 in temporary connection settings",
+    "workaroundResult": "user confirmed success",
+    "artifactIdentity": "Reported after this image was delivered; physical USB checksum not independently re-read",
+    "installationCompletion": "not reported"
+  }
 }
