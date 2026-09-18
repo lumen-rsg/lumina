@@ -5,10 +5,10 @@
   "secureBoot": "disabled",
   "iso": {
     "file": "Lumina-26.9-Cassiopeia-x86_64-NVIDIA-shell3.iso",
-    "sha256": "0340edc8c62dfac5d2386135e15b0f1c6d5c4e37f1f1e495a059aee280528410",
-    "sizeBytes": 1619656704
+    "sha256": "81ea96e9ae61e2c8cef2025f0577229cc39a99461cd2e3fb71ed5c5b2b61c1b6",
+    "sizeBytes": 1619722240
   },
-  "installerSource": "ef6413d948fc4149330cf870e5ff443b89ea0cd6",
+  "installerSource": "12d1b9c7bd900e2f594732ac32079358b4bda58d",
   "shellSource": "3e90e150b320a48cb0a6cc37b6193f28511d0e20",
   "shellDelivery": "70268518-d2dd-43bb-920d-1faba881a246",
   "shellArtifact": {
@@ -26,7 +26,7 @@
   "kernel": "7.2.5-200.fc44.x86_64",
   "nvidia": "615.71.09-1.fc44",
   "luminaRpmCount": 10,
-  "nvidiaRpmCount": 7,
+  "nvidiaRpmCount": 8,
   "checks": {
     "publicLuminaArtifacts": "pass",
     "rpmSignatures": "pass",
@@ -39,7 +39,9 @@
     "finalUefiBoot": "pass: branded graphical Anaconda installation summary",
     "nativeInstalledShellPanels": "pass",
     "nvidiaFirmwareInInitramfs": "pass",
-    "embeddedPostInstallScripts": "pass"
+    "embeddedPostInstallScripts": "pass",
+    "completeMediaOnlyPackageSelection": "pass: 922 packages, core and SELinux included, external NVIDIA repository disabled",
+    "anacondaPackageSelection": "pass: installation source ready and Custom software selected; no software dependency error"
   },
   "limitations": [
     "Network installation; Fedora packages are not bundled",
@@ -51,11 +53,13 @@
     "prepare-native.log": "5c701889dbc583e32504a7c6686d5377e30363dec1022b5d8280dc928a1e4b37",
     "core.log": "a64ace022553c056aa7d86bb11ff5b2fa0c575929502ddf485e002e098441adf",
     "validate-module.log": "6f8f673ae65e57187356efd407369720d770931c1300658214732754752f328b",
-    "media-check-final.log": "7728b631973d3cb28f69e3dd852fdd1cffe3bf11d50be78d6303efa33c6d25bc",
     "installed-rpms.txt": "98f9afb1729a166ac3ef2d8b3c72134407c666dd93bad8b9f1104e48ec70d209",
     "public-packages.json": "afa295d729411a6af37ddbf8f4689d43f8c505d58c27bb0a8bac83cb796f36af",
     "installed-shell-smoke.log": "a3aa0e0e565fd0c6d9285f3e310c7f0d633ae9370b5efa647e2d6776cc030581",
-    "wifi-inventory.txt": "7898e6282e6e1553de9e8d39910afb206fdbeac60e234ad4c1cef53cc79f964a"
+    "wifi-inventory.txt": "7898e6282e6e1553de9e8d39910afb206fdbeac60e234ad4c1cef53cc79f964a",
+    "resolve-media.log": "cfedb21dcda987399b4b6b3c9c8029a90e21b121e7f7cab91715f199f13f6ba3",
+    "media-check-policy.log": "7728b631973d3cb28f69e3dd852fdd1cffe3bf11d50be78d6303efa33c6d25bc",
+    "local-uefi-with-selinux/launch.json": "093d87d9d9171f4b51e71ca482ee6a0c6a2c9af1c281e103579cfd7e1a232fb2"
   },
   "nativeShellTest": {
     "backend": "Chroma headless; pixman; Qt software",
@@ -73,6 +77,7 @@
     "nvidia-driver-615.71.09-1.fc44.x86_64.rpm": "ace0c5e1f7a323c9270c12696d908fe38a7cb331d93c9892f03e04c26eac0f4e",
     "nvidia-driver-common-615.71.09-1.fc44.x86_64.rpm": "cf20cc024cab43134618294d6a3ed7fc99de8e88b1b2d6e2da783d272ebdf4a7",
     "nvidia-driver-libs-615.71.09-1.fc44.x86_64.rpm": "a125a04897b10a2631b783627d22ec61511e1a8f9f7abcdc412515c07e3df474",
+    "nvidia-driver-selinux-0.1-2.fc44.noarch.rpm": "ed503045fdab673363a82e99aab31e64c883585b346343d18dbf3f52628b432c",
     "nvidia-kmod-common-615.71.09-1.fc44.noarch.rpm": "08c1f20aae1d7f5b49642ebae55aca4980742a9845ca963c922876bac40f2c4c",
     "nvidia-modprobe-615.71.09-1.fc44.x86_64.rpm": "8371622616c15854896cad166b7e17645cdf4f5ed9fcd043feb8e38115c27141",
     "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f",
@@ -97,11 +102,18 @@
   "bootTests": [
     {
       "environment": "native x64 VMware host, QEMU 10.2.2 TCG, 4 vCPUs, 6 GiB",
-      "result": "stalled at initrd switch-root"
+      "result": "stalled at initrd switch-root",
+      "isoSha256": "0340edc8c62dfac5d2386135e15b0f1c6d5c4e37f1f1e495a059aee280528410"
     },
     {
       "environment": "ARM64 host, QEMU 10.2.2 x64 TCG, 4 vCPUs, 4 GiB, OVMF UEFI, Virtio GPU",
-      "result": "pass: branded graphical Anaconda 44.30-2.fc44 installation summary, disk and account creation interactive"
+      "result": "rejected: graphical Anaconda reached, but package selection required missing nvidia-driver-selinux",
+      "isoSha256": "0340edc8c62dfac5d2386135e15b0f1c6d5c4e37f1f1e495a059aee280528410"
+    },
+    {
+      "environment": "ARM64 host, QEMU 10.2.2 x64 TCG, 4 vCPUs, 4 GiB, OVMF UEFI, Virtio GPU",
+      "isoSha256": "81ea96e9ae61e2c8cef2025f0577229cc39a99461cd2e3fb71ed5c5b2b61c1b6",
+      "result": "pass: graphical Anaconda, installation source ready, Custom software selected; only interactive disk and account setup remain"
     }
   ]
 }

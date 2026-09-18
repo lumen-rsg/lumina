@@ -1,10 +1,10 @@
 # Cassiopeia x64 NVIDIA installer candidate
 
-`Lumina-26.9-Cassiopeia-x86_64-NVIDIA-shell3.iso` is a 1,619,656,704-byte
+`Lumina-26.9-Cassiopeia-x86_64-NVIDIA-shell3.iso` is a 1,619,722,240-byte
 UEFI network installer for Lumina 26.9 Cassiopeia. Its SHA-256 is:
 
 ```text
-0340edc8c62dfac5d2386135e15b0f1c6d5c4e37f1f1e495a059aee280528410
+81ea96e9ae61e2c8cef2025f0577229cc39a99461cd2e3fb71ed5c5b2b61c1b6
 ```
 
 This candidate targets the requested Ryzen 9 9950X / RTX 4090 desktop with
@@ -13,7 +13,7 @@ to the network, choose the installation disk and create an administrator
 account. Disk selection and partitioning remain interactive. Fedora packages
 are downloaded during installation; this is not a live or offline image.
 
-The ISO bundles ten signed Lumina RPMs and seven signed NVIDIA RPMs. Shell
+The ISO bundles ten signed Lumina RPMs and eight signed NVIDIA RPMs. Shell
 release 3 includes the restored control center, settings, sidebar tasks and
 timers, media controls and provider-selected assistant. The existing signed
 x64 Chroma/Quickshell base is retained. NVIDIA's desktop driver and open DKMS
@@ -26,11 +26,13 @@ succeed before installation finishes.
 - The shell update completed LuminaCI build, scan, sign and promotion stages
   in delivery `70268518-d2dd-43bb-920d-1faba881a246`.
 - All ten Lumina inputs matched public repository metadata and downloaded RPM
-  hashes. All seventeen bundled RPM signatures passed validation. Composition
+  hashes. All eighteen bundled RPM signatures passed validation. Composition
   also verified the signed Fedora base checksum, and used no unsigned override.
 - A native x64 empty-root installation resolved and installed the desktop,
   Fedora core group, kernel and NVIDIA profile. The final RPM inventory has
-  925 records, including imported signing keys.
+  925 records, including imported signing keys. The entire 922-package
+  selection also resolved in one transaction with only Fedora and the bundled
+  media repository enabled, including core and enforcing-SELinux dependencies.
 - NVIDIA's open modules built for `7.2.5-200.fc44.x86_64`. The target post-install
   script passed its version/license checks and regenerated the initramfs.
   NVIDIA, modeset, UVM and DRM modules plus GSP firmware were present.
@@ -51,9 +53,15 @@ real device/proc/sys mounts passed. The installer now checks these mounts
 explicitly before DKMS. The retained logs also contain container-only service
 and logging warnings. No compiler or package source patch was needed.
 
-The native server's software-emulated UEFI VM stalled at root handover.
+An earlier candidate booted but Anaconda rejected its software selection
+because NVIDIA conditionally requires `nvidia-driver-selinux` when targeted
+SELinux policy is present. The final profile explicitly includes that signed
+policy RPM and requires it during composition.
+
+During preflight, the native server's software-emulated UEFI VM stalled at root handover.
 The same final ISO subsequently reached the branded graphical Anaconda
-installation summary in the previously validated
+installation summary with its installation source ready and custom software
+selection accepted without errors, in the previously validated
 local QEMU 10.2.2 environment: x86-64 TCG on ARM64, four vCPUs, 4 GiB RAM,
 OVMF UEFI, Virtio display and a fresh disposable disk.
 
