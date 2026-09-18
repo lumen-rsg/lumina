@@ -45,7 +45,7 @@
   },
   "limitations": [
     "Network installation; Fedora packages are not bundled",
-    "No physical RTX 4090 or motherboard Wi-Fi test",
+    "Physical RTX 4090 USB boot failed; installed graphics and motherboard Wi-Fi remain unqualified",
     "No complete fresh installation or first desktop login for this exact ISO yet",
     "Secure Boot disabled; no signing-certificate enrollment"
   ],
@@ -115,5 +115,13 @@
       "isoSha256": "81ea96e9ae61e2c8cef2025f0577229cc39a99461cd2e3fb71ed5c5b2b61c1b6",
       "result": "pass: graphical Anaconda, installation source ready, Custom software selected; only interactive disk and account setup remain"
     }
-  ]
+  ],
+  "status": "superseded-after-physical-usb-boot-failure",
+  "physicalTest": {
+    "source": "user report",
+    "hardware": "RTX 4090 / Ryzen 9 9950X, Secure Boot disabled",
+    "stage": "USB installer boot",
+    "result": "monitor loses signal",
+    "cause": "not established; target NVIDIA driver has not been installed at this stage"
+  }
 }

@@ -1,0 +1,72 @@
+{
+  "release": "Lumina 26.9 Cassiopeia",
+  "architecture": "x86_64",
+  "profile": "mesa",
+  "installerGraphics": "basic (nomodeset removed from installed target)",
+  "installerSource": "e736f282b158f0f1b6f46a846096c6e7841082a0",
+  "shellSource": "3e90e150b320a48cb0a6cc37b6193f28511d0e20",
+  "shellDelivery": "70268518-d2dd-43bb-920d-1faba881a246",
+  "iso": {
+    "file": "Lumina-26.9-Cassiopeia-x86_64-Nouveau-shell3.iso",
+    "sizeBytes": 1353383936,
+    "sha256": "d489a0a391222c9b937c8c1ed81a07ffbfc6d09fd6ba64aed4f48747c1c86487"
+  },
+  "bundledRpms": {
+    "bibata-cursor-theme-2.0.7-1.lu26.noarch.rpm": "d20f3d633566a93ab8367a8469dba16f3872cfd214184c7efb44ae0be1d7998f",
+    "chroma-compositor-0.1.0^20260911gitc310258-2.lu26.x86_64.rpm": "20501082a6da7a9f4e31864366e24e816b9358235e48323947303b4b7c9f8955",
+    "google-material-symbols-vf-rounded-fonts-20260911-2.lu26.noarch.rpm": "96709c88b021227c8ae73ad9974b6d70e99b55a94271e3cea385067514437801",
+    "google-sans-flex-vf-fonts-20260911-2.lu26.noarch.rpm": "b60d938ff2ae83c00efc803c4c6fe0e5ef656e661f1143eec7d1562226c62e4e",
+    "lumina-artwork-26.9-2.lu26.noarch.rpm": "b9e9e27152ca26bae9ea4e1bdc864c29a5091869b5bad1e3ab356bb73bd3507d",
+    "lumina-desktop-26.9-3.lu26.noarch.rpm": "6429bd2f78e3c1d5ec667b619907aeb5f07bdf97db50b9ebcfc91793fba97c21",
+    "lumina-release-26.9-2.lu26.noarch.rpm": "5e45338146138436246a7a4a7b30a0a255af2261a794e99c64e8a9e1f7569fe3",
+    "lumina-shell-26.9-3.lu26.noarch.rpm": "8939171c1a79dc532b5e2202882cc4c19d32cf5518082bbb493f3b2dda582dde",
+    "quickshell-0.3.1^20260911git2d3b3e9-2.lu26.x86_64.rpm": "f4477d67d7b00a574b30c9161856714ebb34defd6b4abd5e2dacceda08054e5c",
+    "wl-clip-persist-0.5.0-1.lu26.x86_64.rpm": "c490fab6e9fd7d07a313a9d20a0315d8dffaa9c7f22e2b5ac3fbff8506cf75ae"
+  },
+  "targetPackages": {
+    "installedRpmCountExcludingKeys": 823,
+    "kernel": "7.2.5-200.fc44.x86_64",
+    "mesa": "26.2.2-6.fc44",
+    "firmware": "20260916-1.fc44",
+    "luminaShell": "26.9-3.lu26"
+  },
+  "checks": {
+    "signedFedoraBase": "pass",
+    "bundledRpmSignatures": "pass",
+    "embeddedMediaCheck": "pass",
+    "transferredSha256": "pass",
+    "kickstartValidation": "pass: Fedora 44; embedded content equals source render",
+    "nativeFullPackageInstallation": "pass: empty target with Fedora and Lumina media repositories only",
+    "vendorNvidiaDriverAbsent": "pass: media and native target",
+    "nouveauBlacklistAbsent": "pass: native target",
+    "defaultGenericInitramfs": "pass: Nouveau module and AD102 GSP firmware",
+    "basicGraphicsArgumentCleanup": "pass: synthetic BLS entry, existing target entries, GRUB defaults and kernel cmdline template",
+    "uefiGraphicalBoot": "pass: branded graphical Anaconda installation summary",
+    "anacondaPackageSelection": "pass: installation source ready; Custom software selected; only interactive disk/account setup remains"
+  },
+  "limitations": [
+    "Physical RTX 4090 USB boot and installed graphics require user testing",
+    "Motherboard Wi-Fi remains unqualified",
+    "No complete Anaconda installation or first desktop login from this exact ISO",
+    "Fedora packages require network access during installation"
+  ],
+  "logs": {
+    "compose.log": "64d72780bb398415a6143b6269036fd7cdc206c5eeab716209e12bef82f4094c",
+    "native.log": "23cfac68f822889a047885476146e85a77b9a3c09fcb622bfbc290d058027d04",
+    "default-initramfs.log": "bfe269b540200100b3c8637290b142c55ab40361b003b653e71c5058d57e445e",
+    "installed-rpms.txt": "a6ef9ec1e34e0bc1b3a3527d131b9b15ef0ed9c8f4ac95338fcab3976796bbd4",
+    "media-check.log": "2bab1b95b8f3844786ba74a71f68b113ba0a923773263c1d166e5c0180240125",
+    "grub.cfg": "42f02945d145344d396475c155eb9446016063c5a316b6f12faf1d3317c16e79",
+    "embedded.ks": "bff749a4c5e606c82fc67353e9fe5047a84b3abea6b6833e3c3ab5d8ebf42324",
+    "iso-inventory.txt": "293d87eb0b1a43554b8e1347a7cdd241865a060fd75b70919a424dd98e80b0cc",
+    "local-uefi-basic/launch.json": "b1083d94e3a0d5cff28e29490a39e9d38cb06b05a5a19e485d173ad85f276d1e"
+  },
+  "bootTest": {
+    "environment": "ARM64 host, QEMU 10.2.2 x64 TCG, 4 vCPUs, 4 GiB RAM, OVMF UEFI, standard VGA, fresh 32 GiB disk",
+    "bootEntry": "Test this media & install Lumina 26.9 Cassiopeia",
+    "kernelArguments": "nomodeset; embedded kickstart; rd.live.check",
+    "result": "graphical installer with accepted package selection",
+    "notTested": "Full installation and installed-system first boot"
+  },
+  "initialVmPreview": "Virtio GPU display became inactive with nomodeset; retried unchanged ISO using standard VGA framebuffer"
+}

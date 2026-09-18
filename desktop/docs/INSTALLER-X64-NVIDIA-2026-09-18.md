@@ -1,5 +1,12 @@
 # Cassiopeia x64 NVIDIA installer candidate
 
+**Superseded after a physical USB boot failure.** The user reports that the
+monitor loses signal while booting this installer on the RTX 4090 desktop,
+before target NVIDIA packages are installed. The historical checks below do
+not establish hardware compatibility. Use the
+[Nouveau replacement candidate](INSTALLER-X64-NOUVEAU-2026-09-18.md), whose USB
+installer uses basic graphics and whose installed desktop uses Nouveau/Mesa.
+
 `Lumina-26.9-Cassiopeia-x86_64-NVIDIA-shell3.iso` is a 1,619,722,240-byte
 UEFI network installer for Lumina 26.9 Cassiopeia. Its SHA-256 is:
 
@@ -66,8 +73,8 @@ local QEMU 10.2.2 environment: x86-64 TCG on ARM64, four vCPUs, 4 GiB RAM,
 OVMF UEFI, Virtio display and a fresh disposable disk.
 
 This candidate has **not** completed a fresh end-to-end installation or first
-desktop login from this exact ISO. Physical RTX 4090 graphics, motherboard
-Wi-Fi, suspend and multi-monitor operation remain to be tested. Secure Boot
+desktop login from this exact ISO. The physical RTX 4090 USB boot test failed as recorded above; installed desktop
+graphics, motherboard Wi-Fi, suspend and multi-monitor operation remain unqualified. Secure Boot
 signing/enrollment is outside this profile.
 
 The [machine-readable record](evidence/cassiopeia-x86_64-nvidia-shell3-20260918.json)

@@ -24,9 +24,11 @@ not requalify the earlier x86-64 preview or either installer image.
 
 Release 3 was subsequently signed and published, and is included in the
 [September 18 x64 NVIDIA installer candidate](INSTALLER-X64-NVIDIA-2026-09-18.md).
-That exact image has package, native shell, NVIDIA module/initramfs and UEFI
-boot evidence. A complete fresh installation and physical RTX 4090/Wi-Fi
-acceptance are still open; the older signed images below remain unchanged.
+That image passed package and VM checks but subsequently failed physical USB
+boot with monitor signal loss on the RTX 4090. It is superseded by the
+[Nouveau/Mesa candidate](INSTALLER-X64-NOUVEAU-2026-09-18.md), which uses basic
+graphics for installation. Physical graphics/Wi-Fi acceptance remains open;
+the older signed images below remain unchanged.
 
 ## Gates as of 2026-09-12
 
