@@ -65,7 +65,7 @@ notify-send --app-name='Lumina QA' 'Cassiopeia notification' 'Notification deliv
 sleep 0.2
 quickshell ipc -p "$repo/desktop/lumina-shell/shell" call shell status >"$artifacts/status.json"
 grim "$artifacts/desktop.png"
-for panel in assistant overview launcher controls settings notifications clock; do
+for panel in assistant overview hints launcher controls settings notifications clock; do
     quickshell ipc -p "$repo/desktop/lumina-shell/shell" call "$panel" toggle
     sleep 0.4
     grim "$artifacts/$panel.png"
@@ -74,6 +74,23 @@ done
 kill "$shell_pid"
 wait "$shell_pid" || true
 shell_pid=
+cp -a "$repo/desktop/lumina-shell/shell" "$artifacts/spatial-fixture"
+cp "$repo/desktop/tests/SpatialFixture.qml" "$artifacts/spatial-fixture/shell.qml"
+timeout 25 quickshell -p "$artifacts/spatial-fixture" >"$artifacts/spatial.log" 2>&1
+grep -q SPATIAL_FIXTURE_PASS "$artifacts/spatial.log"
+LUMINA_SPATIAL_RELOAD=1 timeout 10 quickshell -p "$artifacts/spatial-fixture" >"$artifacts/spatial-reload.log" 2>&1
+grep -q SPATIAL_RELOAD_PASS "$artifacts/spatial-reload.log"
+if [[ ${LUMINA_QA_SPATIAL_ONLY:-0} == 1 ]]; then
+    if grep -E 'ERROR|ReferenceError|TypeError|Cannot assign|Unable to assign|Binding loop' "$artifacts/shell.log" "$artifacts/spatial.log" "$artifacts/spatial-reload.log"; then exit 1; fi
+    echo 'Spatial shell integration passed'
+    exit 0
+fi
+# Restore the default palette before existing settings regression fixtures.
+python3 - "$XDG_CONFIG_HOME/lumina/shell.json" <<'PYCOLOR'
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); data=json.loads(p.read_text()); data['appearance']['theme']='cassiopeia'; p.write_text(json.dumps(data))
+PYCOLOR
 cp -a "$repo/desktop/lumina-shell/shell" "$artifacts/widgets-fixture"
 cp "$repo/desktop/tests/SidebarFixture.qml" "$artifacts/widgets-fixture/shell.qml"
 timeout 20 quickshell -p "$artifacts/widgets-fixture" >"$artifacts/sidebar.log" 2>&1
@@ -129,7 +146,7 @@ PY
 python3 - "$artifacts/shell.log" <<'PYLOG'
 import re,sys
 from pathlib import Path
-text='\n'.join(p.read_text() for p in Path(sys.argv[1]).parent.glob('*.log') if p.name in ['shell.log','sidebar.log','settings-actions.log','productivity.log','productivity-reload.log','productivity-corrupt.log','media.log'])
+text='\n'.join(p.read_text() for p in Path(sys.argv[1]).parent.glob('*.log') if p.name in ['shell.log','spatial.log','spatial-reload.log','sidebar.log','settings-actions.log','productivity.log','productivity-reload.log','productivity-corrupt.log','media.log'])
 errors=[line for line in text.splitlines() if re.search(r'ERROR|ReferenceError|TypeError|is not a type|Cannot assign|Unable to assign|not defined|Binding loop',line)]
 if errors: raise SystemExit('\n'.join(errors))
 PYLOG

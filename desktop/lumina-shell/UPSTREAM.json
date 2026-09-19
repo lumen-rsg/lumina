@@ -45,5 +45,18 @@
     "modules/ii/sidebarRight/pomodoro/PomodoroTimer.qml",
     "modules/ii/sidebarRight/pomodoro/Stopwatch.qml",
     "modules/ii/mediaControls/PlayerControl.qml"
-  ]
+  ],
+  "chroma": {
+    "repository": "https://github.com/lumen-rsg/chroma",
+    "revision": "c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c",
+    "license": "MIT",
+    "files": [
+      "shell/overview/Overview.qml",
+      "shell/feedback/SpatialFeedback.qml",
+      "shell/hints/Cheatsheet.qml",
+      "shell/theme/ForestPalette.qml",
+      "shell/theme/SandyPalette.qml"
+    ],
+    "note": "Spatial layouts ported to public Quickshell layer-shell API and Cassiopeia state, controls and Material theme tokens. Effective shortcuts and serialized feedback are read through existing Chroma helpers and protocol v2."
+  }
 }

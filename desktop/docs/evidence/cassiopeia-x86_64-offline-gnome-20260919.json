@@ -62,7 +62,7 @@
     "vendor_nvidia_driver_absent": true
   },
   "emulator_tests": "paused at user request; this ISO not boot-tested",
-  "physical_hardware": "v6 not tested; repaired v5 HDMI and Wi-Fi success is recorded separately",
+  "physical_hardware": "2026-09-19: user reports v6 installed and working; no new remote per-application qualification",
   "local_evidence_sha256": {
     "prepare.log": "c1c0979b80b553e7ca4fb69aa5f565c5d638b08bc5845473f518e7c03caf4c55",
     "verify-closure.log": "bbb310f48774ce0622e3b3035d930f7b4747ab3f05df0494177b502b27ee41b4",

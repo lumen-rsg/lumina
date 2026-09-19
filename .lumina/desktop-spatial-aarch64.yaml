@@ -1,0 +1,27 @@
+# Selective shell migration; reuse published dependencies and shared noarch RPMs.
+version: 1
+packages:
+  lumina-shell:
+    spec: desktop/lumina-shell/lumina-shell.spec
+    paths:
+    - desktop/lumina-shell/**
+    - desktop/tools/bundle-shell.py
+    - .lumina/desktop-spatial-aarch64.yaml
+    depends_on: []
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-spatial-26.9-aarch64
+  chroma:
+    spec: desktop/chroma/chroma.spec
+    paths:
+    - desktop/chroma/**
+    - .lumina/desktop-spatial-aarch64.yaml
+    depends_on:
+    - lumina-shell
+    lookaside_sources:
+    - file: chroma-319c020a2eab9c8874547c2cd4ac88b732738492.tar.gz
+      size: 341436
+      sha256: 90b54d9dd6baf7c2aa8256232ec5eb5abcf5039ea3f87fc618e9047941f2be78
+    targets:
+    - fedora-44-aarch64
+    promotion_group: cassiopeia-spatial-26.9-aarch64

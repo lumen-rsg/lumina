@@ -98,10 +98,25 @@ ApplicationWindow {
                             ActionButton { label: "Choose file"; symbol: "wallpaper"; onClicked: wallpaperPicker.open() }
                             ActionButton { label: "Cassiopeia"; symbol: "restore"; onClicked: Config.options.background.wallpaperPath = "/usr/share/backgrounds/lumina/lumina-default.png" }
                         }
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Repeater {
+                                model: [{key: "cassiopeia", label: "Cassiopeia", color: "#c3b8ff"}, {key: "forest", label: "Muted forest", color: "#A8C7A0"}, {key: "sandy", label: "Sandy", color: "#EECC92"}]
+                                ActionButton {
+                                    required property var modelData
+                                    label: modelData.label; symbol: "palette"
+                                    toggled: Config.options.appearance.theme === modelData.key
+                                    onClicked: Appearance.selectTheme(modelData.key)
+                                    Rectangle { anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter; width: 32; height: 3; radius: 1; color: parent.modelData.color }
+                                }
+                            }
+                        }
+                        StyledText { Layout.fillWidth: true; wrapMode: Text.Wrap; text: "Forest uses deep evergreen; Sandy uses warm light surfaces. Light and Dark select Cassiopeia's corresponding palette."; font.pixelSize: 12; opacity: 0.7 }
                         RowLayout {
                             Layout.fillWidth: true
-                            ControlTile { Layout.fillWidth: true; label: "Light"; symbol: "light_mode"; toggled: !Config.options.appearance.dark; onActivated: Config.options.appearance.dark = false }
-                            ControlTile { Layout.fillWidth: true; label: "Dark"; symbol: "dark_mode"; toggled: Config.options.appearance.dark; onActivated: Config.options.appearance.dark = true }
+                            ControlTile { Layout.fillWidth: true; label: "Light"; symbol: "light_mode"; toggled: !Appearance.m3colors.darkmode; onActivated: { Appearance.selectTheme("cassiopeia"); Config.options.appearance.dark = false; } }
+                            ControlTile { Layout.fillWidth: true; label: "Dark"; symbol: "dark_mode"; toggled: Appearance.m3colors.darkmode; onActivated: { Appearance.selectTheme("cassiopeia"); Config.options.appearance.dark = true; } }
                         }
                         StyledText { visible: root.currentPage === 3; Layout.fillWidth: true; text: Config.options.background.wallpaperPath; wrapMode: Text.WrapAnywhere; font.pixelSize: 12; opacity: 0.6 }
                     }

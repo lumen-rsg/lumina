@@ -1,8 +1,8 @@
-%global commit c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c
+%global commit 319c020a2eab9c8874547c2cd4ac88b732738492
 %global _smp_ncpus_max 2
 Name:           chroma-compositor
-Version:        0.1.0^20260911gitc310258
-Release:        2.lu26
+Version:        0.1.0^20260919git319c020
+Release:        1.lu26
 Summary:        Spatial Wayland compositor for Lumina
 License:        MIT
 URL:            https://github.com/lumen-rsg/chroma
@@ -24,7 +24,7 @@ BuildRequires:  pkgconfig(pixman-1)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  python3
 BuildRequires:  wl-clipboard
-Requires:       lumina-shell = 26.9
+Requires:       lumina-shell >= 26.9-4.lu26
 Requires:       xorg-x11-server-Xwayland
 Requires:       wl-clip-persist
 Requires:       swayidle
@@ -54,7 +54,7 @@ protocols and session helpers. This package uses Lumina Shell and explicitly
 excludes the upstream Chroma Quickshell configuration.
 
 %prep
-echo '0f8f6d45bc80748b6e04a84545a552270167938045c1ef7f324e531bb023c60a  %{SOURCE0}' | sha256sum -c -
+echo '90b54d9dd6baf7c2aa8256232ec5eb5abcf5039ea3f87fc618e9047941f2be78  %{SOURCE0}' | sha256sum -c -
 %autosetup -p1 -n chroma-%{commit}
 
 %build
@@ -72,6 +72,7 @@ install -pm0755 %{SOURCE2} %{buildroot}%{_bindir}/chroma-polkit-agent
 %check
 # Integration requires a nested Wayland session; run it in desktop QA.
 %meson_test --no-suite integration
+python3 tests/test_shell_dispatch.py
 bash %{SOURCE3} %{_vpath_builddir}/chroma
 
 %files
@@ -83,6 +84,10 @@ bash %{SOURCE3} %{_vpath_builddir}/chroma
 %{_datadir}/xdg-desktop-portal/chroma-portals.conf
 
 %changelog
+* Sat Sep 19 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260919git319c020-1.lu26
+- Pin Chroma with unified Cassiopeia startup and IPC delegation
+- Require the matching spatial shell and retain the tested clipboard patch
+
 * Fri Sep 11 2026 Lumina Linux <packages@linux.1t.ru> - 0.1.0^20260911gitc310258-2.lu26
 - Handle regular and primary clipboard selection requests
 - Run both clipboard round trips in an isolated headless compositor at build time

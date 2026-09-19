@@ -1,0 +1,16 @@
+# Selective shell migration; reuse published dependencies and shared noarch RPMs.
+version: 1
+packages:
+  chroma:
+    spec: desktop/chroma/chroma.spec
+    paths:
+    - desktop/chroma/**
+    - .lumina/desktop-spatial-x86_64.yaml
+    depends_on: []
+    lookaside_sources:
+    - file: chroma-319c020a2eab9c8874547c2cd4ac88b732738492.tar.gz
+      size: 341436
+      sha256: 90b54d9dd6baf7c2aa8256232ec5eb5abcf5039ea3f87fc618e9047941f2be78
+    targets:
+    - fedora-44-x86_64
+    promotion_group: cassiopeia-spatial-26.9-x86_64

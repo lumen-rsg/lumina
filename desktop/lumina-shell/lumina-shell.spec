@@ -1,8 +1,8 @@
 Name:           lumina-shell
 Version:        26.9
-Release:        3.lu26
+Release:        4.lu26
 Summary:        Cassiopeia desktop shell derived from end-4 dotfiles
-License:        GPL-3.0-only
+License:        GPL-3.0-only AND MIT
 URL:            https://github.com/lumen-rsg/lumina
 Source0:        lumina-shell-26.9.tar.gz
 Source1:        lumina-shell
@@ -11,6 +11,7 @@ Source3:        lumina-controls
 Source4:        lumina-settings.desktop
 BuildArch:      noarch
 Requires:       quickshell >= 0.3.0
+Requires:       chroma-compositor >= 0.1.0^20260919git319c020-1.lu26
 Requires:       qt6-qt5compat
 Requires:       qt6-qtsvg
 Requires:       qt6-qtimageformats
@@ -32,7 +33,8 @@ Provides:       desktop-notification-daemon
 %description
 Lumina's Material desktop shell based on end-4's portable Quickshell
 components, with native Chroma spatial controls and a user-configured AI
-assistant. No anime content or upstream Chroma shell is included.
+assistant. The spatial overview, feedback and Forest/Sandy palettes are adapted from
+Chroma; the standalone Chroma shell is not installed.
 
 %prep
 %autosetup
@@ -49,7 +51,7 @@ install -Dpm0755 %{SOURCE3} %{buildroot}%{_libexecdir}/lumina-controls
 install -Dpm0644 %{SOURCE4} %{buildroot}%{_datadir}/applications/lumina-settings.desktop
 
 %files
-%license LICENSE
+%license LICENSE CHROMA-LICENSE
 %doc UPSTREAM.json
 %{_datadir}/lumina-shell/
 %{_bindir}/lumina-shell
@@ -58,6 +60,10 @@ install -Dpm0644 %{SOURCE4} %{buildroot}%{_datadir}/applications/lumina-settings
 %{_datadir}/applications/lumina-settings.desktop
 
 %changelog
+* Sat Sep 19 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-4.lu26
+- Integrate Chroma spatial overview, effective shortcut guide and operation warnings
+- Apply persistent Forest and Sandy palettes throughout the Material shell
+
 * Fri Sep 18 2026 Lumina Linux <packages@linux.1t.ru> - 26.9-3.lu26
 - Restore sidebar Calendar/To Do/Timer group and MPRIS media controls
 - Persist tasks, focus deadlines, stopwatch and laps across shell restarts

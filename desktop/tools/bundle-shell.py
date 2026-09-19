@@ -12,7 +12,7 @@ parser.add_argument("--check", action="store_true")
 args = parser.parse_args()
 raw = io.BytesIO()
 with tarfile.open(fileobj=raw, mode="w", format=tarfile.PAX_FORMAT) as archive:
-    for path in sorted([root / "LICENSE", root / "UPSTREAM.json"] + list((root / "shell").rglob("*"))):
+    for path in sorted([root / "LICENSE", root / "CHROMA-LICENSE", root / "UPSTREAM.json"] + list((root / "shell").rglob("*"))):
         if not path.is_file(): continue
         info = archive.gettarinfo(str(path), arcname="lumina-shell-26.9/" + str(path.relative_to(root)))
         info.uid = info.gid = info.mtime = 0

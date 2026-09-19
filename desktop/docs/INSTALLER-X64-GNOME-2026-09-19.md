@@ -58,9 +58,9 @@ RPM and source profiles also cover ARM64; this new ISO is x86-64 only.
   present. Packaged GNOME desktop IDs match the MIME defaults.
 - Embedded media check passed and the transferred local ISO's SHA-256 matches
   the builder. Nine installer profile tests and source-accounting checks passed.
-- Emulator tests remain paused. This exact ISO and its GNOME applications have
-  not been boot-tested. The repaired v5 physical HDMI/Wi-Fi result does not
-  constitute hardware acceptance of v6.
+- Emulator tests remain paused. On 2026-09-19 the user reported that v6 was
+  installed and working on the physical workstation. This is user-reported
+  installation acceptance, not a new remotely observed test of every application.
 
 Private build logs are under `desktop/evidence/offline-x64-gnome-20260919/`.
 [Machine-readable record](evidence/cassiopeia-x86_64-offline-gnome-20260919.json).

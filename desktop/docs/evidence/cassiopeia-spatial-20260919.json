@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-19",
+  "chromaRevision": "319c020a2eab9c8874547c2cd4ac88b732738492",
+  "shell": "26.9-4.lu26",
+  "runtime": "Fedora 44 ARM64, Quickshell 2d3b3e9, isolated Chroma build plus shipped clipboard patch",
+  "checks": [
+    "five Meson suites",
+    "dispatcher startup and IPC",
+    "1280x800 native shell",
+    "two 1920x1200 outputs at scale 2",
+    "spatial actions and map geometry",
+    "effective shortcuts",
+    "feedback serial expiry and rejection warnings",
+    "Forest and Sandy palettes",
+    "palette reload across shell processes",
+    "source accounting and unsigned RPM build"
+  ],
+  "logs": {
+    "standard/shell.log": "25076e3b097fa95eafac5ce2dac71611ac2779810d6feb5b2863b8111cba574e",
+    "standard/spatial-reload.log": "65f2a2ccd47b6ac2c335eac55949e880ada3288e4efc3e4de7c188ae63680d2c",
+    "standard/spatial.log": "efcc6c0d2849d149581384be1ba89843ca49028bd8045d8f894f2bca610fe787",
+    "hidpi/shell.log": "53c58752738f3fa8d71be823f7479547cba74ab5839c497399676c719b07dd27",
+    "hidpi/spatial-reload.log": "49669d599ed33a3698928bbe3a93273d6a79ac53ebcfa9510f99f6a1ce3d6df2",
+    "hidpi/spatial.log": "b623171967c976e5db1c6483161a8c21b703c79d2974a38efb440dafdca852f2"
+  },
+  "publication": "pending",
+  "physical": "not yet tested; x64 emulator remains paused"
+}

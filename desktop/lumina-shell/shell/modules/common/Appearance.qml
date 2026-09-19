@@ -6,6 +6,14 @@ pragma ComponentBehavior: Bound
 
 Singleton {
     id: root
+    readonly property ForestPalette forest: ForestPalette {}
+    readonly property SandyPalette sandy: SandyPalette {}
+    readonly property QtObject palette: Config.options.appearance.theme === "forest" ? forest : Config.options.appearance.theme === "sandy" ? sandy : null
+    function selectTheme(name) {
+        Config.options.appearance.theme = name;
+        if (name === "forest") Config.options.appearance.dark = true;
+        if (name === "sandy") Config.options.appearance.dark = false;
+    }
     property QtObject m3colors
     property QtObject animation
     property QtObject animationCurves
@@ -35,45 +43,45 @@ Singleton {
     property real contentTransparency: !Config.options.appearance.transparency.enable ? 0 : Config.options.appearance.transparency.automatic ? autoContentTransparency : Math.min(0.9, Config.options.appearance.transparency.contentTransparency)
 
     m3colors: QtObject {
-        property bool darkmode: Config.options.appearance.dark
+        property bool darkmode: root.palette ? root.palette.dark : Config.options.appearance.dark
         property bool transparent: false
-        property color m3background: darkmode ? "#11121f" : "#f7f2fa"
-        property color m3onBackground: darkmode ? "#e7e7f7" : "#1e1b22"
-        property color m3surface: darkmode ? "#11121f" : "#f7f2fa"
-        property color m3surfaceDim: darkmode ? "#11121f" : "#ded8e1"
-        property color m3surfaceBright: darkmode ? "#3a3939" : "#fff8ff"
-        property color m3surfaceContainerLowest: darkmode ? "#0f0e0e" : "#ffffff"
-        property color m3surfaceContainerLow: darkmode ? "#1c1b1c" : "#f1ebf4"
-        property color m3surfaceContainer: darkmode ? "#201f20" : "#ebe5ee"
-        property color m3surfaceContainerHigh: darkmode ? "#2b2a2a" : "#e5dfe8"
-        property color m3surfaceContainerHighest: darkmode ? "#363435" : "#ded8e1"
-        property color m3onSurface: darkmode ? "#e7e7f7" : "#1e1b22"
-        property color m3surfaceVariant: "#49464a"
-        property color m3onSurfaceVariant: darkmode ? "#cbc5ca" : "#49454e"
-        property color m3inverseSurface: "#e7e7f7"
-        property color m3inverseOnSurface: "#313030"
-        property color m3outline: darkmode ? "#948f94" : "#7a7480"
-        property color m3outlineVariant: darkmode ? "#49464a" : "#ccc4d1"
+        property color m3background: root.palette ? root.palette.bg : (darkmode ? "#11121f" : "#f7f2fa")
+        property color m3onBackground: root.palette ? root.palette.fg : (darkmode ? "#e7e7f7" : "#1e1b22")
+        property color m3surface: root.palette ? root.palette.bg : (darkmode ? "#11121f" : "#f7f2fa")
+        property color m3surfaceDim: root.palette ? root.palette.bg : (darkmode ? "#11121f" : "#ded8e1")
+        property color m3surfaceBright: root.palette ? root.palette.bgRaised : (darkmode ? "#3a3939" : "#fff8ff")
+        property color m3surfaceContainerLowest: root.palette ? root.palette.bg : (darkmode ? "#0f0e0e" : "#ffffff")
+        property color m3surfaceContainerLow: root.palette ? root.palette.bgRaised : (darkmode ? "#1c1b1c" : "#f1ebf4")
+        property color m3surfaceContainer: root.palette ? root.palette.bgOverlay : (darkmode ? "#201f20" : "#ebe5ee")
+        property color m3surfaceContainerHigh: root.palette ? root.palette.bgOverlay : (darkmode ? "#2b2a2a" : "#e5dfe8")
+        property color m3surfaceContainerHighest: root.palette ? root.palette.bgOverlay : (darkmode ? "#363435" : "#ded8e1")
+        property color m3onSurface: root.palette ? root.palette.fg : (darkmode ? "#e7e7f7" : "#1e1b22")
+        property color m3surfaceVariant: root.palette ? root.palette.bgOverlay : ("#49464a")
+        property color m3onSurfaceVariant: root.palette ? root.palette.fgDim : (darkmode ? "#cbc5ca" : "#49454e")
+        property color m3inverseSurface: root.palette ? root.palette.fg : ("#e7e7f7")
+        property color m3inverseOnSurface: root.palette ? root.palette.bg : ("#313030")
+        property color m3outline: root.palette ? root.palette.borderStrong : (darkmode ? "#948f94" : "#7a7480")
+        property color m3outlineVariant: root.palette ? root.palette.borderDefault : (darkmode ? "#49464a" : "#ccc4d1")
         property color m3shadow: "#000000"
         property color m3scrim: "#000000"
-        property color m3surfaceTint: "#c3b8ff"
-        property color m3primary: darkmode ? "#c3b8ff" : "#65558f"
-        property color m3onPrimary: darkmode ? "#322f34" : "#ffffff"
-        property color m3primaryContainer: darkmode ? "#2d2a2f" : "#e9ddff"
-        property color m3onPrimaryContainer: darkmode ? "#bcb6bc" : "#211047"
-        property color m3inversePrimary: "#615d63"
-        property color m3secondary: darkmode ? "#cac5c8" : "#635b70"
-        property color m3onSecondary: darkmode ? "#323032" : "#ffffff"
-        property color m3secondaryContainer: darkmode ? "#4d4b4d" : "#e8def4"
-        property color m3onSecondaryContainer: darkmode ? "#ece6e9" : "#201a2b"
-        property color m3tertiary: "#d1c3c6"
-        property color m3onTertiary: "#372e30"
-        property color m3tertiaryContainer: "#31292b"
-        property color m3onTertiaryContainer: "#c1b4b7"
-        property color m3error: darkmode ? "#ffb4ab" : "#ba1a1a"
-        property color m3onError: darkmode ? "#690005" : "#ffffff"
-        property color m3errorContainer: "#93000a"
-        property color m3onErrorContainer: "#ffdad6"
+        property color m3surfaceTint: root.palette ? root.palette.accent : ("#c3b8ff")
+        property color m3primary: root.palette ? root.palette.accent : (darkmode ? "#c3b8ff" : "#65558f")
+        property color m3onPrimary: root.palette ? root.palette.bg : (darkmode ? "#322f34" : "#ffffff")
+        property color m3primaryContainer: root.palette ? root.palette.bgOverlay : (darkmode ? "#2d2a2f" : "#e9ddff")
+        property color m3onPrimaryContainer: root.palette ? root.palette.fg : (darkmode ? "#bcb6bc" : "#211047")
+        property color m3inversePrimary: root.palette ? root.palette.accent : ("#615d63")
+        property color m3secondary: root.palette ? root.palette.accentAlt : (darkmode ? "#cac5c8" : "#635b70")
+        property color m3onSecondary: root.palette ? root.palette.bg : (darkmode ? "#323032" : "#ffffff")
+        property color m3secondaryContainer: root.palette ? root.palette.bgOverlay : (darkmode ? "#4d4b4d" : "#e8def4")
+        property color m3onSecondaryContainer: root.palette ? root.palette.fg : (darkmode ? "#ece6e9" : "#201a2b")
+        property color m3tertiary: root.palette ? root.palette.accentPurple : ("#d1c3c6")
+        property color m3onTertiary: root.palette ? root.palette.bg : ("#372e30")
+        property color m3tertiaryContainer: root.palette ? root.palette.bgOverlay : ("#31292b")
+        property color m3onTertiaryContainer: root.palette ? root.palette.fg : ("#c1b4b7")
+        property color m3error: root.palette ? root.palette.accentDanger : (darkmode ? "#ffb4ab" : "#ba1a1a")
+        property color m3onError: root.palette ? root.palette.bg : (darkmode ? "#690005" : "#ffffff")
+        property color m3errorContainer: root.palette ? root.palette.accentDanger : ("#93000a")
+        property color m3onErrorContainer: root.palette ? root.palette.bg : ("#ffdad6")
         property color m3primaryFixed: "#e7e0e7"
         property color m3primaryFixedDim: "#c3b8ff"
         property color m3onPrimaryFixed: "#1d1b1f"

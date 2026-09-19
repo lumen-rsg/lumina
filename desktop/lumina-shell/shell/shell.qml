@@ -14,6 +14,7 @@ import "modules/common"
 import "modules/common/widgets"
 import "services"
 import "panels"
+import "spatial"
 
 ShellRoot {
     id: root
@@ -48,6 +49,7 @@ ShellRoot {
         model: Quickshell.screens
         delegate: Scope {
             required property var modelData
+            SpatialFeedback { screen: modelData }
             PanelWindow {
                 screen: modelData
                 anchors { top: true; bottom: true; left: true; right: true }
@@ -97,6 +99,7 @@ ShellRoot {
                         StyledText { visible: UPower.displayDevice.isLaptopBattery && bar.width > 700; text: Math.round(UPower.displayDevice.percentage * 100) + "%"; font.pixelSize: 12 }
                         ActionButton { label: Qt.formatDateTime(clock.date, Config.options.bar.clock24h ? "hh:mm" : "h:mm AP"); onClicked: root.toggle("clock", bar.screen) }
                         ActionButton { symbol: "notifications"; label: ""; Accessible.name: "Notifications"; onClicked: root.toggle("controls", bar.screen) }
+                        ActionButton { symbol: "keyboard"; Accessible.name: "Keyboard and canvas controls"; onClicked: root.toggle("hints", bar.screen) }
                         ActionButton { symbol: "power_settings_new"; label: ""; Accessible.name: "Session"; onClicked: root.toggle("session", bar.screen) }
                     }
                 }
@@ -106,7 +109,7 @@ ShellRoot {
     PanelWindow {
         id: drawer
         screen: root.panelScreen
-        visible: root.panel !== ""
+        visible: root.panel !== "" && root.panel !== "overview" && root.panel !== "hints"
         anchors { right: true; top: true; bottom: true }
         margins.top: 6
         margins.bottom: 8
@@ -131,7 +134,8 @@ ShellRoot {
                 }
                 Loader {
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    sourceComponent: root.panel === "assistant" ? assistantPanel : root.panel === "overview" ? overviewPanel : root.panel === "launcher" ? launcherPanel : root.panel === "session" ? sessionPanel : root.panel === "notifications" ? notificationPanel : root.panel === "clock" ? clockPanel : controlCenterPanel
+                    active: drawer.visible
+                    sourceComponent: root.panel === "assistant" ? assistantPanel : root.panel === "launcher" ? launcherPanel : root.panel === "session" ? sessionPanel : root.panel === "notifications" ? notificationPanel : root.panel === "clock" ? clockPanel : controlCenterPanel
                 }
             }
             Keys.onEscapePressed: root.panel = ""
@@ -157,7 +161,8 @@ ShellRoot {
         }
     }
     Component { id: assistantPanel; AssistantPanel {} }
-    Component { id: overviewPanel; OverviewPanel {} }
+    Overview { opened: root.panel === "overview"; output: root.panelScreen; onCloseRequested: root.panel = "" }
+    Cheatsheet { opened: root.panel === "hints"; screen: root.panelScreen; onCloseRequested: root.panel = "" }
     Component { id: launcherPanel; LauncherPanel { onLaunched: root.panel = "" } }
     Component {
         id: sessionPanel
@@ -227,6 +232,6 @@ ShellRoot {
     IpcHandler { target: "notifications"; function toggle(): void { root.toggle("notifications"); } function dnd(): void { Config.options.notifications.dnd = !Config.options.notifications.dnd; } }
     IpcHandler { target: "clock"; function toggle(): void { root.toggle("clock"); } }
     IpcHandler { target: "session"; function menu(): void { root.toggle("session"); } }
-    IpcHandler { target: "hints"; function toggle(): void { root.toggle("overview"); } }
-    IpcHandler { target: "shell"; function close(): void { root.panel = ""; settingsWindow.visible = false; } function status(): string { return JSON.stringify({panel: root.panel, connected: Chroma.connected, version: "26.9", settingsOpen: settingsWindow.visible, settingsPage: settingsWindow.currentPage, dark: Config.options.appearance.dark, dnd: root.dnd, windows: Chroma.state.windows.length}); } }
+    IpcHandler { target: "hints"; function toggle(): void { root.toggle("hints"); } }
+    IpcHandler { target: "shell"; function close(): void { root.panel = ""; settingsWindow.visible = false; } function status(): string { return JSON.stringify({panel: root.panel, connected: Chroma.connected, version: "26.9", settingsOpen: settingsWindow.visible, settingsPage: settingsWindow.currentPage, dark: Appearance.m3colors.darkmode, theme: Config.options.appearance.theme, dnd: root.dnd, windows: Chroma.state.windows.length}); } }
 }

@@ -101,9 +101,9 @@ packages:
     - lumina-shell
     - wl-clip-persist
     lookaside_sources:
-    - file: chroma-c310258dbf1c71b3cf4a4474a9680f07bfdd2e4c.tar.gz
-      size: 339797
-      sha256: 0f8f6d45bc80748b6e04a84545a552270167938045c1ef7f324e531bb023c60a
+    - file: chroma-319c020a2eab9c8874547c2cd4ac88b732738492.tar.gz
+      size: 341436
+      sha256: 90b54d9dd6baf7c2aa8256232ec5eb5abcf5039ea3f87fc618e9047941f2be78
     targets:
     - fedora-44-aarch64
     promotion_group: cassiopeia-desktop-26.9-aarch64

@@ -27,6 +27,7 @@ Singleton {
             property JsonObject notifications: JsonObject { property bool dnd: false; property int timeout: 6000 }
             property JsonObject controls: JsonObject { property bool showBrightness: true; property bool showMic: true; property bool showCalendar: true; property bool showMedia: true; property bool widgetsCollapsed: true; property int widgetTab: 0 }
             property JsonObject appearance: JsonObject {
+                property string theme: "cassiopeia"
                 property bool dark: true
                 property bool reducedMotion: false
                 property real extraBackgroundTint: 0
