@@ -13,7 +13,11 @@
     "feedback serial expiry and rejection warnings",
     "Forest and Sandy palettes",
     "palette reload across shell processes",
-    "source accounting and unsigned RPM build"
+    "source accounting and unsigned RPM build",
+    "native ARM64 and x64 RPM tests including both clipboard round trips",
+    "LuminaCI scan and signing on both architectures",
+    "native baseline installation and upgrade on both architectures",
+    "all three public core RPM digests and signatures verified"
   ],
   "logs": {
     "standard/shell.log": "25076e3b097fa95eafac5ce2dac71611ac2779810d6feb5b2863b8111cba574e",
@@ -21,8 +25,171 @@
     "standard/spatial.log": "efcc6c0d2849d149581384be1ba89843ca49028bd8045d8f894f2bca610fe787",
     "hidpi/shell.log": "53c58752738f3fa8d71be823f7479547cba74ab5839c497399676c719b07dd27",
     "hidpi/spatial-reload.log": "49669d599ed33a3698928bbe3a93273d6a79ac53ebcfa9510f99f6a1ce3d6df2",
-    "hidpi/spatial.log": "b623171967c976e5db1c6483161a8c21b703c79d2974a38efb440dafdca852f2"
+    "hidpi/spatial.log": "b623171967c976e5db1c6483161a8c21b703c79d2974a38efb440dafdca852f2",
+    "final/shell.log": "901bcfb9c1b6280e5ec6bd20415cf65ee769d1c8e13746532a379595cafd8fc3",
+    "final/spatial.log": "fd9df53808bfd44287741237fd60e83e9b313de127dec5cc629783013aecef6b",
+    "final/spatial-reload.log": "d479f3c82ce6d188ad4dcef8684b9cda5a34a904808dd6277348a522814fcf36",
+    "signatures-all.log": "3bc107201e4de035093706ec782fed55b9773c30177cfb5224f8ae3e4e8c6128"
   },
-  "publication": "pending",
-  "physical": "not yet tested; x64 emulator remains paused"
+  "publication": "Published to lumen for aarch64 and x86_64, with shared noarch shell; public metadata, RPM digests and Lumina signatures verified",
+  "physical": "not yet tested; x64 emulator remains paused",
+  "sourceCommit": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+  "chromaBranch": "codex/cassiopeia-shell-integration",
+  "luminaBranch": "codex/cassiopeia-desktop",
+  "deliveries": {
+    "aarch64": {
+      "requestId": "fba01ab5-52b0-40dc-b429-734168929684",
+      "projectId": "42b8c09b-c652-4e16-9033-9af83d78329e",
+      "status": 6,
+      "commitSha": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+      "snapshotSha256": "a4f541ece3e4487eb0628aef5aff9ec51adc2ffed41f4f0198d1eba22a7ae37e",
+      "manifestSha256": "1a2b18a41728649a2ee3801402a3cd2c6b8084830b87d37cbc61c2bcea6ff97e"
+    },
+    "x86_64": {
+      "requestId": "e2f82497-524f-4685-b395-3b1e1f6bbde2",
+      "projectId": "707af936-1a5d-4425-8416-287618d8b3ef",
+      "status": 6,
+      "commitSha": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+      "snapshotSha256": "e7dffe50422b4d2676a651c32521803dfa85003c665bd9b145d5ee3071911353",
+      "manifestSha256": "d83418a228987ea0f7538618c0b16752fadf5b7ee7c99aeb695885f179045b6f"
+    }
+  },
+  "builds": {
+    "aarch64-chroma-build": {
+      "id": "98a1741b-c795-4025-beb8-111ddd8bfc6b",
+      "commitSha": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+      "targetArchitecture": "aarch64",
+      "runnerImageDigest": "sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568",
+      "completedAt": "2026-09-19T11:22:26.404228Z",
+      "artifacts": [
+        {
+          "fileName": "chroma-compositor-0.1.0^20260919git319c020-1.lu26.aarch64.rpm",
+          "hashSha256": "de989d2d385bfb0458af0833edbbfaffbf4a02a7b5ffe49690a809dd50ca7a3e",
+          "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+          "signedAt": "2026-09-19T11:19:24.125347Z",
+          "publishedAt": "2026-09-19T11:22:26.34266Z",
+          "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254"
+        }
+      ]
+    },
+    "aarch64-lumina-shell-build": {
+      "id": "c2f25615-8242-4645-b103-75b08cd9c9ec",
+      "commitSha": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+      "targetArchitecture": "aarch64",
+      "runnerImageDigest": "sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568",
+      "completedAt": "2026-09-19T11:22:26.365808Z",
+      "artifacts": [
+        {
+          "fileName": "lumina-shell-26.9-4.lu26.noarch.rpm",
+          "hashSha256": "2b55bf8f35296790ea4d969668653d2a4027d6090cd99be146d52f4f609ede32",
+          "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+          "signedAt": "2026-09-19T11:17:22.305606Z",
+          "publishedAt": "2026-09-19T11:22:26.34266Z",
+          "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254"
+        }
+      ]
+    },
+    "x86_64-chroma-build": {
+      "id": "42717aab-c26f-4b60-9126-de58c6dbbe69",
+      "commitSha": "cbc0326d51d76c08a32f194e12192a4239a56a9f",
+      "targetArchitecture": "x86_64",
+      "runnerImageDigest": "sha256:6254d7fccefa0d58a33dbdfc1c396339a10baff2eda319f6d204c48f9b168aa9",
+      "completedAt": "2026-09-19T11:28:42.882689Z",
+      "artifacts": [
+        {
+          "fileName": "chroma-compositor-0.1.0^20260919git319c020-1.lu26.x86_64.rpm",
+          "hashSha256": "56c539ee9f87f255ca94e5bf05d3317868f456d5a89dc0767ad9be15d1557bed",
+          "signingKeyFingerprint": "EBE39C736CAC92CEC2139DC7620675824776D3D7",
+          "signedAt": "2026-09-19T11:25:51.968777Z",
+          "publishedAt": "2026-09-19T11:28:42.815537Z",
+          "publishedRepositoryId": "82886b10-0a9f-442a-a3fc-2e95afbaa254"
+        }
+      ]
+    }
+  },
+  "nativeGates": {
+    "aarch64": {
+      "baselinePackageNames": [
+        "chroma-compositor",
+        "chroma-compositor-debuginfo",
+        "chroma-compositor-debugsource",
+        "lumina-shell"
+      ],
+      "candidates": [
+        {
+          "fileName": "chroma-compositor-0.1.0^20260919git319c020-1.lu26.aarch64.rpm",
+          "nevra": "chroma-compositor-0:0.1.0^20260919git319c020-1.lu26.aarch64",
+          "sha256": "de989d2d385bfb0458af0833edbbfaffbf4a02a7b5ffe49690a809dd50ca7a3e"
+        },
+        {
+          "fileName": "chroma-compositor-debuginfo-0.1.0^20260919git319c020-1.lu26.aarch64.rpm",
+          "nevra": "chroma-compositor-debuginfo-0:0.1.0^20260919git319c020-1.lu26.aarch64",
+          "sha256": "fd1c436a97c91dff12b089d0146f144801319099a4d5958626f3890a2645c61f"
+        },
+        {
+          "fileName": "chroma-compositor-debugsource-0.1.0^20260919git319c020-1.lu26.aarch64.rpm",
+          "nevra": "chroma-compositor-debugsource-0:0.1.0^20260919git319c020-1.lu26.aarch64",
+          "sha256": "0e7ac3d9b2ffa2e451a2533dac2218559fbca706dd964976f1aaee4270d67ca9"
+        },
+        {
+          "fileName": "lumina-shell-26.9-4.lu26.noarch.rpm",
+          "nevra": "lumina-shell-0:26.9-4.lu26.noarch",
+          "sha256": "2b55bf8f35296790ea4d969668653d2a4027d6090cd99be146d52f4f609ede32"
+        }
+      ],
+      "kubernetesJobUid": "6423b83c-f0ae-43aa-9ffb-29b2190a5479",
+      "promotionSetId": "488c593a-a89a-854a-ba9a-159f9e864467",
+      "runnerImageDigest": "sha256:6c214c5199609f02b987a9aff877bf0ca3bd54bc7113b4f059753e6443969568",
+      "targetArchitecture": "aarch64",
+      "transaction": "baseline-upgrade",
+      "version": 1
+    },
+    "x86_64": {
+      "baselinePackageNames": [
+        "chroma-compositor",
+        "chroma-compositor-debuginfo",
+        "chroma-compositor-debugsource"
+      ],
+      "candidates": [
+        {
+          "fileName": "chroma-compositor-0.1.0^20260919git319c020-1.lu26.x86_64.rpm",
+          "nevra": "chroma-compositor-0:0.1.0^20260919git319c020-1.lu26.x86_64",
+          "sha256": "56c539ee9f87f255ca94e5bf05d3317868f456d5a89dc0767ad9be15d1557bed"
+        },
+        {
+          "fileName": "chroma-compositor-debuginfo-0.1.0^20260919git319c020-1.lu26.x86_64.rpm",
+          "nevra": "chroma-compositor-debuginfo-0:0.1.0^20260919git319c020-1.lu26.x86_64",
+          "sha256": "92f4626fd9b548220b0e6fee070a433c98a2b1f8d695a8c8fe4c8ce751c5fde1"
+        },
+        {
+          "fileName": "chroma-compositor-debugsource-0.1.0^20260919git319c020-1.lu26.x86_64.rpm",
+          "nevra": "chroma-compositor-debugsource-0:0.1.0^20260919git319c020-1.lu26.x86_64",
+          "sha256": "b7c7737cb489719b9bbb610eee395af7a1267c649f23d3c9415b0aedb914cb2d"
+        }
+      ],
+      "kubernetesJobUid": "e7ce5abd-b8bc-4b4b-b06b-0baf8b6e4360",
+      "promotionSetId": "accc1970-1ce5-8759-a3d3-cee1e6878758",
+      "runnerImageDigest": "sha256:6254d7fccefa0d58a33dbdfc1c396339a10baff2eda319f6d204c48f9b168aa9",
+      "targetArchitecture": "x86_64",
+      "transaction": "baseline-upgrade",
+      "version": 1
+    }
+  },
+  "publicArtifacts": {
+    "chroma-compositor-0.1.0^20260919git319c020-1.lu26.aarch64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/aarch64/chroma-compositor-0.1.0^20260919git319c020-1.lu26.aarch64.rpm",
+      "sha256": "de989d2d385bfb0458af0833edbbfaffbf4a02a7b5ffe49690a809dd50ca7a3e",
+      "bytes": 262587
+    },
+    "chroma-compositor-0.1.0^20260919git319c020-1.lu26.x86_64.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/x86_64/chroma-compositor-0.1.0^20260919git319c020-1.lu26.x86_64.rpm",
+      "sha256": "56c539ee9f87f255ca94e5bf05d3317868f456d5a89dc0767ad9be15d1557bed",
+      "bytes": 293603
+    },
+    "lumina-shell-26.9-4.lu26.noarch.rpm": {
+      "url": "https://packages.lumina.1t.ru/lumen/noarch/lumina-shell-26.9-4.lu26.noarch.rpm",
+      "sha256": "2b55bf8f35296790ea4d969668653d2a4027d6090cd99be146d52f4f609ede32",
+      "bytes": 75101
+    }
+  }
 }

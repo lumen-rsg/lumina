@@ -49,3 +49,33 @@ Raw development evidence is in `desktop/evidence/spatial-20260919/`. This is
 native headless verification, not physical acceptance of release 4. The user's
 v6 installation success covers the earlier shell 3 ISO; no new ISO is composed
 by this shell update. CI signing/publication results are recorded separately.
+
+## Published release
+
+Lumina source `cbc0326d51d76c08a32f194e12192a4239a56a9f` completed:
+
+- ARM64 delivery `fba01ab5-52b0-40dc-b429-734168929684`, published at
+  `2026-09-19T11:22:26Z`, including the shared `lumina-shell-26.9-4.lu26.noarch`.
+- x64 delivery `e2f82497-524f-4685-b395-3b1e1f6bbde2`, published at
+  `2026-09-19T11:28:42Z`.
+- Native compositor RPM `chroma-compositor-0.1.0^20260919git319c020-1.lu26`
+  for both architectures. Meson suites, dispatcher tests, and regular/primary
+  clipboard round trips pass in both RPM builds.
+
+Both native promotion gates installed the prior baseline in an isolated root,
+then upgraded it with the new candidates. This is package transaction evidence,
+not a graphical boot or physical hardware test. Public repository metadata and
+all three downloaded core RPMs match the signed CI artifacts byte for byte.
+Their signatures verify with Lumina key
+`EBE39C736CAC92CEC2139DC7620675824776D3D7` in an isolated key database.
+Detailed identities and hashes are in
+[evidence/cassiopeia-spatial-20260919.json](evidence/cassiopeia-spatial-20260919.json).
+
+Update an installed Cassiopeia system with:
+
+```sh
+sudo dnf upgrade --refresh chroma-compositor lumina-shell
+```
+
+Log out and back in to run the new compositor and shell. No reinstall is needed;
+the v6 ISO remains the previously verified shell-3 artifact.
